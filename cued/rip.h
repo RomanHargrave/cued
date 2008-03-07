@@ -87,10 +87,10 @@ extern long cued_read_audio(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t first
 extern void cued_init_rip_data();
 extern void cued_free_paranoia_buf();
 
-extern char rip_mcn[ MCN_LEN + 1 ];
-extern char rip_isrc[ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
-extern lsn_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ] [ CUED_MAX_INDICES ];
-extern int rip_silent_pregap;
+extern char  rip_mcn[ MCN_LEN + 1 ];
+extern char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
+extern lsn_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
+extern int   rip_silent_pregap;
 
 
 #endif // RIP_H_INCLUDED

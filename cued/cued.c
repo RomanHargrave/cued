@@ -417,17 +417,17 @@ int main(int argc, char *const argv[])
                 qSubChannelFileName,
                 fileNameBuffer, sizeof(fileNameBuffer)
                 );
-        }
 
-        // remove track 0 tag file if track 0 pre-gap file was removed;  could check extract here too, but rip_silent_pregap handles
-        if (1 == firstRipTrack && rip_silent_pregap && cddb2_has_tags()) {
-            cddb_track_t *trackObj = cddb2_get_track(cddbObj, 0);
-            if (!cddb2_apply_pattern(cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
-                if (unlink(fileNameBuffer)) {
-                    cdio2_unix_error("unlink", fileNameBuffer, 0);
+            // remove track 0 tag file if track 0 pre-gap file was removed
+            if (cddb2_has_tags() && 1 == firstRipTrack && rip_silent_pregap) {
+                cddb_track_t *trackObj = cddb2_get_track(cddbObj, 0);
+                if (!cddb2_apply_pattern(cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
+                    if (unlink(fileNameBuffer)) {
+                        cdio2_unix_error("unlink", fileNameBuffer, 0);
+                    }
+                } else {
+                    cdio_error("could not make filename to unlink track 0 tag file");
                 }
-            } else {
-                cdio_error("could not make filename to unlink track 0 tag file");
             }
         }
     }

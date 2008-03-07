@@ -36,7 +36,6 @@ char rip_isrc[ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
 lsn_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ] [ CUED_MAX_INDICES ];
 int rip_silent_pregap;
 
-static int noisyPregap;
 static int trackHint;
 
 
@@ -53,8 +52,7 @@ void cued_init_rip_data()
     memset(rip_mcn,  0x00, sizeof(rip_mcn));
     memset(rip_isrc, 0x00, sizeof(rip_isrc));
     trackHint = 0;
-    noisyPregap = 0;
-    rip_silent_pregap = 0;
+    rip_silent_pregap = 1;
 }
 
 
@@ -320,18 +318,14 @@ void cued_rip_to_file(
             cdio2_abort("failed to write to file \"%s\" due to \"%s\"", fileName, sf_strerror(sfObj));
         }
 
-        if (!track && !noisyPregap) {
+        if (!track && rip_silent_pregap) {
             for (i = 0;  i < wordsToWrite;  ++i) {
                 if (pbuf[i]) {
-                    noisyPregap = 1;
+                    rip_silent_pregap = 0;
                     break;
                 }
             }
         }
-    }
-
-    if (!track && !noisyPregap) {
-        rip_silent_pregap = 1;
     }
 
     sf_close(sfObj);
