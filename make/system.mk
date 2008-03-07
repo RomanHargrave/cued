@@ -18,7 +18,8 @@
 #
 
 BUILD ?= release
-INSTALL_DIR ?= /usr/local/bin
+INSTALL_PREFIX ?= /usr/local
+INSTALL_BIN_DIR ?= $(INSTALL_PREFIX)/bin
 
 UNAME_SYSTEM		:= $(shell uname -s)
 ifeq (SunOS, $(UNAME_SYSTEM))
@@ -166,7 +167,7 @@ $(LIB_PATH) :: $(addsuffix .o, $(SRC))
 	$(AR_BIN) $(AR_FLAGS) $@ $(foreach obj, $?, $(if $(findstring $(OBJ_DIR), $(obj)), $(obj), $(addprefix $(OBJ_DIR), $(obj))))
 
 install : all
-	$(if $(BIN_PATH),cp -p $(BIN_PATH) $(INSTALL_DIR))
+	$(if $(BIN_PATH),cp -p $(BIN_PATH) $(INSTALL_BIN_DIR))
 
 dependclean :
 	@-rm .dependencies 2>/dev/null

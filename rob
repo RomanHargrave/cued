@@ -1,2 +1,2 @@
 #!/bin/bash
-CC_BIN=g++ INSTALL_DIR=~/bin/linux CC_DEFINES=-DDEBUG_MALLOC make install
+CC_BIN=g++ INSTALL_BIN_DIR=~/bin/linux CC_DEFINES=-DDEBUG_MALLOC make install
