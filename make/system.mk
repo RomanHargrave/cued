@@ -177,5 +177,5 @@ clean : dependclean
 	@-rm $(BIN_PATH) $(LIB_PATH) 2>/dev/null
 	@-rmdir -p $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) 2>/dev/null
 
-distclean :
+distclean : dependclean
 	@-rm -rf bin lib obj *~ 2>/dev/null
