@@ -418,8 +418,8 @@ int main(int argc, char *const argv[])
                 fileNameBuffer, sizeof(fileNameBuffer)
                 );
 
-            // remove track 0 tag file if track 0 pre-gap file was removed
-            if (cddb2_has_tags() && 1 == firstRipTrack && rip_silent_pregap) {
+            // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
+            if (cddb2_has_tags() && 1 == firstRipTrack && !rip_noisy_pregap) {
                 cddb_track_t *trackObj = cddb2_get_track(cddbObj, 0);
                 if (!cddb2_apply_pattern(cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
                     if (unlink(fileNameBuffer)) {

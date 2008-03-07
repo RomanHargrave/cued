@@ -91,6 +91,7 @@ extern char  rip_mcn[ MCN_LEN + 1 ];
 extern char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
 extern lsn_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
 extern int   rip_silent_pregap;
+extern int   rip_noisy_pregap;
 
 
 #endif // RIP_H_INCLUDED
