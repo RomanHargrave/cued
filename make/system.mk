@@ -171,10 +171,10 @@ install : all
 dependclean :
 	@-rm .dependencies 2>/dev/null
 
-clean :
+clean : dependclean
 	@-rm $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) 2>/dev/null
 	@-rm $(BIN_PATH) $(LIB_PATH) 2>/dev/null
 	@-rmdir -p $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) 2>/dev/null
 
-distclean : dependclean
+distclean :
 	@-rm -rf bin lib obj *~ 2>/dev/null
