@@ -127,7 +127,7 @@ void cued_write_cuefile(
 
         ripLsn = rip_indices[track];
         if (CDIO_INVALID_LSN != ripLsn[1]) {
-           for (index = 0;  index < CUED_MAX_INDICES;  ++index) {
+            for (index = 0;  index < CUED_MAX_INDICES;  ++index) {
 
                 useLsn = ripLsn[index];
                 if (CDIO_INVALID_LSN == useLsn) {
