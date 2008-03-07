@@ -38,6 +38,10 @@ RIPPING
         to the offset.  Or, better yet, use notdown in the "accurip" directory.
         Notdown recognizes that the Accurate Rip database is off by 30.
 
+    This is how the author rips from an image file:
+
+        1.  cued --cddb-match=1 -vx -c "%D/%Y<%Y - >%C/%C (%M)" -n "%D/%Y<%Y - >%C/%N%N<<00> - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "comment=cued%V" -t "comment=%S" *nrg
+
     Help on formats:
 
         If track is zero, use 00 for track number, else use track number:
