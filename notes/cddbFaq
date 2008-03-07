@@ -1,0 +1,9 @@
+2.2. Are there any naming-rules for submitting CD's to freedb?
+Yes, there are:
+
+   1. Never submit info completely in capitals or completely lower case, if there is no special reason for that.
+   2. For bands that have a leading "the", simply leave out the "the" (e.g. use "Rolling Stones" instead of "The Rolling Stones") (this rule does not apply to "The The" ;-)
+   3. Names of people should be written "first name last name" - NOT "last name, first name".
+   4. Use the name of the artist repeated on the "title" field if there is no title (usually seen on an artist's first major label release, such as with the B-52's)
+   5. When submitting a CD-Extra, name the data-track "Data" or something like that - do not leave the track-title blank.
+   6. When submitting a sampler or compilation, you should include the track-artist in the track-name, using the syntax "artist / track-title" and set the CD-artist to "Various"

@@ -1,0 +1,21 @@
+
+    // parse options
+    //
+    for (exeName = basename2(argv[0]);  -1 != (option = getopt(argc, argv, "q:"));  ) {
+
+        switch (option) {
+
+            case 'q':
+                qSubChannelFileName = optarg;
+                break;
+
+            case '?':
+                fprintf(stderr, "unknown option \"%c\" specified\n", optopt);
+                usage(exeName);
+                break;
+
+            default:
+                unixError("getopt", "", 1);
+                break;
+        }
+    }

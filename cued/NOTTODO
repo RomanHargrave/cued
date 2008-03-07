@@ -1,0 +1,45 @@
+mkdirp for qsc
+    why not?
+        qsc extraction is merely diagnostic
+
+create toc file (-t)
+    why not?
+        cue sheet is well supported by cdrdao
+
+handle multi-session?
+    why not?
+        does this case matter?
+    paranoia example uses alternate sector routines...
+        should use with paranoia?
+
+add alternate Q subchannel read method?
+    why not?
+        too complicated and newer drives support mmc read
+    use DAP and position commands
+
+    10% of track back until index that is non-zero found, then read forward?
+
+    use binary search?
+        left val/right val
+            search until left val is 1, right val is 2 (lsn diff==1)
+
+            always work left which is reading BACKWARDS, but then read forward
+
+        what to do for missing qsc entries?
+            scan right until found
+                what if it scans all the way to end without getting a valid qsc record?
+                    then scan left?
+
+    use heuristic?
+        5%, 15%, 35%, 65%, etc. before beginning of track
+
+    build in memory search tree
+        check tree before checking disc
+
+extract wave files needs to handle performer/title cd text?
+    why not?
+        design decision is that cue sheet will contain real cd text, filenames come from cddb
+    need to handle % in alternation
+    if performer/title from track, use those
+        save with each call to cdio2_fprint_cd_text if string ptrs passed
+    if performer/title from disc, use those

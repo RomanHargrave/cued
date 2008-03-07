@@ -1,0 +1,283 @@
+static int reallocOpts(opt_param_t *opts[], int *optAlloc, int numOpts, int newOpts, int optHint)
+{
+    opt_param_t *rcAlloc;
+    int emptyOpts, allocOpts;
+
+    // for idempotence
+    allocOpts = *optAlloc;
+ 
+    // will the new entries fit?
+    //
+    emptyOpts = allocOpts - numOpts;
+    if (newOpts > emptyOpts) {
+
+        // allocate the number of entries needed or the hint, whichever is more
+        //
+        allocOpts = numOpts + newOpts;
+        if (optHint > allocOpts) {
+            allocOpts = optHint;
+        }
+
+        rcAlloc = (opt_param_t *) realloc(*opts, allocOpts * sizeof(opt_param_t));
+        if (rcAlloc) {
+
+            *opts = rcAlloc;
+            *optAlloc = allocOpts;
+
+        } else {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+void cddb2_parse_opt(cddb2_opt_t cddb2Opt)
+{
+    ssize_t sst;
+
+    switch (cddb2Opt) {
+
+        case CDDB2_OPT_SERVER:
+            server = optarg;
+            break;
+
+        case CDDB2_OPT_PORT:
+            if (strtol2(optarg, NULL, 10, &sst) || sst < 0 || sst > 65535) {
+                cdio2_abort("invalid port of \"%s\" specified", optarg);
+            } else {
+                port = (int) sst;
+            }
+            break;
+
+        case CDDB2_OPT_EMAIL:
+            email = optarg;
+            break;
+
+        case CDDB2_OPT_TIMEOUT:
+            if (strtol2(optarg, NULL, 10, &sst)) {
+                cdio2_abort("invalid timeout of \"%s\" specified", optarg);
+            } else {
+                timeout = (int) sst;
+            }
+            break;
+
+        default:
+            cdio2_abort("unknown option to cddb");
+            break;
+    }
+}
+
+
+extern void cddb2_parse_opt(cddb2_opt_t cddb2Opt);
+extern struct option cddb2_options_table[];
+
+
+
+void cddb2_parse_opt(cddb2_opt_t cddb2Opt)
+{
+    switch (cddb2Opt) {
+
+        case CDDB2_OPT_CACHE_DIR:
+            cddb2_set_cache_dir(optarg);
+            break;
+
+        case CDDB2_OPT_SERVER:
+            cddb2_set_server(optarg);
+            break;
+
+        case CDDB2_OPT_PORT:
+            cddb2_set_port(optarg);
+            break;
+
+        case CDDB2_OPT_EMAIL:
+            cddb2_set_email(optarg);
+            break;
+
+        case CDDB2_OPT_TIMEOUT:
+            cddb2_set_timeout(optarg);
+            break;
+
+        default:
+            cdio2_abort("unknown option to cddb");
+            break;
+    }
+}
+
+
+typedef enum _cddb2_opt_t {
+
+    CDDB2_OPT_SERVER = 0xCDDB2,
+    CDDB2_OPT_MIN = CDDB2_OPT_SERVER,
+
+    CDDB2_OPT_CACHE_DIR,
+    CDDB2_OPT_PORT,
+    CDDB2_OPT_EMAIL,
+
+    CDDB2_OPT_TIMEOUT,
+    CDDB2_OPT_MAX = CDDB2_OPT_TIMEOUT
+
+} cddb2_opt_t;
+
+
+void cddb2_set_server(char *host)
+{
+    server = host;
+}
+
+void cddb2_set_cache_dir(char *dir)
+{
+    cacheDir = dir;
+}
+
+void cddb2_set_email(char *userAtHost)
+{
+    email = userAtHost;
+}
+
+void cddb2_set_timeout(char *seconds)
+{
+    ssize_t sst;
+
+    if (strtol2(seconds, NULL, 10, &sst)) {
+        cdio2_abort("invalid timeout of \"%s\" specified", seconds);
+    } else {
+        timeout = (int) sst;
+    }
+}
+
+
+#if 0
+struct option cddb2_options_table[] = {
+
+    { "no-cddb",        no_argument,        &cddb2_disable_opt,     1 },
+    { "no-cddb-cache",  no_argument,        &disableCache,          1 },
+    { "cddb-http",      no_argument,        &useHttp,               1 },
+
+    { "cddb-server",    required_argument,  NULL, CDDB2_OPT_SERVER },
+    { "cddb-cache",     required_argument,  NULL, CDDB2_OPT_CACHE_DIR },
+    { "cddb-port",      required_argument,  NULL, CDDB2_OPT_PORT },
+    { "cddb-email",     required_argument,  NULL, CDDB2_OPT_EMAIL },
+    { "cddb-timeout",   required_argument,  NULL, CDDB2_OPT_TIMEOUT },
+};
+#endif
+
+
+cddb_disc_t *cddb2_get_first_match(CdIo_t *cdObj, cddb_conn_t **dbObj, int *matches)
+{
+    cddb_disc_t *discObj = NULL;
+
+    *dbObj = cddb2_create_connection_object();
+    if (!*dbObj) {
+        cddb2_error("failed to create CDDB connection object");
+    }
+
+    discObj = cddb2_create_query_object(cdObj);
+    if (!discObj) {
+        cddb2_error("failed to create CDDB query object");
+    }
+
+    *matches = cddb_query(*dbObj, discObj);
+    if (-1 == *matches) {
+        cddb2_error("failed to query CDDB");
+    }
+
+    if (1 != cddb_read(*dbObj, discObj)) {
+        cddb2_error("failed to read first CDDB disc object");
+    }
+
+    return discObj;
+
+cleanup:
+
+    if (discObj) {
+        cddb_disc_destroy(discObj);
+    }
+    if (*dbObj) {
+        cddb_destroy(*dbObj);
+    }
+
+    return NULL;
+}
+
+
+    // TEST code
+    if (mkdirp(argv[1])) {
+        printf("mkdirp failed with error %s\n", strerror(errno));
+    }
+    exit(EXIT_SUCCESS);
+
+
+extern bool cdio2_get_track_msf(CdIo_t *cdObj, track_t track, msf_t *msf);
+
+
+bool cdio2_get_track_msf(CdIo_t *cdObj, track_t track, msf_t *msf)
+{
+    lsn_t lsn;
+
+    lsn = cdio_get_track_lsn(cdObj, track);
+    if (CDIO_INVALID_LSN == lsn) {
+        return false;
+    }
+
+    lsn -= CDIO_PREGAP_SECTORS;
+
+    return qsc_lsn_to_msf(lsn, msf) ? false : true;
+}
+
+
+/*  memory is requested from the operating system in larger chunks
+**  than the process needs immediately;  consequently, there're fewer
+**  switches to supervisor mode to obtain memory from the operating
+**  system
+*/
+
+#define BREAK_DIFFERENCE	    		0x10000000		/* 256 MB */
+
+/*  use a break addresses to reduce large block fragmentation
+*/
+static ptr_as_int_t itsLargeBreakAddress;
+
+INLINE
+void *allocLargeChunk(size_t theSize)
+{
+	ptr_as_int_t aNewChunk;
+
+    if (!itsLargeBreakAddress)
+    {
+        itsLargeBreakAddress = allocChunk(0, SMALL_PAGE_SIZE);
+        if (!itsLargeBreakAddress)
+            return 0;
+
+        freeChunk(itsLargeBreakAddress, SMALL_PAGE_SIZE);
+        itsLargeBreakAddress += BREAK_DIFFERENCE;
+
+        /* itsLargeBreakAddress = (ptr_as_int_t) sbrk(0) + BREAK_DIFFERENCE;
+        */
+    }
+
+    if ((aNewChunk = allocChunk(itsLargeBreakAddress, theSize)))
+    	itsLargeBreakAddress = aNewChunk + theSize;
+
+	return (void *) aNewChunk;
+}
+
+
+int cddb2_get_file_path(
+    cddb_disc_t *cddbObj,
+    const char *fileNamePattern,
+    char *fileNameExt,
+    track_t track,
+    char *fileNameBuffer,
+    int bufferSize
+    )
+{
+    int chars;
+
+    chars = snprintf(fileNameBuffer, bufferSize, "%s%02d%s", fileNamePattern, track, fileNameExt);
+
+    return (chars >= bufferSize) ? -1 : 0;
+}

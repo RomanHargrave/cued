@@ -1,0 +1,55 @@
+RELEASE
+
+    This is cued v.b1, the first beta version.
+
+SUPPORT
+
+    For support, send e-mail to hydrologiccycle@gmail.com.
+
+BUILDING
+
+    Cued was developed with the following libraries:
+
+        libcdio     version 0.78.2
+        libsndfile  version 1.0.17
+        libcddb     version 1.3.0
+
+    You can build the release by running GNU make.  On most systems
+    this is either simply "make" or "gmake."
+
+INSTALLING
+
+    To install in /usr/local/bin:
+        make install
+
+    To install elsewhere:
+        INSTALL_DIR="/some/place/bin" make install
+
+RIPPING
+
+    This is how the author rips a disc (2 steps:)
+
+        1. cued -o 12 -vipx -c "%D/%Y<%Y - >%C/%C (%M)" -n "%D/%Y<%Y - >%C/%N%N<<00> - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "comment=cued%V" -t "comment=%S" /dev/cdrom
+
+        2. make -f make/flac.mk
+
+        Add 30 to cued -o to match EAC with is skewed from "absolute zero"
+        by -30.  Note that ARCue.pl will fail if you do not add 30
+        to the offset.  Or, better yet, use notdown in the "accurip" directory.
+        Notdown recognizes that the Accurate Rip database is off by 30.
+
+    Help on formats:
+
+        If track is zero, use 00 for track number, else use track number:
+            %N%N<<00>
+
+        If track artist is empty, use disc artist:
+            %A%A<<%D>
+
+        If track artist is provided, then include it.
+            %A<%A - >
+
+            This is useful for compilations of various artists.
+
+        Test tags without ripping:
+            cued -n "%D/%Y<%Y - >%C/%N%N<<00> - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "comment=cued%V" -t "comment=%S" /dev/cdrom

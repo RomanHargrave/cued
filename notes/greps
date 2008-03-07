@@ -1,0 +1,5 @@
+checking for superfluous \n in cdio_log family
+    grepit "\"" | fgrep "\\n" | fgrep -v printf
+
+looking for product name not using macro
+    grepit "\"" | fgrep cued | fgrep -v include

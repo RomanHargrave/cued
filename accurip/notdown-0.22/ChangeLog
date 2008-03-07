@@ -1,0 +1,18 @@
+Notdown tools ChangeLog
+-----------------------
+
+2007-06-11: 0.22 - Eric Shattow
+  - verified okay for HTOA track 01 pregap album Blind Melon / Soup
+  - info.rb reads EAC style cuesheets, cdrdao style tocfiles
+  - clashcheck.rb configurable samples compensation at top
+  - decode_ar.rb uses Toc module
+  - cdwavheader.rb usage, use Toc module
+  - first release
+
+2007-06-10: 0.21 - Eric Shattow
+  - restructure and cleanups
+  - not released
+
+2007-06-10: 0.20 - Eric Shattow
+  - transition from arcue.rb
+  - not released
