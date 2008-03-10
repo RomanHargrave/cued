@@ -1,2 +1,2 @@
 #!/bin/bash
-CC_BIN=g++ INSTALL_BIN_DIR=~/bin/linux CC_DEFINES=-DDEBUG_MALLOC make install
+EXTLIBDIRS="/home/edison/local/lib" CC_BIN=g++ CC_FLAGS="-isystem ~/local/include" INSTALL_BIN_DIR=~/bin/linux CC_DEFINES="-DDEBUG_MALLOC" make install
