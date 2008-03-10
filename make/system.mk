@@ -55,13 +55,13 @@ else ifeq (SUNWspro, $(findstring SUNWspro, $(CC_BIN)))
 endif
 
 ifdef SUNWS
-	LD_FLAGS ?= $(CC_FLAGS) -xildoff
+	LD_FLAGS += $(CC_FLAGS) -xildoff
 else
-	LD_FLAGS ?= $(CC_FLAGS)
+	LD_FLAGS += $(CC_FLAGS)
 endif
 
 AR_BIN	 ?= ar
-AR_FLAGS ?= rcs
+AR_FLAGS += rcs
 
 
 OBJ_DIR			:= obj/$(UNAME_SYSTEM)/$(UNAME_PLATFORM)/$(BITS)/$(BUILD)/
@@ -74,7 +74,7 @@ else ifdef LIB
 	LIB_PATH	:= $(LIB_DIR)lib$(LIB).a
 endif
 vpath %.o $(OBJ_DIR)
-vpath %.a /usr/lib $(addsuffix /$(LIB_PROTO_DIR), $(LIBDIRS))
+vpath %.a /usr/lib $(addsuffix /$(LIB_PROTO_DIR), $(LIBDIRS)) $(EXTLIBDIRS)
 
 CC_FLAGS			+= $(CC_DEFINES)
 ifdef GCC
@@ -159,7 +159,7 @@ $(BIN_PATH) :: $(OBJ_DIR) $(BIN_DIR) ;
 
 $(BIN_PATH) :: $(addsuffix .o, $(SRC)) $(addprefix lib, $(addsuffix .a, $(LIBS)))
 	$(LD_BIN) $(LD_FLAGS) -o $@ $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) \
-        $(addprefix -L, $(addsuffix /$(LIB_PROTO_DIR),$(LIBDIRS))) $(addprefix -l, $(LIBS))
+        $(addprefix -L, $(EXTLIBDIRS)) $(addprefix -L, $(addsuffix /$(LIB_PROTO_DIR),$(LIBDIRS))) $(addprefix -l, $(LIBS))
 
 $(LIB_PATH) :: $(OBJ_DIR) $(LIB_DIR) ;
 
