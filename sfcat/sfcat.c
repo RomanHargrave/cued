@@ -73,7 +73,9 @@ static OUTPUT_FORMAT_MAP format_map [] =
     {   "sds",      0,  SF_FORMAT_SDS   },
     {   "sd2",      0,  SF_FORMAT_SD2   },
     {   "vox",      0,  SF_FORMAT_RAW   },
-    {   "xi",       0,  SF_FORMAT_XI    }
+    {   "xi",       0,  SF_FORMAT_XI    },
+    {   "bin",      0,  SF_FORMAT_RAW   }
+
 } ; /* format_map */
 
 static int
