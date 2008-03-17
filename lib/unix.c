@@ -119,10 +119,11 @@ int mkdirp(char *pathname)
     char *subpath, *slash;
     int rc;
 
-    // skip any leading '/' because mkdir does not return EEXIST for the root
-    subpath = pathname;    
-    while ('/' == subpath[0]) {
-        ++subpath;
+    // skip a leading slash because mkdir on "" does not succeed
+    if (pathname[0] == '/') {
+        subpath = &pathname[1];
+    } else {
+        subpath = pathname;
     }
 
     for (;;) {
