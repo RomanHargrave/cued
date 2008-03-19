@@ -26,31 +26,6 @@
 //
 //  TODO:
 //
-//      HIGH PRIORITY
-//
-//          add credit for self
-//              By the way, there should be a note in the libcdio doc that you wrote
-//              the section on pregaps. If you want to find a place to add that,
-//              that'd be cool as well.
-//
-//          fix 272 byte offset in bincue and cdrdao
-//              fix up regression tests
-//
-//          NRG enhancements
-//
-//              isrc's are in the nrg created from the bin/cue, although mcn is not
-//                  12 bytes...  they go in the zero field + 2 more bytes of the so-called "Sector size"
-//
-//              look at cd text in nrg
-//
-//              create nrg image from bincue
-//                  look at mcn and check for pregap
-//                      no mcn created, but pregap is
-//
-//              look at mcn in nrg
-//                  looks like a space!
-//                      is this correct?
-//
 //      MEDIUM PRIORITY
 //
 //          overread support
