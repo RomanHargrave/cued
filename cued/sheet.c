@@ -71,7 +71,7 @@ void cued_write_cuefile(
 
     quoted = strchr(basename2(devFileName), ' ') ? 1 : 0;
     fprintf(cueFile
-        , "FILE %s%s.wav%s BINARY\n"
+        , "FILE %s%s.bin%s BINARY\n"
         , quoted ? "\"" : ""
         , basename2(devFileName)
         , quoted ? "\"" : ""
