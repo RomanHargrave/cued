@@ -26,7 +26,32 @@
 //
 //  TODO:
 //
-//      MEDIUM_PRIORITY
+//      HIGH PRIORITY
+//
+//          add credit for self
+//              By the way, there should be a note in the libcdio doc that you wrote
+//              the section on pregaps. If you want to find a place to add that,
+//              that'd be cool as well.
+//
+//          fix 272 byte offset in bincue and cdrdao
+//              fix up regression tests
+//
+//          NRG enhancements
+//
+//              isrc's are in the nrg created from the bin/cue, although mcn is not
+//                  12 bytes...  they go in the zero field + 2 more bytes of the so-called "Sector size"
+//
+//              look at cd text in nrg
+//
+//              create nrg image from bincue
+//                  look at mcn and check for pregap
+//                      no mcn created, but pregap is
+//
+//              look at mcn in nrg
+//                  looks like a space!
+//                      is this correct?
+//
+//      MEDIUM PRIORITY
 //
 //          overread support
 //              need to handle error of read inside/outside audio track during offset correction?
@@ -379,9 +404,12 @@ int main(int argc, char *const argv[])
         if (!strcmp("-", cueFileNamePattern)) {
             cueFile = stdout;
         } else {
-            (void) cddb2_get_file_path(cddbObj, cueFileNamePattern, ".cue", 0, fileNameBuffer, sizeof(fileNameBuffer));
 
-            cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_EXCL | O_APPEND, 0666);
+            // removed ".cue" extension to allow using /dev/null for testing
+            (void) cddb2_get_file_path(cddbObj, cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
+
+            // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
+            cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
             if (!cueFile) {
                 cdio2_unix_error("fopen2", fileNameBuffer, 0);
                 cdio_error("not creating cue file \"%s\"", fileNameBuffer);
@@ -433,6 +461,27 @@ int main(int argc, char *const argv[])
     }
 
     if (cueFileNamePattern) {
+
+        lsn_t *ripLsn;
+        lsn_t pregap;
+        track_t track;
+
+        // for image files, libcdio may have the pregap;  if so, use it
+        for (track = firstTrack;  track <= lastTrack;  ++track) {
+            pregap = cdio_get_track_pregap_lsn(cdObj, track);
+            if (CDIO_INVALID_LSN != pregap) {
+                ripLsn = rip_indices[track];
+                if (CDIO_INVALID_LSN == ripLsn[0]) {
+                    ripLsn[0] = pregap;
+                    cdio_info("using pregap from cdio");
+                } else {
+                    cdio_warn("ignoring cdio pregap for track %02d because Q sub-channel had pregap", track);
+                }
+                if (CDIO_INVALID_LSN == ripLsn[1]) {
+                    ripLsn[1] = cdio_get_track_lsn(cdObj, track);
+                }
+            }
+        }
 
         // this could (should?) use paranoia in the future
         cued_write_cuefile(cueFile, cdObj, devName, firstTrack, lastTrack);
