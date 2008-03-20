@@ -438,11 +438,13 @@ int main(int argc, char *const argv[])
     if (cueFileNamePattern) {
 
         lsn_t *ripLsn;
+        char *isrc;
         lsn_t pregap;
         track_t track;
 
-        // for image files, libcdio may have the pregap;  if so, use it
         for (track = firstTrack;  track <= lastTrack;  ++track) {
+
+            // for image files, libcdio may have the pregap;  if so, use it
             pregap = cdio_get_track_pregap_lsn(cdObj, track);
             if (CDIO_INVALID_LSN != pregap) {
                 ripLsn = rip_indices[track];
@@ -455,6 +457,14 @@ int main(int argc, char *const argv[])
                 if (CDIO_INVALID_LSN == ripLsn[1]) {
                     ripLsn[1] = cdio_get_track_lsn(cdObj, track);
                 }
+            }
+
+            // for image files, libcdio may have the isrc;  if so, use it
+            isrc = cdio_get_track_isrc(cdObj, track);
+            if (isrc) {
+                // rip_isrc[track] is already null terminated
+                strncpy(rip_isrc[track], isrc, ISRC_LEN);
+                free(isrc);
             }
         }
 
