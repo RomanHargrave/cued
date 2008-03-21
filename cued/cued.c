@@ -468,6 +468,23 @@ int main(int argc, char *const argv[])
             }
         }
 
+        // Nero does not properly handle the pregap for the first track
+        if (DRIVER_NRG == cdio_get_driver_id(cdObj) && 1 == firstTrack) {
+            lsn_t lsn = cdio_get_track_lsn(cdObj, firstTrack);
+            if (CDIO_INVALID_LSN == lsn) {
+                cdio2_abort("failed to get first sector number for track %02d", firstTrack);
+            } else if (lsn) {
+                char *mcn = cdio_get_mcn(cdObj);
+
+                // (heuristic) check for DAO
+                if (mcn) {
+                    free(mcn);
+                    rip_indices[firstTrack][0] = 0;
+                    rip_indices[firstTrack][1] = lsn;
+                }
+            }
+        }
+
         // this could (should?) use paranoia in the future
         cued_write_cuefile(cueFile, cdObj, devName, firstTrack, lastTrack);
     }
