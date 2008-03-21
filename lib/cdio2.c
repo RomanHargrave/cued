@@ -123,6 +123,7 @@ void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const cha
     if (cdtext) {
         for (i = MIN_CDTEXT_FIELD;  i < MAX_CDTEXT_FIELDS;  ++i) {
 
+            // checking for cdtext->field[i][0] is for Nero, which sometime has zero length
             if (cdtext->field[i] && cdtext->field[i][0]) {
                 quoted = strchr(cdtext->field[i], ' ') ? 1 : 0;
                 fprintf(cueFile, "%s%s %s%s%s\n", prefix, cdtext_field2str((cdtext_field_t) i),
