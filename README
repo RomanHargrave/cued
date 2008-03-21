@@ -19,7 +19,7 @@ INSTALLING
         make install
 
     To install elsewhere:
-        INSTALL_DIR="/some/place/bin" make install
+        INSTALL_BIN_DIR="/some/place/bin" make install
 
 RIPPING
 
