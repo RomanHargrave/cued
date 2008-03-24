@@ -25,7 +25,7 @@ RIPPING
 
     This is how the author rips a disc (2 steps:)
 
-        1. cued -o 12 -vipx -c "%D/%Y<%Y - >%C/%C (%M).cue" -n "%D/%Y<%Y - >%C/%N%N<<00> - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "comment=cued%V" -t "comment=%S" /dev/cdrom
+        1. cued -o 12 -vipx -c "%D/%Y<%Y - >%C/%B (%M).cue" -n "%D/%Y<%Y - >%C/%N%N<<00> of %O - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "ripper=cued %V" -t "xdate=%S" -t "class=%I" -t "comment=%I" /dev/dvd
 
         2. make -f make/flac.mk
 
