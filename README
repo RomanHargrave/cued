@@ -36,7 +36,17 @@ RIPPING
 
     This is how the author rips from an image file:
 
-        1.  cued --cddb-match=1 -vx -c "%D/%Y<%Y - >%C/%C (%M).cue" -n "%D/%Y<%Y - >%C/%N%N<<00> - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "comment=cued%V" -t "comment=%S" *nrg
+        1. cued -vx -c "%D/%Y<%Y - >%C/%B (%M).cue" -n "%D/%Y<%Y - >%C/%N%N<<00> of %O - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "ripper=cued %V" -t "xdate=%S" -t "class=%I" -t "comment=%I" *cue
+
+        2. If the track is not found in cddb, the author uses:
+
+            export TRACKS="13" && \
+            export CLASS="Soul" && \
+            export GENRE="Rock" && \
+            export ARTIST="Chi Lites" && \
+            export TITLE="Greatest Hits" && \
+            export YEAR="1972" && \
+            cued --no-cddb -vx -c "${ARTIST}/${YEAR} - ${TITLE}/${GENRE}.cue" -n "${ARTIST}/${YEAR} - ${TITLE}/%N%N<<00> of ${TRACKS} - ${ARTIST} - ${TITLE}" -t "artist=${ARTIST}" -t "title=${TITLE}" -t "album=${TITLE}" -t "date=${YEAR}" -t "year=${YEAR}" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=${GENRE}" -t "ripper=cued %V" -t "xdate=%S" -t "class=${CLASS}" -t "comment=${CLASS}" *cue
 
     Help on formats:
 
