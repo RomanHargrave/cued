@@ -31,4 +31,4 @@ all : *.wav
 *.wav :
 	$(FLAC_BIN) $(FLAC_FLAGS) "$@"
 	@$(META_BIN) --import-tags-from="$(subst .wav,.tag,$@)" "$(subst .wav,.flac,$@)" 
-	@rm "$@"
+	@rm "$@" "$(subst .wav,.tag,$@)"
