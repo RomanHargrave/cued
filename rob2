@@ -1,0 +1,2 @@
+#!/bin/bash
+EXTLIBDIRS="/home/edison/local/lib" CC_FLAGS="-isystem ~/local/include" INSTALL_BIN_DIR=~/bin/linux CC_DEFINES="-DDEBUG_MALLOC" make install
