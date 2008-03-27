@@ -281,3 +281,29 @@ int cddb2_get_file_path(
 
     return (chars >= bufferSize) ? -1 : 0;
 }
+
+
+
+                            n = cddb_track_get_length(trackObj);
+                            if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d:%02d", n / 60, n % 60)) {
+                                cddb2_abort("cddb track length exceeds %ld characters (length=%d)", sizeof(nstr) - 1, n);
+                                goto error;
+                            }
+
+
+                        n = cddb_disc_get_length(cddbObj);
+                        if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d:%02d", n / 60, n % 60)) {
+                            cddb2_abort("cddb disc length exceeds %ld characters (length=%d)", sizeof(nstr) - 1, n);
+                            goto error;
+                        }
+
+                        //n = cddb_disc_get_track_count(cddbObj);
+
+
+                        //
+                        // everything from this point on requires cddb objects
+                        //
+                        if (!trackObj) {
+                            cddb2_abort("cannot use substitution code \"%c\" with --no-cddb option", patternChar);
+                            goto error;
+                        }
