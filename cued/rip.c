@@ -26,6 +26,8 @@
 #include "cdio2.h"
 #include <cdio/mmc.h> // CDIO_MMC_READ_TYPE_ANY
 
+#include "cddb2.h" // rip_year
+
 #include <stdlib.h> // free
 #include <unistd.h> // unlink
 #include <sndfile.h>
@@ -55,6 +57,7 @@ void cued_init_rip_data()
     trackHint = 0;
     rip_noisy_pregap = 0;
     rip_silent_pregap = 0;
+    cddb2_rip_year = 0;
 }
 
 
@@ -101,6 +104,8 @@ static void cued_parse_qsc(void *qsc)
                 if (qsc_get_isrc(qsc, isrc)) {
                     cdio_warn("invalid isrc found in q sub-channel");
                     isrc[0] = 0;
+                } else if (!cddb2_rip_year) {
+                    cddb2_rip_year = qsc_get_isrc_year(isrc);
                 }
             }
             break;
@@ -490,7 +495,7 @@ void cued_rip_disc(
     }
 
     endOfDiscSector = cdio_get_disc_last_lsn(cdObj);
-    if (CDIO_INVALID_TRACK == endOfDiscSector) {
+    if (CDIO_INVALID_LSN == endOfDiscSector) {
         cdio2_abort("failed to get last sector number");
     } else {
         //cdio_debug("end of disc sector is %d", endOfDiscSector);
@@ -519,7 +524,7 @@ void cued_rip_disc(
         channels = cdio2_get_track_channels(cdObj, firstTrack);
 
         // does not return on error
-        (void) cddb2_get_file_path(cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
+        (void) cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
 
         if (verbose) {
             printf("progress: reading sectors from %d to %d\n", firstSector, lastSector);
@@ -564,7 +569,7 @@ void cued_rip_disc(
             if (1 == track && firstSector > 0) {
 
                 // does not return on error
-                (void) cddb2_get_file_path(cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
+                (void) cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
 
                 if (verbose) {
                     printf("progress: reading track %02d\n", 0);
@@ -604,7 +609,7 @@ void cued_rip_disc(
             }
 
             // does not return on error
-            (void) cddb2_get_file_path(cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), track, fileNameBuffer, bufferSize);
+            (void) cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), track, fileNameBuffer, bufferSize);
 
             if (verbose) {
                 printf("progress: reading track %02d\n", track);

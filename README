@@ -25,7 +25,7 @@ RIPPING
 
     This is how the author rips a disc (2 steps:)
 
-        1. cued -o 12 -vipx -c "%D/%Y<%Y - >%C/%B (%M).cue" -n "%D/%Y<%Y - >%C/%N%N<<00> of %O - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "ripper=cued %V" -t "xdate=%S" -t "class=%I" -t "comment=%I" /dev/dvd
+        1. cued -o 12 -vipx -c "%D%D<<%d>/%Y<%Y - >%Y<<%y<%y - >>%C%C<<%c>/%B<%B >%B<<%j<%j >>(%M).cue" -n "%D%D<<%d>/%Y<%Y - >%Y<<%y<%y - >>%C%C<<%c>/%N%N<<00> of %O - %A<%A - >%T%T<<%t> (%L)" -t "artist=%A%A<<%D%D<<%a%a<<%d>>>" -t "title=%T%T<<%t>" -t "album=%C%C<<%c>" -t "%Y<date=%Y>%Y<<%y<date=%y>>" -t "%Y<year=%Y>%Y<<%y<year=%y>>" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "%B<genre=%B>%B<<%j<genre=%j>>" -t "%F<freedb=%F>" -t "ripper=cued %V" -t "xdate=%S" -t "%I<class=%I>%I<<%j<class=%j>>" -t "%I<comment=%I>%I<<%j<comment=%j>>" /dev/dvd
 
         2. make -f make/flac.mk
 
@@ -36,17 +36,19 @@ RIPPING
 
     This is how the author rips from an image file:
 
-        1. cued -vx -c "%D/%Y<%Y - >%C/%B (%M).cue" -n "%D/%Y<%Y - >%C/%N%N<<00> of %O - %A<%A - >%T%N< (%L)>" -t "artist=%A%A<<%D>" -t "title=%T" -t "album=%C" -t "date=%Y" -t "year=%Y" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=%B" -t "freedb=%F" -t "ripper=cued %V" -t "xdate=%S" -t "class=%I" -t "comment=%I" *cue
+        1. cued -vx -c "%D%D<<%d>/%Y<%Y - >%Y<<%y<%y - >>%C%C<<%c>/%B<%B >%B<<%j<%j >>(%M).cue" -n "%D%D<<%d>/%Y<%Y - >%Y<<%y<%y - >>%C%C<<%c>/%N%N<<00> of %O - %A<%A - >%T%T<<%t> (%L)" -t "artist=%A%A<<%D%D<<%a%a<<%d>>>" -t "title=%T%T<<%t>" -t "album=%C%C<<%c>" -t "%Y<date=%Y>%Y<<%y<date=%y>>" -t "%Y<year=%Y>%Y<<%y<year=%y>>" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "%B<genre=%B>%B<<%j<genre=%j>>" -t "%F<freedb=%F>" -t "ripper=cued %V" -t "xdate=%S" -t "%I<class=%I>%I<<%j<class=%j>>" -t "%I<comment=%I>%I<<%j<comment=%j>>" *cue
 
-        2. If the track is not found in cddb, the author uses:
+        2. If the track is not found in cddb, add PERFORMER and TITLE commands to cue file, then re-invoke with --no-cddb option.
 
-            export TRACKS="13" && \
-            export CLASS="Soul" && \
+        3. As a last resort:
+
+            export TRACKS="08" && \
+            export CLASS="Rock" && \
             export GENRE="Rock" && \
-            export ARTIST="Chi Lites" && \
-            export TITLE="Greatest Hits" && \
-            export YEAR="1972" && \
-            cued --no-cddb -vx -c "${ARTIST}/${YEAR} - ${TITLE}/${GENRE}.cue" -n "${ARTIST}/${YEAR} - ${TITLE}/%N%N<<00> of ${TRACKS} - ${ARTIST} - ${TITLE}" -t "artist=${ARTIST}" -t "title=${TITLE}" -t "album=${TITLE}" -t "date=${YEAR}" -t "year=${YEAR}" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=${GENRE}" -t "ripper=cued %V" -t "xdate=%S" -t "class=${CLASS}" -t "comment=${CLASS}" *cue
+            export ARTIST="O'Jays" && \
+            export TITLE="Ships Ahoy" && \
+            export YEAR="1971" && \
+            cued --no-cddb -vx -c "${ARTIST}/${YEAR} - ${TITLE}/${GENRE}.cue" -n "${ARTIST}/${YEAR} - ${TITLE}/%N%N<<00> of ${TRACKS} - ${ARTIST} - ${TITLE}" -t "artist=${ARTIST}" -t "title=${TITLE}" -t "album=${TITLE}" -t "date=${YEAR}" -t "year=${YEAR}" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "genre=${GENRE}" -t "ripper=cued %V" -t "xdate=%S" -t "class=${CLASS}" -t "comment=${CLASS}" *nrg
 
     Help on formats:
 

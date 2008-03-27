@@ -31,8 +31,6 @@
     (((v)[ (n) / 2 ]) >> ((n) % 2 ? 0 : 4)) & 0x0F \
     )
 
-#define BCD_TO_ASCII(n) ('0' + (n))
-
 #define ISRC_COUNTRY_OWNER_LEN 5
 #define ISRC_YEAR_SERIAL_NO_LEN 7
 
@@ -190,7 +188,7 @@ int qsc_get_mcn(void *p, char *mcn)
     for (i = 0;  i < MCN_LEN;  ++i) {
         nibble = NIBBLE(qsc->mode_2.mcn, i);
         if (nibble <= 9) {
-            mcn[i] = BCD_TO_ASCII(nibble);
+            mcn[i] = QSC_BCD_TO_ASCII(nibble);
         } else {
             return -1;
         }
@@ -199,6 +197,22 @@ int qsc_get_mcn(void *p, char *mcn)
     mcn[MCN_LEN] = 0;
 
     return 0;
+}
+
+
+int qsc_get_isrc_year(char *isrc)
+{
+    int year;
+
+    year  = 10 * QSC_ASCII_TO_BCD(isrc[ISRC_COUNTRY_OWNER_LEN]);
+    year +=      QSC_ASCII_TO_BCD(isrc[ISRC_COUNTRY_OWNER_LEN + 1]);
+    if (year >= 50) {
+        year += 2000;
+    } else {
+        year += 1900;
+    }
+
+    return year;
 }
 
 
@@ -212,7 +226,7 @@ int qsc_get_isrc(void *p, char *isrc)
     for (i = 0;  i < ISRC_COUNTRY_OWNER_LEN;  ++i) {
         nabble = NABBLE(qsc->mode_3.country_owner, i);
         if (nabble <= 9) {
-            isrc[i] = BCD_TO_ASCII(nabble);
+            isrc[i] = QSC_BCD_TO_ASCII(nabble);
         } else if (nabble >= 0x11 && nabble <= 0x2A) {
             isrc[i] = 'A' - 0x11 + nabble;
         } else {
@@ -224,7 +238,7 @@ int qsc_get_isrc(void *p, char *isrc)
     for (i = 0;  i < ISRC_YEAR_SERIAL_NO_LEN;  ++i) {
         nibble = NIBBLE(qsc->mode_3.year_serial_no, i);
         if (nibble <= 9) {
-            isrc[ i + ISRC_COUNTRY_OWNER_LEN ] = BCD_TO_ASCII(nibble);
+            isrc[ i + ISRC_COUNTRY_OWNER_LEN ] = QSC_BCD_TO_ASCII(nibble);
         } else {
             return -1;
         }
@@ -322,7 +336,7 @@ int qsc_msf_to_ascii(msf_t *msf_in, char *ascii)
         for (j = 0;  j < 2;  ++j) {
             nibble = NIBBLE(msf, 2 * i + j);
             if (nibble <= 9) {
-                ascii[ 3 * i + j ] = BCD_TO_ASCII(nibble);
+                ascii[ 3 * i + j ] = QSC_BCD_TO_ASCII(nibble);
             } else {
                 return -1;
             }

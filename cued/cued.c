@@ -141,14 +141,14 @@ static void cued_format_help(void *context, char *optarg, char *optionName)
     "   (Does not apply to tags.)\n"
     "3. A percent character, followed by another character, indicates substitution.\n"
     "4. Valid substitutions are as follows:\n"
-    "   %%N is the track number             %%O is the total number of tracks\n"
-    "   %%T is the track title              %%C is the disc title\n"
-    "   %%L is the track length             %%M is the disc length\n"
-    "   %%Y is the disc release year        %%I is the disc genre\n"
-    "   %%B is the cddb category            %%K is the cddb category as a number\n"
-    "   %%F is the cddb disc ID             %%D is the disc artist\n"
-    "   %%V is the version of %s          %%S is the date/time (Internet RFC 3339)\n"
-    "   %%A is the track artist (if and only if the album has various artists)\n"
+    "   %%L=track length  %%M=disc length  %%N=track no.  %%O=no. tracks  %%y=ISRC year\n"
+    "   %%V=version of %s               %%S is the date/time (Internet RFC 3339)\n"
+    "   CD-TEXT substitutions:\n"
+    "   track: %%t=title %%a=artist %%i=genre %%m=composer %%r=arranger %%w=songwriter\n"
+    "   disc:  %%c=title %%d=artist %%j=genre %%n=composer %%s=arranger %%x=songwriter\n"
+    "   CDDB substitutions:\n"
+    "   track: %%T=title %%A=artist\n"
+    "   disc:  %%C=title %%D=artist %%I=genre %%B=category %%K=cat no. %%Y=year %%F=ID\n"
     "   %%%% is a %% character      %%< is a < character      %%> is a > character\n"
     "5. The < character indicates conditional behavior when following a substition.\n"
     "   If the preceding substitution, such as %%A, is not empty, then the\n"
@@ -381,7 +381,7 @@ int main(int argc, char *const argv[])
         } else {
 
             // removed ".cue" extension to allow using /dev/null for testing
-            (void) cddb2_get_file_path(cddbObj, cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
+            (void) cddb2_get_file_path(cdObj, cddbObj, cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
 
             // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
             cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
@@ -397,7 +397,7 @@ int main(int argc, char *const argv[])
     if (fileNamePattern) {
 
         cddb2_make_tag_files(
-            cddbObj,
+            cdObj, cddbObj,
             fileNamePattern, TAG_FILE_EXT,
             (1 == firstRipTrack) ? 0 : firstRipTrack,
             lastRipTrack,
@@ -424,7 +424,7 @@ int main(int argc, char *const argv[])
             // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
             if (cddb2_has_tags() && 1 == firstRipTrack && !rip_noisy_pregap) {
                 cddb_track_t *trackObj = cddb2_get_track(cddbObj, 0);
-                if (!cddb2_apply_pattern(cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
+                if (!cddb2_apply_pattern(cdObj, cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
                     if (unlink(fileNameBuffer)) {
                         cdio2_unix_error("unlink", fileNameBuffer, 0);
                     }
