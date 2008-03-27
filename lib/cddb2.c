@@ -35,6 +35,8 @@
 #define TERMINATION_CHAR '>'
 
 
+int cddb2_rip_year;
+
 static cddb_log_handler_t oldLogFn;
 
 static void cddb2_log_handler(cddb_log_level_t oldLevel, const char *message)
@@ -434,13 +436,15 @@ static char **cddbCategories;
 
 
 int cddb2_apply_pattern(
-    cddb_disc_t *cddbObj, cddb_track_t *trackObj,
+    CdIo_t *cdObj, cddb_disc_t *cddbObj, cddb_track_t *trackObj,
     const char *pattern, char *extension,
     track_t track,
     char *resultBuffer, int bufferSize,
     int terminator)
 {
     const char *field;
+    cdtext_t *cdtext;
+    lsn_t lsn;
     int resultIndex = 0;
     int patternIndex = 0;
     int patternChar;
@@ -526,13 +530,122 @@ int cddb2_apply_pattern(
                         // skip alternation code
                         goto next;
 
+                    case 'L':
+                        if (track) {
+                            lsn = cdio2_get_track_length(cdObj, track);
+                        } else {
+                            lsn = cdio_get_track_lsn(cdObj, 1);
+                            if (CDIO_INVALID_LSN == lsn) {
+                                cddb2_abort("failed to get first sector number for track %02d", 1);
+                                goto error;
+                            }
+                        }
+                        cdio2_get_length(nstr, lsn);
+                        field = nstr;
+                        break;
+
+                    case 'M':
+                        lsn = cdio_get_disc_last_lsn(cdObj);
+                        if (CDIO_INVALID_LSN == lsn) {
+                            cddb2_abort("failed to get last sector number");
+                            goto error;
+                        }
+                        cdio2_get_length(nstr, lsn);
+                        field = nstr;
+                        break;
+
                     case 'N':
                         // allow conditional handling of pre-gap track
                         if (track) {
-                            nstr[0] = track / 10 + '0';
-                            nstr[1] = track % 10 + '0';
-                            nstr[2] = 0;
+                            cdio2_set_2_digits_nt(nstr, track);
                             field = nstr;
+                        } else {
+                            field = NULL;
+                        }
+                        break;
+
+                    case 'O':
+                        n = cdio_get_num_tracks(cdObj);
+                        if (CDIO_INVALID_TRACK == n) {
+                            cddb2_abort("failed to get number of tracks");
+                            goto error;
+                        }
+                        cdio2_set_2_digits_nt(nstr, n);
+                        field = nstr;
+                        break;
+
+                    case 'y':
+                        if (cddb2_rip_year) {
+                            if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d", cddb2_rip_year)) {
+                                cddb2_abort("year %d exceeds %ld characters (internal error)", cddb2_rip_year, sizeof(nstr) - 1);
+                                goto error;
+                            }
+                            field = nstr;                          
+                        } else {
+                            field = NULL;
+                        }
+                        break;
+
+                    case 'a':
+                    case 'd':
+                    case 'i':
+                    case 'j':
+                    case 'm':
+                    case 'n':
+                    case 'r':
+                    case 's':
+                    case 'w':
+                    case 'x':
+                    case 't':
+                    case 'c':
+                        switch (patternChar) {
+                            case 'c':
+                            case 'd':
+                            case 'j':
+                            case 'n':
+                            case 's':
+                            case 'x':
+                                cdtext = cdio_get_cdtext(cdObj, 0);
+                                break;
+
+                            default:
+                                cdtext = cdio_get_cdtext(cdObj, track);
+                                break;
+                        }
+                        if (cdtext) {
+                            cdtext_field_t key;
+                            switch (patternChar) {
+                                case 'a':
+                                case 'd':
+                                    key = CDTEXT_PERFORMER;
+                                    break;
+                                case 'i':
+                                case 'j':
+                                    key = CDTEXT_GENRE;
+                                    break;
+                                case 'm':
+                                case 'n':
+                                    key = CDTEXT_COMPOSER;
+                                    break;
+                                case 'r':
+                                case 's':
+                                    key = CDTEXT_ARRANGER;
+                                    break;
+                                case 'w':
+                                case 'x':
+                                    key = CDTEXT_SONGWRITER;
+                                    break;
+                                case 't':
+                                case 'c':
+                                    key = CDTEXT_TITLE;
+                                    break;
+                                default:
+                                    key = CDTEXT_INVALID;
+                                    cddb2_abort("internal error getting cdtext for format");
+                                    goto error;
+                                    break;
+                            }
+                            field = cdtext_get_const(key, cdtext);
                         } else {
                             field = NULL;
                         }
@@ -559,20 +672,11 @@ int cddb2_apply_pattern(
                         // everything from this point on requires cddb objects
                         //
                         if (!trackObj) {
-                            cddb2_abort("cannot use substitution code \"%c\" with --no-cddb option", patternChar);
-                            goto error;
+                            field = NULL;
+                            break;
                         }
 
                         switch (patternChar) {
-
-                            case 'O':
-                                n = cddb_disc_get_track_count(cddbObj);
-                                nstr[0] = n / 10 + '0';
-                                nstr[1] = n % 10 + '0';
-                                nstr[2] = 0;
-                                field = nstr;
-                                break;
-
                             case 'T':
                                 if (track) {
                                     field = cddb_track_get_title(trackObj);
@@ -586,28 +690,6 @@ int cddb2_apply_pattern(
                                 if (field && !track) {
                                     field = "Unknown Artist";
                                 }
-                                break;
-
-                            case 'L':
-                                if (track) {
-                                    n = cddb_track_get_length(trackObj);
-                                    if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d:%02d", n / 60, n % 60)) {
-                                        cddb2_abort("cddb track length exceeds %ld characters (length=%d)", sizeof(nstr) - 1, n);
-                                        goto error;
-                                    }
-                                    field = nstr;
-                                } else {
-                                    field = NULL;
-                                }
-                                break;
-
-                            case 'M':
-                                n = cddb_disc_get_length(cddbObj);
-                                if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d:%02d", n / 60, n % 60)) {
-                                    cddb2_abort("cddb disc length exceeds %ld characters (length=%d)", sizeof(nstr) - 1, n);
-                                    goto error;
-                                }
-                                field = nstr;
                                 break;
 
                             case 'Y':
@@ -671,8 +753,8 @@ int cddb2_apply_pattern(
                     patternChar = pattern[++patternIndex];
 
                     // if the conditional logic evaluates to true, then recurse
-                    if (   (ALTERNATION_CHAR == patternChar && !field)
-                        || (ALTERNATION_CHAR != patternChar &&  field))
+                    if (   (ALTERNATION_CHAR == patternChar && !(field && field[0]))
+                        || (ALTERNATION_CHAR != patternChar &&  (field && field[0])))
                     {
                         // if the next character is also an alternation character, skip it
                         if (ALTERNATION_CHAR == patternChar) {
@@ -680,7 +762,7 @@ int cddb2_apply_pattern(
                         }
 
                         // recursion allows nested conditionals and substitution codes within conditionals
-                        n = cddb2_apply_pattern(cddbObj, trackObj,
+                        n = cddb2_apply_pattern(cdObj, cddbObj, trackObj,
                                 &pattern[patternIndex], NULL, track,
                                 &resultBuffer[resultIndex],
                                 bufferSize - resultIndex,
@@ -736,7 +818,7 @@ int cddb2_apply_pattern(
                                             //
                                             // all other possibilities eliminated;  must be a substitution code
                                             //
-                                            if (!strchr("NSVOTALMYCDBIKF", patternChar)) {
+                                            if (!strchr("LMNOyVStaimrwcdjnsxTACDIBKYF", patternChar)) {
                                                 cddb2_abort("format contains unrecognized substitution code \"%c\"", patternChar);
                                                 goto error;
                                             }
@@ -798,7 +880,7 @@ error:
 
 
 int cddb2_get_file_path(
-    cddb_disc_t *cddbObj,
+    CdIo_t *cdObj, cddb_disc_t *cddbObj,
     const char *fileNamePattern, char *fileNameExt,
     track_t track,
     char *fileNameBuffer, int bufferSize
@@ -831,7 +913,7 @@ int cddb2_get_file_path(
     }
 
     trackObj = cddb2_get_track(cddbObj, track);
-    rc = cddb2_apply_pattern(cddbObj, trackObj, fileNamePattern, fileNameExt, track, fileNameBuffer, bufferSize, 0);
+    rc = cddb2_apply_pattern(cdObj, cddbObj, trackObj, fileNamePattern, fileNameExt, track, fileNameBuffer, bufferSize, 0);
     if (!rc) {
 
         // make directories
@@ -898,7 +980,7 @@ int cddb2_has_tags()
 
 
 void cddb2_make_tag_files(
-    cddb_disc_t *cddbObj,
+    CdIo_t *cdObj, cddb_disc_t *cddbObj,
     const char *fileNamePattern, char *fileNameExt,
     track_t firstTrack, track_t lastTrack,
     char *resultBuffer, int bufferSize)
@@ -918,7 +1000,7 @@ void cddb2_make_tag_files(
 
         trackObj = cddb2_get_track(cddbObj, track);
 
-        rc = cddb2_get_file_path(cddbObj, fileNamePattern, fileNameExt, track, resultBuffer, bufferSize);
+        rc = cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, fileNameExt, track, resultBuffer, bufferSize);
         if (rc) {
             cddb2_error("failed to make filename for tags for track %02d", track);
 
@@ -937,9 +1019,11 @@ void cddb2_make_tag_files(
             for (node = tagList.next;  node != &tagList;  node = node->next) {
                 tag = FIELD_TO_STRUCT(node, listNode, tag_t);
 
-                rc = cddb2_apply_pattern(cddbObj, trackObj, tag->pattern, "\n", track, resultBuffer, bufferSize, 0);
+                rc = cddb2_apply_pattern(cdObj, cddbObj, trackObj, tag->pattern, "\n", track, resultBuffer, bufferSize, 0);
                 if (!rc) {
-                    fprintf(tagFile, resultBuffer);
+                    if ('\n' != resultBuffer[0]) {
+                        fprintf(tagFile, resultBuffer);
+                    }
                 } else {
                     cddb2_error("could not create tag for track %02d from pattern \"%s\"", track, tag->pattern);
 

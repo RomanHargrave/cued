@@ -51,14 +51,14 @@ extern cddb_disc_t *cddb2_get_next_match(cddb_conn_t *dbObj);
 
 extern cddb_track_t *cddb2_get_track(cddb_disc_t *cddbObj, track_t track);
 extern int cddb2_apply_pattern(
-    cddb_disc_t *cddbObj, cddb_track_t *trackObj,
+    CdIo_t *cdObj, cddb_disc_t *cddbObj, cddb_track_t *trackObj,
     const char *pattern, char *extension,
     track_t track,
     char *resultBuffer, int bufferSize,
     int terminator
     );
 extern int cddb2_get_file_path(
-    cddb_disc_t *cddbObj,
+    CdIo_t *cdObj, cddb_disc_t *cddbObj,
     const char *fileNamePattern, char *fileNameExt,
     track_t track,
     char *fileNameBuffer, int bufferSize
@@ -66,7 +66,7 @@ extern int cddb2_get_file_path(
 
 extern void cddb2_set_tag(void *context, char *optarg, char *optionName);
 extern void cddb2_make_tag_files(
-    cddb_disc_t *cddbObj,
+    CdIo_t *cdObj, cddb_disc_t *cddbObj,
     const char *fileNamePattern, char *fileNameExt,
     track_t firstTrack, track_t lastTrack,
     char *resultBuffer, int bufferSize
@@ -74,6 +74,8 @@ extern void cddb2_make_tag_files(
 extern int cddb2_has_tags();
 
 extern void cddb2_cleanup();
+
+extern int cddb2_rip_year;
 
 
 #endif // CDDB2_H_INCLUDED

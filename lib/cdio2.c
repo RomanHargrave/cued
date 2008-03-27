@@ -19,7 +19,6 @@
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include "cdio2.h"
-#include "qsc.h"
 
 #include <string.h> // strlen, strerror, strchr
 #include <errno.h>
@@ -131,7 +130,7 @@ void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const cha
             }
         }
 
-        cdtext_destroy(cdtext);
+        //cdtext_destroy(cdtext);
     }
 }
 
@@ -209,4 +208,53 @@ int cdio2_get_track_channels(CdIo_t *cdObj, track_t track)
     }
 
     return channels;
+}
+
+
+lsn_t cdio2_get_track_length(CdIo_t *cdObj, track_t track)
+{
+    lsn_t firstSector, lastSector;
+
+    firstSector = cdio_get_track_lsn(cdObj, track);
+    if (CDIO_INVALID_LSN == firstSector) {
+        cdio2_abort("failed to get first sector number for track %02d", track);
+
+        return CDIO_INVALID_LSN;
+    }
+
+    lastSector = cdio_get_track_last_lsn(cdObj, track);
+    if (CDIO_INVALID_LSN == lastSector) {
+        cdio2_abort("failed to get last sector number for track %02d", track);
+
+        return CDIO_INVALID_LSN;
+    }
+
+    return lastSector - firstSector + 1;
+}
+
+
+#define FPM CDIO_CD_FRAMES_PER_MIN
+#define FPS CDIO_CD_FRAMES_PER_SEC
+
+void cdio2_get_length(char *length, lsn_t sectors)
+{
+    int minutes, seconds;
+
+    minutes = sectors / FPM;
+    sectors %= FPM;
+    seconds = sectors / FPS + (sectors % FPS > FPS / 2);
+    if (60 == seconds) {
+        seconds  = 0;
+        minutes += 1;
+    }
+
+    if (minutes > 9) {
+        cdio2_set_2_digits(&length[0], minutes);
+        length[2] = ':';
+        cdio2_set_2_digits_nt(&length[3], seconds);
+    } else {
+        length[0] = QSC_BCD_TO_ASCII(minutes);
+        length[1] = ':';
+        cdio2_set_2_digits_nt(&length[2], seconds);
+    }
 }

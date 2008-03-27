@@ -27,6 +27,10 @@
 #include <cdio/logging.h>
 #include <cdio/paranoia.h>
 
+#include "qsc.h"
+
+#define CDIO2_LENGTH_LEN 5
+
 
 extern void cdio2_set_log_handler();
 extern void cdio2_unix_error(const char *fn, const char *arg, int isFatal);
@@ -40,6 +44,23 @@ extern void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, co
 extern void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, char *when);
 extern void cdio2_driver_error(driver_return_code_t ec, char *when);
 extern void cdio2_paranoia_callback(long int frame, paranoia_cb_mode_t prc);
+
+extern lsn_t cdio2_get_track_length(CdIo_t *cdObj, track_t track);
+extern void cdio2_get_length(char *length, lsn_t sectors);
+
+static inline
+void cdio2_set_2_digits(char *digits, int n)
+{
+    digits[0] = QSC_BCD_TO_ASCII(n / 10);
+    digits[1] = QSC_BCD_TO_ASCII(n % 10);
+}
+
+static inline
+void cdio2_set_2_digits_nt(char *digits, int n)
+{
+    cdio2_set_2_digits(digits, n);
+    digits[2] = 0;
+}
 
 
 #endif // CDIO2_H_INCLUDED
