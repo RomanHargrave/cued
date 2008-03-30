@@ -207,9 +207,9 @@ int qsc_get_isrc_year(char *isrc)
     year  = 10 * QSC_ASCII_TO_BCD(isrc[ISRC_COUNTRY_OWNER_LEN]);
     year +=      QSC_ASCII_TO_BCD(isrc[ISRC_COUNTRY_OWNER_LEN + 1]);
     if (year >= 50) {
-        year += 2000;
-    } else {
         year += 1900;
+    } else {
+        year += 2000;
     }
 
     return year;

@@ -75,7 +75,5 @@ extern int cddb2_has_tags();
 
 extern void cddb2_cleanup();
 
-extern int cddb2_rip_year;
-
 
 #endif // CDDB2_H_INCLUDED

@@ -26,8 +26,6 @@
 #include "cdio2.h"
 #include <cdio/mmc.h> // CDIO_MMC_READ_TYPE_ANY
 
-#include "cddb2.h" // rip_year
-
 #include <stdlib.h> // free
 #include <unistd.h> // unlink
 #include <sndfile.h>
@@ -38,6 +36,7 @@ char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
 lsn_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
 int   rip_silent_pregap;
 int   rip_noisy_pregap;
+int   rip_year;
 
 static int trackHint;
 
@@ -57,7 +56,7 @@ void cued_init_rip_data()
     trackHint = 0;
     rip_noisy_pregap = 0;
     rip_silent_pregap = 0;
-    cddb2_rip_year = 0;
+    rip_year = 0;
 }
 
 
@@ -104,8 +103,9 @@ static void cued_parse_qsc(void *qsc)
                 if (qsc_get_isrc(qsc, isrc)) {
                     cdio_warn("invalid isrc found in q sub-channel");
                     isrc[0] = 0;
-                } else if (!cddb2_rip_year) {
-                    cddb2_rip_year = qsc_get_isrc_year(isrc);
+                } else if (!rip_year) {
+                    rip_year = qsc_get_isrc_year(isrc);
+                    cdio_info("set rip year to %d\n", rip_year);
                 }
             }
             break;

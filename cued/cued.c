@@ -141,7 +141,7 @@ static void cued_format_help(void *context, char *optarg, char *optionName)
     "   (Does not apply to tags.)\n"
     "3. A percent character, followed by another character, indicates substitution.\n"
     "4. Valid substitutions are as follows:\n"
-    "   %%L=track length  %%M=disc length  %%N=track no.  %%O=no. tracks  %%y=ISRC year\n"
+    "   %%L=track length  %%M=disc length  %%N=track no.  %%O=no. tracks\n"
     "   %%V=version of %s               %%S is the date/time (Internet RFC 3339)\n"
     "   CD-TEXT substitutions:\n"
     "   track: %%t=title %%a=artist %%i=genre %%m=composer %%r=arranger %%w=songwriter\n"

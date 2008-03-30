@@ -35,8 +35,6 @@
 #define TERMINATION_CHAR '>'
 
 
-int cddb2_rip_year;
-
 static cddb_log_handler_t oldLogFn;
 
 static void cddb2_log_handler(cddb_log_level_t oldLevel, const char *message)
@@ -574,6 +572,8 @@ int cddb2_apply_pattern(
                         field = nstr;
                         break;
 
+#if 0
+                    // doesn't work too well if you don't rip before creating tags
                     case 'y':
                         if (cddb2_rip_year) {
                             if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d", cddb2_rip_year)) {
@@ -585,6 +585,7 @@ int cddb2_apply_pattern(
                             field = NULL;
                         }
                         break;
+#endif
 
                     case 'a':
                     case 'd':
@@ -818,7 +819,7 @@ int cddb2_apply_pattern(
                                             //
                                             // all other possibilities eliminated;  must be a substitution code
                                             //
-                                            if (!strchr("LMNOyVStaimrwcdjnsxTACDIBKYF", patternChar)) {
+                                            if (!strchr("LMNOVStaimrwcdjnsxTACDIBKYF", patternChar)) {
                                                 cddb2_abort("format contains unrecognized substitution code \"%c\"", patternChar);
                                                 goto error;
                                             }
