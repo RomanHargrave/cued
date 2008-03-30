@@ -28,28 +28,24 @@
 
 #include <sndfile.h>
 
+
+static void copy_metadata(SNDFILE *outfile, SNDFILE *infile);
+static void copy_data_fp (SNDFILE *outfile, SNDFILE *infile, int channels);
+static void copy_data_int(SNDFILE *outfile, SNDFILE *infile, int channels);
+
+
 #define BUFFER_LEN      (64 * 1024)
 #define FP_BUFFER_LEN   (BUFFER_LEN / sizeof(double))
 #define INT_BUFFER_LEN  (BUFFER_LEN / sizeof(int))
 
 
-typedef struct
-{   char    *infilename, *outfilename ;
-    SF_INFO  infileinfo,  outfileinfo ;
-} OptionData ;
+typedef struct {
+    const char *ext;
+    int         len;
+    int         format;
+} OUTPUT_FORMAT_MAP;
 
-typedef struct
-{   const char  *ext ;
-    int         len ;
-    int         format ;
-} OUTPUT_FORMAT_MAP ;
-
-static void copy_metadata (SNDFILE *outfile, SNDFILE *infile) ;
-static void copy_data_fp  (SNDFILE *outfile, SNDFILE *infile, int channels) ;
-static void copy_data_int (SNDFILE *outfile, SNDFILE *infile, int channels) ;
-
-static OUTPUT_FORMAT_MAP format_map [] =
-{
+static OUTPUT_FORMAT_MAP format_map[] = {
     {   "aif",      3,  SF_FORMAT_AIFF  },
     {   "wav",      0,  SF_FORMAT_WAV   },
     {   "au",       0,  SF_FORMAT_AU    },
@@ -76,80 +72,83 @@ static OUTPUT_FORMAT_MAP format_map [] =
     {   "xi",       0,  SF_FORMAT_XI    },
     {   "bin",      0,  SF_FORMAT_RAW   }
 
-} ; /* format_map */
+}; /* format_map */
 
-static int
-guess_output_file_type (char *str, int format)
-{   char    buffer [16], *cptr ;
-    int     k ;
 
-    format &= SF_FORMAT_SUBMASK ;
+static int guess_output_file_type(char *str, int format)
+{
+    char buffer[16], *cptr;
+    int i;
 
-    if ((cptr = strrchr (str, '.')) == NULL)
-        return 0 ;
+    format &= SF_FORMAT_SUBMASK;
 
-    strncpy (buffer, cptr + 1, 15) ;
-    buffer [15] = 0 ;
+    if (!(cptr = strrchr(str, '.'))) {
+        return 0;
+    }
 
-    for (k = 0 ; buffer [k] ; k++)
-        buffer [k] = tolower ((buffer [k])) ;
+    strncpy(buffer, cptr + 1, sizeof(buffer));
+    buffer[ sizeof(buffer) - 1 ] = 0;
 
-    if (strcmp (buffer, "gsm") == 0)
-        return SF_FORMAT_RAW | SF_FORMAT_GSM610 ;
+    for (i = 0;  buffer[i];  ++i) {
+        buffer[i] = tolower((buffer[i]));
+    }
 
-    if (strcmp (buffer, "vox") == 0)
-        return SF_FORMAT_RAW | SF_FORMAT_VOX_ADPCM ;
+    if (!(strcmp(buffer, "gsm"))) {
+        return SF_FORMAT_RAW | SF_FORMAT_GSM610;
+    }
 
-    for (k = 0 ; k < SNELEMS(format_map) ; k++)
-    {   if (format_map [k].len > 0 && strncmp (buffer, format_map [k].ext, format_map [k].len) == 0)
-            return format_map [k].format | format ;
-        else if (strcmp (buffer, format_map [k].ext) == 0)
-            return format_map [k].format | format ;
-        } ;
+    if (!(strcmp(buffer, "vox"))) {
+        return SF_FORMAT_RAW | SF_FORMAT_VOX_ADPCM;
+    }
 
-    return  0 ;
+    for (i = 0;  i < SNELEMS(format_map);  ++i) {
+        if (format_map[i].len > 0 && !(strncmp(buffer, format_map[i].ext, format_map[i].len))) {
+            return format_map[i].format | format;
+        }
+        else if (!(strcmp(buffer, format_map[i].ext))) {
+            return format_map[i].format | format;
+        }
+    }
+
+    return 0;
+
 } /* guess_output_file_type */
 
 
-static void
-print_usage (char *progname)
-{   SF_FORMAT_INFO  info ;
+static void print_usage(char *progname)
+{
+    SF_FORMAT_INFO info;
+    int i;
 
-    int k ;
+    fprintf(stderr, "\nUsage : %s [options] <infile1> [infile2] [infile3...] <output file>\n", progname);
+    fprintf(stderr,
+       "    Force the output with the following [options]:\n"
+       "        --pcms8,     --pcmu8             : 8 bit signed, unsigned pcm\n"
+       "        --pcm16,     --pcm24,   --pcm32  : 16, 24, 32 bit signed pcm\n"
+       "        --float32,   --float64           : 32, 64 bit floating point pcm\n"
+       "        --ulaw,      --alaw              : ULAW, ALAW\n"
+       "        --ima-adpcm, --ms-adpcm          : IMA/MS ADPCM (WAV only)\n"
+       "        --gsm610                         : GSM6.10 (WAV only)\n"
+       "        --dwvw12,    --dwvw16,  --dwvw24 : 12, 16, 24 bit DWVW (AIFF only)\n"
+       "    Force the input with the following [options]:\n"
+       "        --in-pcms8,   --in-pcmu8,   --in-pcm16,  --in-pcm24, --in-pcm32\n"
+       "        --in-float32, --in-float64, --in-gsm610\n"
+       "        --in-channels=number of channels,   --in-rate==sample rate (Hz)\n"
+       "        --in-cd : shorthand for --in-pcm16, --in-rate=44100, --in-channels=2\n"
+       "    Miscellaneous [options]:\n"
+       "        --silent : do not display progress messages\n"
+       "    The format of the output file is determined by the file extension of the\n"
+       "    output file name. The following extensions are currently understood:\n"
+       );
 
-    printf ("\nUsage : %s [options] <infile1> [infile2] [infile3...] <output file>\n", progname) ;
-    puts ("\n"
-        "    where [options] may be one of the following:\n\n"
-        "        --pcms8     : force the output to signed 8 bit pcm\n"
-        "        --pcmu8     : force the output to unsigned 8 bit pcm\n"
-        "        --pcm16     : force the output to 16 bit pcm\n"
-        "        --pcm24     : force the output to 24 bit pcm\n"
-        "        --pcm32     : force the output to 32 bit pcm\n"
-        "        --float32   : force the output to 32 bit floating point"
-        ) ;
-    puts (
-        "        --ulaw      : force the output ULAW\n"
-        "        --alaw      : force the output ALAW\n"
-        "        --ima-adpcm : force the output to IMA ADPCM (WAV only)\n"
-        "        --ms-adpcm  : force the output to MS ADPCM (WAV only)\n"
-        "        --gsm610    : force the GSM6.10 (WAV only)\n"
-        "        --dwvw12    : force the output to 12 bit DWVW (AIFF only)\n"
-        "        --dwvw16    : force the output to 16 bit DWVW (AIFF only)\n"
-        "        --dwvw24    : force the output to 24 bit DWVW (AIFF only)\n"
-        ) ;
+    for (i = 0;  i < SNELEMS(format_map);  ++i) {
+        info.format = format_map[i].format;
+        sf_command(NULL, SFC_GET_FORMAT_INFO, &info, sizeof(info));
+        fprintf(stderr, "        %-5s : %s\n", format_map[i].ext, info.name);
+    }
 
-    puts (
-        "    The format of the output file is determined by the file extension of the\n"
-        "    output file name. The following extensions are currently understood:\n"
-        ) ;
+    fprintf(stderr, "\n");
 
-    for (k = 0 ; k < SNELEMS(format_map) ; k++)
-    {   info.format = format_map [k].format ;
-        sf_command (NULL, SFC_GET_FORMAT_INFO, &info, sizeof (info)) ;
-        printf ("         %-10s : %s\n", format_map [k].ext, info.name) ;
-        } ;
-
-    puts ("") ;
 } /* print_usage */
 
 
@@ -161,30 +160,64 @@ static void set_outfileminor(void *context, char *optarg, char *optname)
 }
 
 
-int
-main (int argc, char * argv [])
-{   char        *progname, *infilename, *outfilename ;
-    SNDFILE     *infile = NULL, *outfile = NULL ;
-    SF_INFO     sfinfo1, sfinfo2 ;
-    int         i, outfilemajor, outfileminor = 0, infileminor ;
+static SF_INFO proto;
 
+static void set_rawfileminor(void *context, char *optarg, char *optname)
+{
+    int minor = (intptr_t) context;
+    proto.format = minor | SF_FORMAT_RAW;
+}
+
+static void set_in_cd(void *context, char *optarg, char *optname)
+{
+    proto.format     = SF_FORMAT_PCM_16 | SF_FORMAT_RAW;
+    proto.samplerate = 44100;
+    proto.channels   = 2;
+}
+
+
+int main(int argc, char * argv[])
+{
+    SF_INFO outinfo, ininfo;
+    char *progname, *infilename, *outfilename;
+    SNDFILE *infile, *outfile;
+    int i, outfilemajor, infileminor, silent;
+
+    silent = 0;
     progname = (char *) basename2(argv[0]);
 
     opt_param_t opts[] = {
-        { "pcms8",     (void *) SF_FORMAT_PCM_S8,    set_outfileminor, OPT_NONE },
-        { "pcmu8",     (void *) SF_FORMAT_PCM_U8,    set_outfileminor, OPT_NONE },
-        { "pcm16",     (void *) SF_FORMAT_PCM_16,    set_outfileminor, OPT_NONE },
-        { "pcm24",     (void *) SF_FORMAT_PCM_24,    set_outfileminor, OPT_NONE },
-        { "pcm32",     (void *) SF_FORMAT_PCM_32,    set_outfileminor, OPT_NONE },
-        { "float32",   (void *) SF_FORMAT_FLOAT,     set_outfileminor, OPT_NONE },
-        { "ulaw",      (void *) SF_FORMAT_ULAW,      set_outfileminor, OPT_NONE },
-        { "alaw",      (void *) SF_FORMAT_ALAW,      set_outfileminor, OPT_NONE },
-        { "ima-adpcm", (void *) SF_FORMAT_IMA_ADPCM, set_outfileminor, OPT_NONE },    
-        { "ms-adpcm",  (void *) SF_FORMAT_MS_ADPCM,  set_outfileminor, OPT_NONE },
-        { "gsm610",    (void *) SF_FORMAT_GSM610,    set_outfileminor, OPT_NONE },
-        { "dwvw12",    (void *) SF_FORMAT_DWVW_12,   set_outfileminor, OPT_NONE },
-        { "dwvw16",    (void *) SF_FORMAT_DWVW_16,   set_outfileminor, OPT_NONE },
-        { "dwvw24",    (void *) SF_FORMAT_DWVW_24,   set_outfileminor, OPT_NONE }
+        { "pcms8",       (void *) SF_FORMAT_PCM_S8,    set_outfileminor, OPT_NONE },
+        { "pcmu8",       (void *) SF_FORMAT_PCM_U8,    set_outfileminor, OPT_NONE },
+        { "pcm16",       (void *) SF_FORMAT_PCM_16,    set_outfileminor, OPT_NONE },
+        { "pcm24",       (void *) SF_FORMAT_PCM_24,    set_outfileminor, OPT_NONE },
+        { "pcm32",       (void *) SF_FORMAT_PCM_32,    set_outfileminor, OPT_NONE },
+        { "float32",     (void *) SF_FORMAT_FLOAT,     set_outfileminor, OPT_NONE },
+        { "float64",     (void *) SF_FORMAT_DOUBLE,    set_outfileminor, OPT_NONE },
+
+        { "ulaw",        (void *) SF_FORMAT_ULAW,      set_outfileminor, OPT_NONE },
+        { "alaw",        (void *) SF_FORMAT_ALAW,      set_outfileminor, OPT_NONE },
+        { "ima-adpcm",   (void *) SF_FORMAT_IMA_ADPCM, set_outfileminor, OPT_NONE },    
+        { "ms-adpcm",    (void *) SF_FORMAT_MS_ADPCM,  set_outfileminor, OPT_NONE },
+        { "gsm610",      (void *) SF_FORMAT_GSM610,    set_outfileminor, OPT_NONE },
+        { "dwvw12",      (void *) SF_FORMAT_DWVW_12,   set_outfileminor, OPT_NONE },
+        { "dwvw16",      (void *) SF_FORMAT_DWVW_16,   set_outfileminor, OPT_NONE },
+        { "dwvw24",      (void *) SF_FORMAT_DWVW_24,   set_outfileminor, OPT_NONE },
+
+        { "in-pcms8",    (void *) SF_FORMAT_PCM_S8,    set_rawfileminor, OPT_NONE },
+        { "in-pcmu8",    (void *) SF_FORMAT_PCM_U8,    set_rawfileminor, OPT_NONE },
+        { "in-pcm16",    (void *) SF_FORMAT_PCM_16,    set_rawfileminor, OPT_NONE },
+        { "in-pcm24",    (void *) SF_FORMAT_PCM_24,    set_rawfileminor, OPT_NONE },
+        { "in-pcm32",    (void *) SF_FORMAT_PCM_32,    set_rawfileminor, OPT_NONE },
+        { "in-float32",  (void *) SF_FORMAT_FLOAT,     set_rawfileminor, OPT_NONE },
+        { "in-float64",  (void *) SF_FORMAT_DOUBLE,    set_rawfileminor, OPT_NONE },
+        { "in-gsm610",   (void *) SF_FORMAT_GSM610,    set_rawfileminor, OPT_NONE },
+
+        { "in-channels", (void *) &proto.channels,     opt_set_nat_no,   OPT_REQUIRED },
+        { "in-rate",     (void *) &proto.samplerate,   opt_set_nat_no,   OPT_REQUIRED },
+        { "in-cd",       NULL,                         set_in_cd,        OPT_NONE },
+
+        { "silent",      &silent,                      opt_set_flag,     OPT_NONE }
     };
 
     opt_register_params(opts, NELEMS(opts), 0, 0);
@@ -207,173 +240,171 @@ main (int argc, char * argv [])
         return 1;
     }
 
-    infilename = argv[optind];
-    outfilename = argv[argc - 1];
+    infilename  = argv[ optind ];
+    outfilename = argv[ argc - 1 ];
 
-    if ((infile = sf_open (infilename, SFM_READ, &sfinfo1)) == NULL)
-    {   printf ("Not able to open input file %s.\n", infilename) ;
-        puts (sf_strerror (NULL)) ;
-        return 1 ;
-        } ;
+    if (!(infile = sf_open(infilename, SFM_READ, &proto))) {
+        fprintf(stderr, "Not able to open input file %s : %s\n", infilename, sf_strerror(NULL));
+        return 1;
+    }
 
-    infileminor = sfinfo1.format & SF_FORMAT_SUBMASK ;
+    infileminor = proto.format & SF_FORMAT_SUBMASK;
+    outinfo = proto;
 
-    if ((sfinfo1.format = guess_output_file_type (outfilename, sfinfo1.format)) == 0)
-    {   printf ("Error : Not able to determine output file type for %s.\n", outfilename) ;
-        return 1 ;
-        } ;
+    if (!(outinfo.format = guess_output_file_type(outfilename, proto.format))) {
+        fprintf(stderr, "Error : Not able to determine output file type for %s.\n", outfilename);
+        return 1;
+    }
 
-    outfilemajor = sfinfo1.format & (SF_FORMAT_TYPEMASK | SF_FORMAT_ENDMASK) ;
+    outfilemajor = outinfo.format & (SF_FORMAT_TYPEMASK | SF_FORMAT_ENDMASK);
+    if (!outfileminor) {
+        outfileminor = outinfo.format & SF_FORMAT_SUBMASK;
+    }
+    outinfo.format = outfilemajor | outfileminor;
 
-    if (outfileminor == 0)
-        outfileminor = sfinfo1.format & SF_FORMAT_SUBMASK ;
+    if (SF_FORMAT_XI == (outinfo.format & SF_FORMAT_TYPEMASK)) {
+        switch (outinfo.format & SF_FORMAT_SUBMASK) {
+            case SF_FORMAT_PCM_16:
+                outinfo.format = outfilemajor | SF_FORMAT_DPCM_16;
+                break;
 
-    if (outfileminor != 0)
-        sfinfo1.format = outfilemajor | outfileminor ;
-    else
-        sfinfo1.format = outfilemajor | (sfinfo1.format & SF_FORMAT_SUBMASK) ;
+            case SF_FORMAT_PCM_S8:
+            case SF_FORMAT_PCM_U8:
+                outinfo.format = outfilemajor | SF_FORMAT_DPCM_8;
+                break;
+        }
+    }
 
-    if ((sfinfo1.format & SF_FORMAT_TYPEMASK) == SF_FORMAT_XI)
-        switch (sfinfo1.format & SF_FORMAT_SUBMASK)
-        {   case SF_FORMAT_PCM_16 :
-                    sfinfo1.format = outfilemajor | SF_FORMAT_DPCM_16 ;
-                    break ;
-
-            case SF_FORMAT_PCM_S8 :
-            case SF_FORMAT_PCM_U8 :
-                    sfinfo1.format = outfilemajor | SF_FORMAT_DPCM_8 ;
-                    break ;
-            } ;
-
-    if (sf_format_check (&sfinfo1) == 0)
-    {   printf ("Error : output file format is invalid (0x%08X).\n", sfinfo1.format) ;
-        return 1 ;
-        } ;
+    if (!(sf_format_check(&outinfo))) {
+        fprintf(stderr, "Error : output file format is invalid (0x%08X).\n", outinfo.format);
+        return 1;
+    }
 
     /* Open the output file. */
-    if ((outfile = sf_open (outfilename, SFM_WRITE, &sfinfo1)) == NULL)
-    {   printf ("Not able to open output file %s : %s\n", outfilename, sf_strerror (NULL)) ;
-        return 1 ;
-        } ;
+    if (!(outfile = sf_open(outfilename, SFM_WRITE, &outinfo))) {
+        fprintf(stderr, "Not able to open output file %s : %s\n", outfilename, sf_strerror(NULL));
+        return 1;
+    }
 
-    /* Copy the metadata */
-    copy_metadata (outfile, infile) ;
+    copy_metadata(outfile, infile);
 
-    for (i = optind ; ; ) {
+    for (i = optind;  ;  ) {
 
         if (strcmp(infilename, outfilename)) {
-            printf("Copying file \"%s.\"\n", infilename);
+            if (!silent) {
+                printf("Copying file \"%s.\"\n", infilename);
+            }
 
-            if ((outfileminor == SF_FORMAT_DOUBLE) || (outfileminor == SF_FORMAT_FLOAT) ||
-                        (infileminor == SF_FORMAT_DOUBLE) || (infileminor == SF_FORMAT_FLOAT))
-                copy_data_fp (outfile, infile, sfinfo1.channels) ;
+            if (   (SF_FORMAT_DOUBLE == outfileminor) || (SF_FORMAT_FLOAT == outfileminor)
+                || (SF_FORMAT_DOUBLE == infileminor)  || (SF_FORMAT_FLOAT == infileminor))
+            {
+                copy_data_fp (outfile, infile, outinfo.channels);
+            }
             else
-                copy_data_int (outfile, infile, sfinfo1.channels) ;
+            {
+                copy_data_int(outfile, infile, outinfo.channels);
+            }
         } else {
-            printf("Skipping an input file with the same name as the output file.\n") ;
+            fprintf(stderr, "Skipping an input file with the same name as the output file.\n");
         }
 
-        sf_close (infile) ;
+        sf_close(infile);
 
-        if (++i == argc - 1) {
+        if (argc - 1 == ++i) {
             break;
         }
 
         infilename = argv[i];
+        ininfo = proto;
 
-        if ((infile = sf_open (infilename, SFM_READ, &sfinfo2)) == NULL)
-        {   printf ("Not able to open input file %s.\n", infilename) ;
-            puts (sf_strerror (NULL)) ;
-            return 1 ;
-            }
-
-        if (sfinfo2.samplerate != sfinfo1.samplerate) {
-            printf("Sample rate of file %s is incompatible with other files.\n", infilename);
+        if (!(infile = sf_open(infilename, SFM_READ, &ininfo))) {
+            fprintf(stderr, "Not able to open input file %s : %s\n", infilename, sf_strerror(NULL));
             return 1;
         }
 
-        if (sfinfo2.channels != sfinfo1.channels) {
-            printf("Number of channels in file %s is incompatible with other files.\n", infilename);
+        if (ininfo.samplerate != outinfo.samplerate) {
+            fprintf(stderr, "Sample rate of file %s is incompatible with other files.\n", infilename);
+            return 1;
+        }
+
+        if (ininfo.channels   != outinfo.channels) {
+            fprintf(stderr, "Number of channels in file %s is incompatible with other files.\n", infilename);
             return 1;
         }
     }
 
-    printf("Done.\n");
+    if (!silent) {
+        printf("Done.\n");
+    }
 
-    sf_close (outfile) ;
+    sf_close(outfile);
 
-    return 0 ;
+    return 0;
+
 } /* main */
 
-static void
-copy_metadata (SNDFILE *outfile, SNDFILE *infile)
-{   SF_INSTRUMENT inst ;
-    const char *str ;
-    int k, err = 0 ;
 
-    for (k = SF_STR_FIRST ; k <= SF_STR_LAST ; k++)
-    {   str = sf_get_string (infile, k) ;
-        if (str != NULL)
-            err = sf_set_string (outfile, k, str) ;
-        } ;
+static void copy_metadata(SNDFILE *outfile, SNDFILE *infile)
+{
+    SF_INSTRUMENT inst;
+    const char *str;
+    int i, err = 0;
 
-    memset (&inst, 0, sizeof (inst)) ;
-    if (sf_command (infile, SFC_GET_INSTRUMENT, &inst, sizeof (inst)) == SF_TRUE)
-        sf_command (outfile, SFC_SET_INSTRUMENT, &inst, sizeof (inst)) ;
+    for (i = SF_STR_FIRST;  i <= SF_STR_LAST;  ++i) {
+        str = sf_get_string(infile, i);
+        if (str) {
+            err = sf_set_string(outfile, i, str);
+        }
+    }
+
+    memset(&inst, 0x00, sizeof(inst));
+    if (SF_TRUE == sf_command(infile, SFC_GET_INSTRUMENT, &inst, sizeof(inst))) {
+        sf_command(outfile, SFC_SET_INSTRUMENT, &inst, sizeof(inst));
+    }
 
 } /* copy_metadata */
 
-static void
-copy_data_fp (SNDFILE *outfile, SNDFILE *infile, int channels)
-{   static double   data [FP_BUFFER_LEN], max ;
-    int     frames, readcount, k ;
 
-    frames = FP_BUFFER_LEN / channels ;
-    readcount = frames ;
+static void copy_data_fp(SNDFILE *outfile, SNDFILE *infile, int channels)
+{
+    static double data[FP_BUFFER_LEN], max;
+    int frames, readcount, i;
 
-    sf_command (infile, SFC_CALC_SIGNAL_MAX, &max, sizeof (max)) ;
+    readcount = frames = FP_BUFFER_LEN / channels;
+
+    sf_command(infile, SFC_CALC_SIGNAL_MAX, &max, sizeof(max));
 
     /* RWF: range is inclusive of 1.0, not exclusive;  changed < to <= */
-    if (max <= 1.0)
-    {   while (readcount > 0)
-        {   readcount = sf_readf_double (infile, data, frames) ;
-            sf_writef_double (outfile, data, readcount) ;
-            } ;
+    if (max <= 1.0) {
+        while (readcount > 0) {
+            readcount = sf_readf_double(infile, data, frames);
+            sf_writef_double(outfile, data, readcount);
         }
-    else
-    {   sf_command (infile, SFC_SET_NORM_DOUBLE, NULL, SF_FALSE) ;
+    } else {
+        sf_command(infile, SFC_SET_NORM_DOUBLE, NULL, SF_FALSE);
 
-        while (readcount > 0)
-        {   readcount = sf_readf_double (infile, data, frames) ;
-            for (k = 0 ; k < readcount * channels ; k++)
-                data [k] /= max ;
-            sf_writef_double (outfile, data, readcount) ;
-            } ;
-        } ;
+        while (readcount > 0) {
+            readcount = sf_readf_double(infile, data, frames);
+            for (i = 0;  i < readcount * channels;  ++i) {
+                data[i] /= max;
+            }
+            sf_writef_double(outfile, data, readcount);
+        }
+    }
 
-    return ;
 } /* copy_data_fp */
 
-static void
-copy_data_int (SNDFILE *outfile, SNDFILE *infile, int channels)
-{   static int  data [INT_BUFFER_LEN] ;
-    int     frames, readcount ;
 
-    frames = INT_BUFFER_LEN / channels ;
-    readcount = frames ;
+static void copy_data_int(SNDFILE *outfile, SNDFILE *infile, int channels)
+{
+    static int data[INT_BUFFER_LEN];
+    int frames, readcount;
 
-    while (readcount > 0)
-    {   readcount = sf_readf_int (infile, data, frames) ;
-        sf_writef_int (outfile, data, readcount) ;
-        } ;
+    readcount = frames = INT_BUFFER_LEN / channels;
 
-    return ;
+    while (readcount > 0) {
+        readcount = sf_readf_int(infile, data, frames);
+        sf_writef_int(outfile, data, readcount);
+    }
+
 } /* copy_data_int */
-
-/*
-** Do not edit or modify anything in this comment block.
-** The arch-tag line is a file identity tag for the GNU Arch
-** revision control system.
-**
-** arch-tag: 259682b3-2887-48a6-b5bb-3cde00521ba3
-*/
