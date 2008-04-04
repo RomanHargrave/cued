@@ -1,0 +1,111 @@
+--- opt.c.alias_by_assign	2008-03-06 19:42:06.000000000 -0500
++++ opt.c.alias_by_union	2008-03-12 21:44:13.000000000 -0400
+@@ -31,7 +31,14 @@
+ static void opt_default_error_handler(const char format[], ...);
+ static opt_err_fn_t errFn = opt_default_error_handler;
+ 
+-static opt_param_t *shrtOpts, *longOpts;
++// deal with aliasing in ISO C
++typedef union _opt_ptr_t {
++    opt_param_t *p;
++    void *v;
++} opt_ptr_t;
++
++static opt_ptr_t shrtOpts, longOpts;
++
+ static int numShrtOpts, numLongOpts;
+ static int shrtOptAlloc, longOptAlloc;
+ 
+@@ -40,7 +47,6 @@ void opt_register_params(opt_param_t opt
+ {
+     opt_param_t *shrtOpt, *longOpt;
+     int i, newShrtOpts, newLongOpts;
+-    void *vShrtOpts, *vLongOpts;
+ 
+     // count the number of short and long options
+     for (i = newShrtOpts = newLongOpts = 0;  i < numOpts;  ++i) {
+@@ -60,24 +66,18 @@ void opt_register_params(opt_param_t opt
+         }
+     }
+ 
+-    // deal with aliasing in ISO C
+-    vShrtOpts = shrtOpts;
+-    vLongOpts = longOpts;
+ 
+     // expand the arrays to hold the new options
+-    if (   reallocItems(&vShrtOpts, sizeof(opt_param_t), &shrtOptAlloc, numShrtOpts, newShrtOpts, shrtOptHint)
+-        || reallocItems(&vLongOpts, sizeof(opt_param_t), &longOptAlloc, numLongOpts, newLongOpts, longOptHint))
++    if (   reallocItems(&shrtOpts.v, sizeof(opt_param_t), &shrtOptAlloc, numShrtOpts, newShrtOpts, shrtOptHint)
++        || reallocItems(&longOpts.v, sizeof(opt_param_t), &longOptAlloc, numLongOpts, newLongOpts, longOptHint))
+     {
+         errFn("out of memory allocating memory for options");
+         return;
+     }
+ 
+-    shrtOpts = (opt_param_t *) vShrtOpts;
+-    longOpts = (opt_param_t *) vLongOpts;
+-
+     // copy the new options to the arrays
+-    shrtOpt = &shrtOpts[numShrtOpts];
+-    longOpt = &longOpts[numLongOpts];
++    shrtOpt = &shrtOpts.p[numShrtOpts];
++    longOpt = &longOpts.p[numLongOpts];
+     for (i = 0;  i < numOpts;  ++i) {
+         if (1 == strlen(opts[i].opt)) {
+             *shrtOpt++ = opts[i];
+@@ -112,8 +112,8 @@ opt_result_t opt_parse_args(int argc, ch
+ 
+     // set options array for getopt_long
+     for (i = 0;  i < numLongOpts;  ++i) {
+-        opts[i].name = longOpts[i].opt;
+-        switch (longOpts[i].mode) {
++        opts[i].name = longOpts.p[i].opt;
++        switch (longOpts.p[i].mode) {
+ 
+             case OPT_NONE:
+                 opts[i].has_arg = no_argument;
+@@ -144,9 +144,9 @@ opt_result_t opt_parse_args(int argc, ch
+     shortStr = optstring;
+     for (i = 0;  i < numShrtOpts;  ++i) {
+ 
+-        *shortStr++ = shrtOpts[i].opt[0];
++        *shortStr++ = shrtOpts.p[i].opt[0];
+ 
+-        switch (shrtOpts[i].mode) {
++        switch (shrtOpts.p[i].mode) {
+ 
+             case OPT_NONE:
+                 break;
+@@ -175,7 +175,7 @@ opt_result_t opt_parse_args(int argc, ch
+                 if (longIndex < 0 || longIndex >= numLongOpts) {
+                     opt2_error("getopt_long returned illegal index (broken libc?)");
+                 }
+-                longOpts[longIndex].fn(longOpts[longIndex].context, optarg, longOpts[longIndex].opt);
++                longOpts.p[longIndex].fn(longOpts.p[longIndex].context, optarg, longOpts.p[longIndex].opt);
+                 break;
+ 
+             case '?':
+@@ -183,8 +183,8 @@ opt_result_t opt_parse_args(int argc, ch
+ 
+             default:
+                 for (i = 0;  i < numShrtOpts;  ++i) {
+-                    if (option == shrtOpts[i].opt[0]) {
+-                        shrtOpts[i].fn(shrtOpts[i].context, optarg, shrtOpts[i].opt);
++                    if (option == shrtOpts.p[i].opt[0]) {
++                        shrtOpts.p[i].fn(shrtOpts.p[i].context, optarg, shrtOpts.p[i].opt);
+                         goto next;
+                     }
+                 }
+@@ -202,9 +202,9 @@ cleanup:
+     free(opts);
+     free(optstring);
+ 
+-    free(shrtOpts);
+-    free(longOpts);
+-    shrtOpts = longOpts = NULL;
++    free(shrtOpts.p);
++    free(longOpts.p);
++    shrtOpts.p = longOpts.p = NULL;
+     numShrtOpts = numLongOpts = 0;
+     shrtOptAlloc = longOptAlloc = 0;
+ 
