@@ -22,9 +22,11 @@
 #include "cued.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
-#include "rip.h"
-#include "cdio2.h"
+#include <cdio/cdio.h>
 #include <cdio/mmc.h> // CDIO_MMC_READ_TYPE_ANY
+#include "cdio2.h"
+#include "rip.h"
+#include "format.h"
 
 #include <stdlib.h> // free
 #include <unistd.h> // unlink
@@ -524,7 +526,7 @@ void cued_rip_disc(
         channels = cdio2_get_track_channels(cdObj, firstTrack);
 
         // does not return on error
-        (void) cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
+        (void) format_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
 
         if (verbose) {
             printf("progress: reading sectors from %d to %d\n", firstSector, lastSector);
@@ -569,7 +571,7 @@ void cued_rip_disc(
             if (1 == track && firstSector > 0) {
 
                 // does not return on error
-                (void) cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
+                (void) format_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), 0, fileNameBuffer, bufferSize);
 
                 if (verbose) {
                     printf("progress: reading track %02d\n", 0);
@@ -609,7 +611,7 @@ void cued_rip_disc(
             }
 
             // does not return on error
-            (void) cddb2_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), track, fileNameBuffer, bufferSize);
+            (void) format_get_file_path(cdObj, cddbObj, fileNamePattern, cued_fmt_to_ext(soundFileFormat), track, fileNameBuffer, bufferSize);
 
             if (verbose) {
                 printf("progress: reading track %02d\n", track);

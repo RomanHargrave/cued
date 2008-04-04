@@ -48,15 +48,17 @@
 
 #include "unix.h"
 #include "macros.h"
-#include "cddb2.h"
-#include "qsc.h" // MSF_LEN, msf_to_ascii
 #include "cued.h" // CUED_VERSION
 #include "opt.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
-#include "rip.h"
+#include <cdio/cdio.h>
 #include "cdio2.h"
+#include "cddb2.h"
+#include "format.h"
+#include "rip.h"
 #include "sheet.h"
+#include "qsc.h" // MSF_LEN, msf_to_ascii
 
 #include <sndfile.h>
 
@@ -191,13 +193,8 @@ int main(int argc, char *const argv[])
 
     // this should be first
     cdio2_set_log_handler();
-    cddb2_set_log_handler();
     opt_set_error_handler(cdio2_abort);
-
-    // don't return album artist as track artist;  this would complicate
-    // handling compilations of various artists
-    //
-    libcddb_set_flags(CDDB_F_NO_TRACK_ARTIST);
+    cddb2_init();
 
     // set defaults before option parsing
     //
@@ -209,6 +206,7 @@ int main(int argc, char *const argv[])
     retries = CUED_DEFAULT_RETRIES;
     soundFileFormat = SF_FORMAT_WAV;
 
+    exeName = basename2(argv[0]);
     opt_param_t opts[] = {
         { "b", &firstRipTrack,          opt_set_nat_no,     OPT_REQUIRED },
         { "c", &cueFileNamePattern,     opt_set_string,     OPT_REQUIRED },
@@ -222,18 +220,13 @@ int main(int argc, char *const argv[])
         { "q", &qSubChannelFileName,    opt_set_string,     OPT_REQUIRED },
         { "r", &retries,                opt_set_whole_no,   OPT_REQUIRED },
         { "s", &speed,                  opt_set_nat_no,     OPT_REQUIRED },
-        { "t", NULL,                    cddb2_set_tag,      OPT_REQUIRED },
+        { "t", NULL,                    format_set_tag,     OPT_REQUIRED },
         { "v", &verbose,                opt_set_flag,       OPT_NONE },
         { "w", &ripToOneFile,           opt_set_flag,       OPT_NONE },
         { "x", &extract,                opt_set_flag,       OPT_NONE },
         { "format-help",   NULL,        cued_format_help,   OPT_NONE }
     };
-
     opt_register_params(opts, NELEMS(opts), 15, 15);
-    cddb2_opt_register_params();
-
-    exeName = basename2(argv[0]);
-
     switch (opt_parse_args(argc, argv)) {
 
         case OPT_SUCCESS:
@@ -381,7 +374,7 @@ int main(int argc, char *const argv[])
         } else {
 
             // removed ".cue" extension to allow using /dev/null for testing
-            (void) cddb2_get_file_path(cdObj, cddbObj, cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
+            (void) format_get_file_path(cdObj, cddbObj, cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
 
             // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
             cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
@@ -396,7 +389,7 @@ int main(int argc, char *const argv[])
 
     if (fileNamePattern) {
 
-        cddb2_make_tag_files(
+        format_make_tag_files(
             cdObj, cddbObj,
             fileNamePattern, TAG_FILE_EXT,
             (1 == firstRipTrack) ? 0 : firstRipTrack,
@@ -422,9 +415,9 @@ int main(int argc, char *const argv[])
                 );
 
             // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
-            if (cddb2_has_tags() && 1 == firstRipTrack && !rip_noisy_pregap) {
+            if (format_has_tags() && 1 == firstRipTrack && !rip_noisy_pregap) {
                 cddb_track_t *trackObj = cddb2_get_track(cddbObj, 0);
-                if (!cddb2_apply_pattern(cdObj, cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
+                if (!format_apply_pattern(cdObj, cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
                     if (unlink(fileNameBuffer)) {
                         cdio2_unix_error("unlink", fileNameBuffer, 0);
                     }
@@ -491,13 +484,18 @@ int main(int argc, char *const argv[])
 
     if (cddbObj) {
         cddb_disc_destroy(cddbObj);
+
+        // for looping
+        cddbObj = NULL;
     }
-    cddb2_cleanup();
     if (useParanoia) {
         cdio_paranoia_free(paranoiaRipObj);
         cdio_cddap_close_no_free_cdio(paranoiaCtlObj);
     }
     cdio_destroy(cdObj);
+
+    cddb2_cleanup();
+    format_cleanup();
 
     exit(EXIT_SUCCESS);
 }

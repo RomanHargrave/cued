@@ -20,14 +20,13 @@
 #ifndef CDIO2_H_INCLUDED
 #define CDIO2_H_INCLUDED
 
-#include <stdio.h>
-#include <stdarg.h>
+#include "qsc.h"
 
-#include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/paranoia.h>
 
-#include "qsc.h"
+#include <stdio.h>
+#include <stdarg.h>
 
 #define CDIO2_LENGTH_LEN 5
 

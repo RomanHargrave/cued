@@ -1,5 +1,5 @@
 //
-// qsc.h
+// qsc_types.h
 //
 // Copyright (C) 2008 Robert William Fuller <hydrologiccycle@gmail.com>
 //
@@ -23,10 +23,13 @@
 #include <sys/types.h>
 
 
+typedef unsigned short crc16_t;
+
+#ifndef __CDIO_H__
 typedef unsigned char uint8_t;
 typedef struct msf_s msf_t;
 typedef int32_t lsn_t;
-typedef unsigned short crc16_t;
+#endif // __CDIO_H__
 
 
 #endif // QSC_TYPES_H_INCLUDED

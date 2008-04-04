@@ -18,6 +18,7 @@
 //
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
+#include <cdio/cdio.h>
 #include "cdio2.h"
 
 #include <string.h> // strlen, strerror, strchr

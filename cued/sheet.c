@@ -19,13 +19,14 @@
 
 #include "macros.h"
 #include "unix.h"
+#include "cued.h" // CUED_VERSION
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
-#include "sheet.h"
-#include "qsc.h"
+#include <cdio/cdio.h>
 #include "cdio2.h"
+#include "sheet.h"
 #include "rip.h"
-#include "cued.h" // CUED_VERSION
+#include "qsc.h"
 
 #include <stdlib.h> // atoll
 

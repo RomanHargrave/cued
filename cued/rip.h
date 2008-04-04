@@ -20,13 +20,11 @@
 #ifndef RIP_H_INCLUDED
 #define RIP_H_INCLUDED
 
-#include <stdio.h>
-
-#include <cdio/cdio.h>
-#include <cdio/paranoia.h>
-
 #include "cddb2.h" // cddb_disc_t
 #include "qsc.h" // MCN_LEN, ISRC_LEN
+
+#include <cdio/paranoia.h>
+#include <stdio.h>
 
 
 #define CUED_MAX_INDICES 100

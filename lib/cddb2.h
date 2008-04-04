@@ -20,13 +20,8 @@
 #ifndef CDDB2_H_INCLUDED
 #define CDDB2_H_INCLUDED
 
-#include <getopt.h>
 #include <cddb/cddb.h>
-
-#include <stdlib.h> // exit
-
-typedef struct _CdIo CdIo_t;
-typedef uint8_t track_t;
+#include <getopt.h>
 
 
 #define CDDB2_OPTIONS \
@@ -40,40 +35,20 @@ typedef uint8_t track_t;
     "\t--cddb-timeout=seconds alternate cddb timeout\n" \
     "\t--cddb-cache=dir       alternate cddb cache directory\n"
 
-extern void cddb2_opt_register_params();
 
+extern void cddb2_init();
+extern void cddb2_cleanup();
 extern void cddb2_set_log_handler();
+extern void cddb2_opt_register_params();
 
 extern cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj);
 extern cddb_disc_t *cddb2_get_match      (CdIo_t *cdObj, cddb_conn_t **dbObj, int *matches, int matchIndex);
 extern cddb_disc_t *cddb2_get_first_match(CdIo_t *cdObj, cddb_conn_t **dbObj, int *matches);
 extern cddb_disc_t *cddb2_get_next_match(cddb_conn_t *dbObj);
 
+extern char *cddb2_get_category(cddb_disc_t *cddbObj);
+
 extern cddb_track_t *cddb2_get_track(cddb_disc_t *cddbObj, track_t track);
-extern int cddb2_apply_pattern(
-    CdIo_t *cdObj, cddb_disc_t *cddbObj, cddb_track_t *trackObj,
-    const char *pattern, char *extension,
-    track_t track,
-    char *resultBuffer, int bufferSize,
-    int terminator
-    );
-extern int cddb2_get_file_path(
-    CdIo_t *cdObj, cddb_disc_t *cddbObj,
-    const char *fileNamePattern, char *fileNameExt,
-    track_t track,
-    char *fileNameBuffer, int bufferSize
-    );
-
-extern void cddb2_set_tag(void *context, char *optarg, char *optionName);
-extern void cddb2_make_tag_files(
-    CdIo_t *cdObj, cddb_disc_t *cddbObj,
-    const char *fileNamePattern, char *fileNameExt,
-    track_t firstTrack, track_t lastTrack,
-    char *resultBuffer, int bufferSize
-    );
-extern int cddb2_has_tags();
-
-extern void cddb2_cleanup();
 
 
 #endif // CDDB2_H_INCLUDED

@@ -44,12 +44,16 @@
 #define FPG (FPS * 2)
 
 
+#ifndef __CDIO_H__
+
 struct msf_s {
 
     uint8_t m;
     uint8_t s;
     uint8_t f;
 };
+
+#endif // __CDIO_H__ 
 
 
 // from mmc5r00.pdf: 4.3.4.5.2 and 6.25.3.2.3

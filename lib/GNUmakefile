@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SRC = unix cdio2 qsc cddb2 opt dmalloc util
+SRC = format unix cdio2 qsc cddb2 opt dmalloc util
 LIB = cued
 
 #CC_DEFINES=-DDEBUG_MALLOC

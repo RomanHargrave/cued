@@ -21,7 +21,6 @@
 #define SHEET_H_INCLUDED
 
 #include <stdio.h>
-#include <cdio/cdio.h>
 
 
 extern void cued_write_cuefile(
