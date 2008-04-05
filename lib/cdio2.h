@@ -40,8 +40,8 @@ extern int cdio2_get_track_channels(CdIo_t *cdObj, track_t track);
 
 extern void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const char *prefix);
 
-extern void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, char *when);
-extern void cdio2_driver_error(driver_return_code_t ec, char *when);
+extern void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, const char *when);
+extern void cdio2_driver_error(driver_return_code_t ec, const char *when);
 extern void cdio2_paranoia_callback(long int frame, paranoia_cb_mode_t prc);
 
 extern lsn_t cdio2_get_track_length(CdIo_t *cdObj, track_t track);

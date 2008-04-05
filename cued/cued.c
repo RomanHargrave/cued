@@ -103,7 +103,7 @@ static void usage(const char *exeName)
 }
 
 
-static void cued_set_loglevel(void *context, char *optarg, char *optionName)
+static void cued_set_loglevel(void *context, char *optarg, const char *optionName)
 {
     ssize_t sst;
 
@@ -125,7 +125,7 @@ static void cued_set_loglevel(void *context, char *optarg, char *optionName)
 }
 
 
-static void cued_set_sf(void *context, char *optarg, char *optionName)
+static void cued_set_sf(void *context, char *optarg, const char *optionName)
 {
     *(int *) context = SF_FORMAT_FLAC;
 }
@@ -133,7 +133,7 @@ static void cued_set_sf(void *context, char *optarg, char *optionName)
 int verbose;
 
 
-static void cued_format_help(void *context, char *optarg, char *optionName)
+static void cued_format_help(void *context, char *optarg, const char *optionName)
 {
     fprintf(stderr,
     "\nSome options, such as -x and -c, take a format parameter, which is used\n"

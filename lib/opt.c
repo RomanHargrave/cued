@@ -227,7 +227,7 @@ void opt_set_error_handler(opt_err_fn_t fn)
 }
 
 
-void opt_set_port(void *context, char *portno, char *optName)
+void opt_set_port(void *context, char *portno, const char *optName)
 {
     ssize_t sst;
 
@@ -239,13 +239,13 @@ void opt_set_port(void *context, char *portno, char *optName)
 }
 
 
-void opt_set_string(void *context, char *opt, char *optName)
+void opt_set_string(void *context, char *opt, const char *optName)
 {
     *((char **) context) = opt;
 }
 
 
-void opt_set_int(void *context, char *opt, char *optName)
+void opt_set_int(void *context, char *opt, const char *optName)
 {
     ssize_t sst;
 
@@ -258,7 +258,7 @@ void opt_set_int(void *context, char *opt, char *optName)
 }
 
 
-void opt_set_nat_no(void *context, char *opt, char *optName)
+void opt_set_nat_no(void *context, char *opt, const char *optName)
 {
     ssize_t sst;
 
@@ -271,7 +271,7 @@ void opt_set_nat_no(void *context, char *opt, char *optName)
 }
 
 
-void opt_set_whole_no(void *context, char *opt, char *optName)
+void opt_set_whole_no(void *context, char *opt, const char *optName)
 {
     ssize_t sst;
 
@@ -284,7 +284,7 @@ void opt_set_whole_no(void *context, char *opt, char *optName)
 }
 
 
-void opt_set_flag(void *context, char *opt, char *optName)
+void opt_set_flag(void *context, char *opt, const char *optName)
 {
     *((int *) context) = 1;
 }

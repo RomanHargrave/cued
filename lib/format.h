@@ -25,22 +25,22 @@
 
 extern int format_apply_pattern(
     CdIo_t *cdObj, cddb_disc_t *cddbObj, cddb_track_t *trackObj,
-    const char *pattern, char *extension,
+    const char *pattern, const char *extension,
     track_t track,
     char *resultBuffer, int bufferSize,
     int terminator
     );
 extern int format_get_file_path(
     CdIo_t *cdObj, cddb_disc_t *cddbObj,
-    const char *fileNamePattern, char *fileNameExt,
+    const char *fileNamePattern, const char *fileNameExt,
     track_t track,
     char *fileNameBuffer, int bufferSize
     );
 
-extern void format_set_tag(void *context, char *optarg, char *optionName);
+extern void format_set_tag(void *context, char *optarg, const char *optionName);
 extern void format_make_tag_files(
     CdIo_t *cdObj, cddb_disc_t *cddbObj,
-    const char *fileNamePattern, char *fileNameExt,
+    const char *fileNamePattern, const char *fileNameExt,
     track_t firstTrack, track_t lastTrack,
     char *resultBuffer, int bufferSize
     );

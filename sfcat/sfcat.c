@@ -154,7 +154,7 @@ static void print_usage(char *progname)
 
 static int outfileminor;
 
-static void set_outfileminor(void *context, char *optarg, char *optname)
+static void set_outfileminor(void *context, char *optarg, const char *optname)
 {
     outfileminor = (intptr_t) context;
 }
@@ -162,13 +162,13 @@ static void set_outfileminor(void *context, char *optarg, char *optname)
 
 static SF_INFO proto;
 
-static void set_rawfileminor(void *context, char *optarg, char *optname)
+static void set_rawfileminor(void *context, char *optarg, const char *optname)
 {
     int minor = (intptr_t) context;
     proto.format = minor | SF_FORMAT_RAW;
 }
 
-static void set_in_cd(void *context, char *optarg, char *optname)
+static void set_in_cd(void *context, char *optarg, const char *optname)
 {
     proto.format     = SF_FORMAT_PCM_16 | SF_FORMAT_RAW;
     proto.samplerate = 44100;

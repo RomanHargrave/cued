@@ -136,7 +136,7 @@ void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const cha
 }
 
 
-void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, char *when)
+void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, const char *when)
 {
     char *msg;
 
@@ -152,7 +152,7 @@ void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, char *when)
 }
 
 
-void cdio2_driver_error(driver_return_code_t ec, char *when)
+void cdio2_driver_error(driver_return_code_t ec, const char *when)
 {
     if (DRIVER_OP_SUCCESS != ec) {
         cdio_error("received following error during %s: %s", when, cdio_driver_errmsg(ec));

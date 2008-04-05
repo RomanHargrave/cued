@@ -21,7 +21,7 @@
 #define OPT_H_INCLUDED
 
 
-typedef void (*opt_fn_t)(void *context, char *optionArg, char *optionName);
+typedef void (*opt_fn_t)(void *context, char *optionArg, const char *optionName);
 
 typedef enum _opt_mode_t {
 
@@ -42,7 +42,7 @@ typedef enum _opt_result_t {
 
 typedef struct _opt_param_t {
 
-    char *opt;
+    const char *opt;
     void *context;
     opt_fn_t fn;
 
@@ -57,12 +57,12 @@ extern void opt_set_error_handler(opt_err_fn_t fn);
 extern void opt_register_params(opt_param_t options[], int numOptions, int longOptHint, int shortOptHint);
 extern opt_result_t opt_parse_args(int argc, char *const argv[]);
 
-extern void opt_set_string(void *context, char *option, char *optionName);
-extern void opt_set_int(void *context, char *option, char *optionName);
-extern void opt_set_nat_no(void *context, char *option, char *optionName);
-extern void opt_set_whole_no(void *context, char *option, char *optionName);
-extern void opt_set_port(void *context, char *option, char *optionName);
-extern void opt_set_flag(void *context, char *option, char *optionName);
+extern void opt_set_string  (void *context, char *option, const char *optionName);
+extern void opt_set_int     (void *context, char *option, const char *optionName);
+extern void opt_set_nat_no  (void *context, char *option, const char *optionName);
+extern void opt_set_whole_no(void *context, char *option, const char *optionName);
+extern void opt_set_port    (void *context, char *option, const char *optionName);
+extern void opt_set_flag    (void *context, char *option, const char *optionName);
 
 
 #endif // OPT_H_INCLUDED

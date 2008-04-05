@@ -73,7 +73,7 @@ typedef size_t ptr_as_int_t;
 */
 
 INLINE
-void allocAbend(char *theMessage)
+void allocAbend(const char *theMessage)
 {
     fprintf(stderr, "%s\n", theMessage);
     abort();

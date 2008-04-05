@@ -48,7 +48,7 @@
 
 int format_apply_pattern(
     CdIo_t *cdObj, cddb_disc_t *cddbObj, cddb_track_t *trackObj,
-    const char *pattern, char *extension,
+    const char *pattern, const char *extension,
     track_t track,
     char *resultBuffer, int bufferSize,
     int terminator)
@@ -495,7 +495,7 @@ error:
 
 int format_get_file_path(
     CdIo_t *cdObj, cddb_disc_t *cddbObj,
-    const char *fileNamePattern, char *fileNameExt,
+    const char *fileNamePattern, const char *fileNameExt,
     track_t track,
     char *fileNameBuffer, int bufferSize
     )
@@ -536,7 +536,7 @@ typedef struct _tag_t
 static DLIST_DECLARE(tagList)
 
 
-void format_set_tag(void *context, char *optarg, char *optionName)
+void format_set_tag(void *context, char *optarg, const char *optionName)
 {
     tag_t *tag = (tag_t *) malloc(sizeof(tag_t));
     if (!tag) {
@@ -570,7 +570,7 @@ void format_cleanup()
 
 void format_make_tag_files(
     CdIo_t *cdObj, cddb_disc_t *cddbObj,
-    const char *fileNamePattern, char *fileNameExt,
+    const char *fileNamePattern, const char *fileNameExt,
     track_t firstTrack, track_t lastTrack,
     char *resultBuffer, int bufferSize)
 {

@@ -431,7 +431,7 @@ long cued_read_audio(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector,
 }
 
 
-static char *cued_fmt_to_ext(int soundFileFormat)
+static const char *cued_fmt_to_ext(int soundFileFormat)
 {
     switch (soundFileFormat) {
 
