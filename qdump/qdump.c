@@ -17,7 +17,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 //  run:
-//      qdump -f qchannel >qchannel.txt
+//      qdump -q qchannel >qchannel.txt
 //
 
 #include "unix.h"
