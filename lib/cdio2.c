@@ -234,16 +234,13 @@ lsn_t cdio2_get_track_length(CdIo_t *cdObj, track_t track)
 }
 
 
-#define FPM CDIO_CD_FRAMES_PER_MIN
-#define FPS CDIO_CD_FRAMES_PER_SEC
-
 void cdio2_get_length(char *length, lsn_t sectors)
 {
     int minutes, seconds;
 
-    minutes = sectors / FPM;
-    sectors %= FPM;
-    seconds = sectors / FPS + (sectors % FPS > FPS / 2);
+    minutes = sectors / QSC_FPM;
+    sectors %= QSC_FPM;
+    seconds = sectors / QSC_FPS + (sectors % QSC_FPS > QSC_FPS / 2);
     if (60 == seconds) {
         seconds  = 0;
         minutes += 1;
