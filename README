@@ -25,7 +25,7 @@ RIPPING
 
     This is how the author rips a disc (2 steps:)
 
-        1. cued -o 12 -vipx -c "%D%D<<%d>/%Y<%Y - >%C%C<<%c>/%B<%B >%B<<%j<%j >>(%M).cue" -n "%D%D<<%d>/%Y<%Y - >%C%C<<%c>/%N%N<<00> of %O - %A<%A - >%T%T<<%t> (%L)" -t "artist=%A%A<<%D%D<<%a%a<<%d>>>" -t "title=%T%T<<%t>" -t "album=%C%C<<%c>" -t "%Y<date=%Y>" -t "%Y<year=%Y>" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "%B<genre=%B>%B<<%j<genre=%j>>" -t "%F<freedb=%F>" -t "ripper=cued %V" -t "xdate=%S" -t "%I<class=%I>%I<<%j<class=%j>>" -t "%I<comment=%I>%I<<%j<comment=%j>>" *cue
+        1. cued -o 12 -vipx -c "%D%D<<%d>/%Y<%Y - >%C%C<<%c>/%B<%B >%B<<%j<%j >>(%M).cue" -n "%D%D<<%d>/%Y<%Y - >%C%C<<%c>/%N%N<<00> of %O - %A<%A - >%T%T<<%t> (%L)" -t "artist=%A%A<<%D%D<<%a%a<<%d>>>" -t "title=%T%T<<%t>" -t "album=%C%C<<%c>" -t "%Y<date=%Y>" -t "%Y<year=%Y>" -t "tracknumber=%N%N<<00>" -t "track=%N%N<<00>" -t "%B<genre=%B>%B<<%j<genre=%j>>" -t "%F<freedb=%F>" -t "ripper=cued %V" -t "xdate=%S" -t "%I<class=%I>%I<<%j<class=%j>>" -t "%I<comment=%I>%I<<%j<comment=%j>>" /dev/dvd
 
         2. make -f make/flac.mk
 
