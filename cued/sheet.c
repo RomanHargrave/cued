@@ -86,8 +86,8 @@ void cued_write_cuefile(
 
     for (track = firstTrack;  track <= lastTrack;  ++track) {
 
-        lsn_t *ripLsn;
-        lsn_t lsn, useLsn;
+        lba_t *ripLba;
+        lba_t lba, useLba;
         track_flag_t flagrc;
         int preemp, copy, index;
         char msfStr[ MSF_LEN + 1 ];
@@ -128,17 +128,17 @@ void cued_write_cuefile(
             fprintf(cueFile, "    ISRC %s\n", rip_isrc[track]);
         }
 
-        lsn = cdio_get_track_lsn(cdObj, track);
-        if (CDIO_INVALID_LSN == lsn) {
+        lba = cdio_get_track_lba(cdObj, track);
+        if (CDIO_INVALID_LBA == lba) {
             cdio2_abort("failed to get first sector number for track %02d", track);
         }
 
-        ripLsn = rip_indices[track];
-        if (CDIO_INVALID_LSN != ripLsn[1]) {
+        ripLba = rip_indices[track];
+        if (ripLba[1]) {
             for (index = 0;  index < CUED_MAX_INDICES;  ++index) {
 
-                useLsn = ripLsn[index];
-                if (CDIO_INVALID_LSN == useLsn) {
+                useLba = ripLba[index];
+                if (!useLba) {
                     if (!index) {
                         continue;
                     } else {
@@ -146,10 +146,10 @@ void cued_write_cuefile(
                     }
                 }
 
-                if (index <= 1 && useLsn > lsn) {
-                    cdio_warn("index %02d from Q sub-channel for track %02d is greater than index from TOC (lsn=%d > lsn=%d); using TOC",
-                        index, track, useLsn, lsn);
-                    useLsn = lsn;
+                if (index <= 1 && useLba > lba) {
+                    cdio_warn("index %02d from Q sub-channel for track %02d is greater than index from TOC (lba=%d > lba=%d); using TOC",
+                        index, track, useLba, lba);
+                    useLba = lba;
                 }
 
                 if (1 == track && !index && rip_silent_pregap) {
@@ -164,10 +164,10 @@ void cued_write_cuefile(
 
                     // if pregap is silent, adjust index for the fact that pregap was not saved
                     if (rip_silent_pregap) {
-                        useLsn -= firstTrackSector;
+                        useLba -= firstTrackSector;
                     }
 
-                    if (!qsc_lsn_to_ascii_for_cue(useLsn, msfStr)) {
+                    if (!qsc_lba_to_ascii_for_cue(useLba, msfStr)) {
                         fprintf(cueFile, "    INDEX %02d %s\n", index, msfStr);
                     } else {
                         cdio2_abort("failed to convert index %02d for track %02d", index, track);
@@ -175,10 +175,10 @@ void cued_write_cuefile(
                 }
             }
         } else {
-            useLsn = lsn;
+            useLba = lba;
 
             if (rip_silent_pregap) {
-                useLsn -= firstTrackSector;
+                useLba -= firstTrackSector;
                 if (1 == track) {
                     if (!qsc_lsn_to_ascii_for_cue(firstTrackSector, msfStr)) {
                         fprintf(cueFile, "    PREGAP %s\n", msfStr);
@@ -188,7 +188,7 @@ void cued_write_cuefile(
                 }
             }
 
-            if (!qsc_lsn_to_ascii_for_cue(useLsn, msfStr)) {
+            if (!qsc_lba_to_ascii_for_cue(useLba, msfStr)) {
                 fprintf(cueFile, "    INDEX %02d %s\n", 1, msfStr);
             } else {
                 cdio2_abort("failed to convert index for track %02d", track);

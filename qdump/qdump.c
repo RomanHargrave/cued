@@ -170,13 +170,13 @@ int main(int argc, char *const argv[])
             {
                 qsc_index_t index;
                 char requestedMsf[ MSF_LEN + 1 ];
-                char absoluteMsf[ MSF_LEN + 1 ];
-                char relativeMsf[ MSF_LEN + 1 ];
+                char  absoluteMsf[ MSF_LEN + 1 ];
+                char  relativeMsf[ MSF_LEN + 1 ];
 
                 if (   qsc_get_index(&qscBuf.qsc, &index)
                     || qsc_lsn_to_ascii(qscBuf.requested, requestedMsf)
-                    || qsc_lsn_to_ascii(index.relativeLsn, relativeMsf)
-                    || qsc_lsn_to_ascii(index.absoluteLsn, absoluteMsf)
+                    || qsc_lba_to_ascii(index.relativeLba, relativeMsf)
+                    || qsc_lba_to_ascii(index.absoluteLba, absoluteMsf)
                    )
                 {
                     fprintf(stderr, "index at sector %d has out of range members\n", qscBuf.requested);
@@ -189,9 +189,9 @@ int main(int argc, char *const argv[])
                     , index.track
                     , index.index
                     , relativeMsf
-                    , index.relativeLsn
+                    , QSC_LBA_TO_LSN(index.relativeLba)
                     , absoluteMsf
-                    , index.absoluteLsn
+                    , QSC_LBA_TO_LSN(index.absoluteLba)
                     , requestedMsf
                     , qscBuf.requested
                     );

@@ -29,6 +29,7 @@ typedef unsigned short crc16_t;
 typedef unsigned char uint8_t;
 typedef struct msf_s msf_t;
 typedef int32_t lsn_t;
+typedef int32_t lba_t;
 #endif // __CDIO_H__
 
 

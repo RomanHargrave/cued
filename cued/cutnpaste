@@ -553,5 +553,18 @@ ISRC
 #endif
 
 
-
 printf("firstRipTrack is %d; lastRipTrack is %d; first track is %d; last track is %d\n", firstRipTrack, lastRipTrack, firstTrack, lastTrack);
+
+
+    int i, j;
+
+    for (i = 0;  i < CDIO_CD_MAX_TRACKS + 1;  ++i) {
+        for (j = 0;  j < CUED_MAX_INDICES;  ++j) {
+            rip_indices[i][j] = CDIO_INVALID_LSN;
+        }
+    }
+
+    // must be called whether ripping tracks or merely creating cuesheet
+    // because cuesheet relies on rip data being initialized
+    //
+    cued_init_rip_data();

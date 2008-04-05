@@ -52,8 +52,8 @@ typedef struct _qsc_index_t {
     int track;
     int index;
 
-    lsn_t relativeLsn;
-    lsn_t absoluteLsn;
+    lba_t relativeLba;
+    lba_t absoluteLba;
 
 } qsc_index_t;
 
@@ -72,17 +72,37 @@ extern int qsc_get_psc  (void *qsc);
 
 extern int qsc_get_isrc_year(char *isrc);
 
-extern int qsc_msf_to_ascii(msf_t *msf_in, char *ascii);
-extern int qsc_lsn_to_ascii(lsn_t lsn, char *ascii);
-extern int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii);
-extern int qsc_msf_to_lsn(msf_t *msf, int *lsn);
+extern int qsc_msf_to_lba(msf_t *msf, lba_t *lba);
+extern int qsc_msf_to_lsn(msf_t *msf, lsn_t *lsn);
+
+extern int qsc_lba_to_msf(lsn_t lba, msf_t *msf);
 extern int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf);
+
+extern int qsc_msf_to_ascii(msf_t *msf_in, char *ascii);
+
+extern int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii);
+extern int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii);
+extern int qsc_lba_to_ascii        (lba_t lba, char *ascii);
+extern int qsc_lsn_to_ascii        (lsn_t lsn, char *ascii);
 
 extern crc16_t qsc_crc_data(uint8_t *data, ssize_t len);
 
 
 #define QSC_BCD_TO_ASCII(n) ((n) + '0')
 #define QSC_ASCII_TO_BCD(n) ((n) - '0')
+
+
+// frames per second
+#define QSC_FPS 75
+
+// frames per minute
+#define QSC_FPM (QSC_FPS * 60)
+
+// frames in pre-gap
+#define QSC_FPG (QSC_FPS * 2)
+
+#define QSC_LSN_TO_LBA(n) ((n) + QSC_FPG)
+#define QSC_LBA_TO_LSN(n) ((n) - QSC_FPG)
 
 
 #endif // QSC_H_INCLUDED

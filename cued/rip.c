@@ -43,18 +43,11 @@ int   rip_year;
 static int trackHint;
 
 
-void cued_init_rip_data()
+void cued_cleanup_rip_data()
 {
-    int i, j;
-
-    for (i = 0;  i < CDIO_CD_MAX_TRACKS + 1;  ++i) {
-        for (j = 0;  j < CUED_MAX_INDICES;  ++j) {
-            rip_indices[i][j] = CDIO_INVALID_LSN;
-        }
-    }
-
-    memset(rip_mcn,  0x00, sizeof(rip_mcn));
-    memset(rip_isrc, 0x00, sizeof(rip_isrc));
+    memset(rip_indices, 0x00, sizeof(rip_indices));
+    memset(rip_mcn,     0x00, sizeof(rip_mcn));
+    memset(rip_isrc,    0x00, sizeof(rip_isrc));
     trackHint = 0;
     rip_noisy_pregap = 0;
     rip_silent_pregap = 0;
@@ -65,7 +58,7 @@ void cued_init_rip_data()
 static void cued_parse_qsc(void *qsc)
 {
     qsc_index_t index;
-    lsn_t *currLsn;
+    lba_t *currLba;
     char *isrc;
 
     if (qsc_check_crc(qsc)) {
@@ -80,9 +73,9 @@ static void cued_parse_qsc(void *qsc)
                 // set this for ISRC case
                 trackHint = index.track;
 
-                currLsn = &rip_indices[ index.track ][ index.index ];
-                if (CDIO_INVALID_LSN == *currLsn || index.absoluteLsn < *currLsn) {
-                    *currLsn = index.absoluteLsn;
+                currLba = &rip_indices[ index.track ][ index.index ];
+                if (!*currLba || index.absoluteLba < *currLba) {
+                    *currLba = index.absoluteLba;
                 }
 
             } else {

@@ -34,15 +34,6 @@
 #define ISRC_COUNTRY_OWNER_LEN 5
 #define ISRC_YEAR_SERIAL_NO_LEN 7
 
-// frames per second
-#define FPS 75
-
-// frames per minute
-#define FPM (FPS * 60)
-
-// frames in pre-gap
-#define FPG (FPS * 2)
-
 
 #ifndef __CDIO_H__
 
@@ -291,16 +282,14 @@ int int_to_bcd(int native, uint8_t *bcd)
 }
 
 
-int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf)
+int qsc_lba_to_msf(lba_t lba, msf_t *msf)
 {
     int min, sec, frm;
 
-    lsn += FPG;
-
-    min  = lsn / FPM;
-    lsn %= FPM;
-    sec  = lsn / FPS;
-    frm  = lsn % FPS;
+    min  = lba / QSC_FPM;
+    lba %= QSC_FPM;
+    sec  = lba / QSC_FPS;
+    frm  = lba % QSC_FPS;
   
     if (int_to_bcd(min, &msf->m)) {
         return -1;
@@ -313,7 +302,15 @@ int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf)
 }
 
 
-int qsc_msf_to_lsn(msf_t *msf, int *lsn)
+int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf)
+{
+    lba_t lba = QSC_LSN_TO_LBA(lsn);
+
+    return qsc_lba_to_msf(lba, msf);
+}
+
+
+int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
 {
     int min, sec, frm;
 
@@ -325,7 +322,21 @@ int qsc_msf_to_lsn(msf_t *msf, int *lsn)
         return -1;
     }
 
-    *lsn = min * FPM + sec * FPS + frm - FPG;
+    *lba = min * QSC_FPM + sec * QSC_FPS + frm;
+
+    return 0;
+}
+
+
+int qsc_msf_to_lsn(msf_t *msf, lsn_t *lsn)
+{
+    lba_t lba;
+
+    if (qsc_msf_to_lba(msf, &lba)) {
+        return -1;
+    }
+
+    *lsn = QSC_LBA_TO_LSN(lba);
 
     return 0;
 }
@@ -355,6 +366,14 @@ int qsc_msf_to_ascii(msf_t *msf_in, char *ascii)
 }
 
 
+int qsc_lba_to_ascii(lba_t lba, char *ascii)
+{
+    msf_t msf;
+
+    return (qsc_lba_to_msf(lba, &msf) || qsc_msf_to_ascii(&msf, ascii)) ? -1 : 0;
+}
+
+
 int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
 {
     msf_t msf;
@@ -365,9 +384,16 @@ int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
 
 int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii)
 {
-    lsn -= FPG;
+    // intentionally call qsc_lba_to_ascii with an lsn
+    return qsc_lba_to_ascii(lsn, ascii);
+}
 
-    return qsc_lsn_to_ascii(lsn, ascii);
+
+int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii)
+{
+    lsn_t lsn = QSC_LBA_TO_LSN(lba);
+
+    return qsc_lsn_to_ascii_for_cue(lsn, ascii);
 }
 
 
@@ -377,8 +403,8 @@ int qsc_get_index(void *p, qsc_index_t *index)
 
     if (   bcd_to_int(     qsc->mode_1.track,    &index->track)
         || bcd_to_int(     qsc->mode_1.index,    &index->index)
-        || qsc_msf_to_lsn(&qsc->mode_1.relative, &index->relativeLsn)
-        || qsc_msf_to_lsn(&qsc->mode_1.absolute, &index->absoluteLsn))
+        || qsc_msf_to_lba(&qsc->mode_1.relative, &index->relativeLba)
+        || qsc_msf_to_lba(&qsc->mode_1.absolute, &index->absoluteLba))
     {
         return -1;
     }

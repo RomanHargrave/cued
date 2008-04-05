@@ -307,3 +307,24 @@ int cddb2_get_file_path(
                             cddb2_abort("cannot use substitution code \"%c\" with --no-cddb option", patternChar);
                             goto error;
                         }
+
+
+
+int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
+{
+    msf_t msf;
+
+    return (qsc_lsn_to_msf(lsn, &msf) || qsc_msf_to_ascii(&msf, ascii)) ? -1 : 0;
+}
+
+
+int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii)
+{
+    lsn -= FPG;
+
+    return qsc_lsn_to_ascii(lsn, ascii);
+}
+
+
+extern int qsc_lsn_to_ascii(lsn_t lsn, char *ascii);
+extern int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii);
