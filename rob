@@ -1,5 +1,5 @@
 #!/bin/bash
 #sudo gcc-config x86_64-pc-linux-gnu-4.2.3
-source /etc/profile
+#source /etc/profile
 EXTLIBDIRS="/home/edison/local${bits}/lib" CC_FLAGS="-isystem ~/local${bits}/include" INSTALL_BIN_DIR=~/bin/linux/${bits} CC_DEFINES="-DDEBUG_MALLOC" CC_BIN=g++ make install
 #sudo gcc-config x86_64-pc-linux-gnu-4.1.2
