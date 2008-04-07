@@ -19,6 +19,8 @@ INSTALLING
         make install
 
     To install elsewhere:
+        INSTALL_DIR="/opt/local" make install
+            or
         INSTALL_BIN_DIR="/some/place/bin" make install
 
 RIPPING
