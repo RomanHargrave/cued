@@ -75,7 +75,7 @@ static void usage(const char *exeName)
 {
     fprintf(stderr,
         "%s [options] <device>\n"
-        "    where options are:\n"
+        "    where [options] are:\n"
                 CDDB2_OPTIONS
                 "\t-b track       begin ripping at track (default is first)\n"
                 "\t-c format      generate cue sheet (see --format-help)\n"
