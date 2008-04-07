@@ -122,7 +122,7 @@ static void print_usage(char *progname)
 
     fprintf(stderr, "\nUsage : %s [options] <infile1> [infile2] [infile3...] <output file>\n", progname);
     fprintf(stderr,
-       "    Force the output with the following [options]:\n"
+       "    Force the <output file> with the following [options]:\n"
        "        --pcms8,     --pcmu8             : 8 bit signed, unsigned pcm\n"
        "        --pcm16,     --pcm24,   --pcm32  : 16, 24, 32 bit signed pcm\n"
        "        --float32,   --float64           : 32, 64 bit floating point pcm\n"
@@ -130,15 +130,15 @@ static void print_usage(char *progname)
        "        --ima-adpcm, --ms-adpcm          : IMA/MS ADPCM (WAV only)\n"
        "        --gsm610                         : GSM6.10 (WAV only)\n"
        "        --dwvw12,    --dwvw16,  --dwvw24 : 12, 16, 24 bit DWVW (AIFF only)\n"
-       "    Force the input with the following [options]:\n"
+       "    Force the <infile> with the following [options]:\n"
        "        --in-pcms8,   --in-pcmu8,   --in-pcm16,  --in-pcm24, --in-pcm32\n"
        "        --in-float32, --in-float64, --in-gsm610\n"
        "        --in-channels=number of channels,   --in-rate==sample rate (Hz)\n"
        "        --in-cd : shorthand for --in-pcm16, --in-rate=44100, --in-channels=2\n"
        "    Miscellaneous [options]:\n"
        "        --silent : do not display progress messages\n"
-       "    The format of the output file is determined by the file extension of the\n"
-       "    output file name. The following extensions are currently understood:\n"
+       "    The format of the <output file> is determined by the file extension of the\n"
+       "    <output file> name. The following extensions are currently understood:\n"
        );
 
     for (i = 0;  i < SNELEMS(format_map);  ++i) {
