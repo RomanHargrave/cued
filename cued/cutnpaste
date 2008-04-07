@@ -564,13 +564,16 @@ printf("firstRipTrack is %d; lastRipTrack is %d; first track is %d; last track i
         }
     }
 
-    // must be called whether ripping tracks or merely creating cuesheet
-    // because cuesheet relies on rip data being initialized
-    //
-    cued_init_rip_data();
-
-
 
                 if (getIndices) {
                     paranoiaCtlObj->read_audio = cued_read_paranoid;
                 }
+
+
+extern char  rip_mcn[ MCN_LEN + 1 ];
+extern char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
+extern lba_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
+extern int   rip_silent_pregap;
+extern int   rip_noisy_pregap;
+extern int   rip_year;
+

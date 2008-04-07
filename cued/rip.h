@@ -97,7 +97,7 @@ typedef struct _rip_context_t {
     FILE *cueFile;
 
     //
-    // cued_read_audio buffer
+    // cued_read_audio variables
     //
     mmc_audio_buffer_t audioBuf;
 
@@ -108,21 +108,29 @@ typedef struct _rip_context_t {
     long allocatedSectors;
     long (*save_read_paranoid)(cdrom_drive_t *, void *, lsn_t, long);
 
+    //
+    // rip data
+    //
+    char  mcn[ MCN_LEN + 1 ];
+    char  isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
+    lsn_t indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
+    int   silent_pregap;
+    int   noisy_pregap;
+    int   year;
+
+    //
+    // cued_parse_qsc variables
+    //
+    int trackHint;
+    int crcFailure;
+    int crcSuccess;
+
 } rip_context_t;
 
 
-extern void cued_rip_disc   (rip_context_t *rip);
-extern void cued_rip_to_file(rip_context_t *rip);
-
-extern void cued_cleanup_rip_data();
-
-
-extern char  rip_mcn[ MCN_LEN + 1 ];
-extern char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
-extern lba_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
-extern int   rip_silent_pregap;
-extern int   rip_noisy_pregap;
-extern int   rip_year;
+extern void cued_init_rip_data(rip_context_t *rip);
+extern void cued_rip_disc     (rip_context_t *rip);
+extern void cued_rip_to_file  (rip_context_t *rip);
 
 
 #endif // RIP_H_INCLUDED

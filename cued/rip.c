@@ -34,43 +34,35 @@
 #include <sndfile.h>
 
 
-char  rip_mcn[ MCN_LEN + 1 ];
-char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
-lsn_t rip_indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
-int   rip_silent_pregap;
-int   rip_noisy_pregap;
-int   rip_year;
-
-static int trackHint;
-static int crcFailure, crcSuccess;
 
 
-void cued_cleanup_rip_data()
+void cued_init_rip_data(rip_context_t *rip)
 {
-    memset(rip_indices, 0x00, sizeof(rip_indices));
-    memset(rip_mcn,     0x00, sizeof(rip_mcn));
-    memset(rip_isrc,    0x00, sizeof(rip_isrc));
-    rip_noisy_pregap = 0;
-    rip_silent_pregap = 0;
-    rip_year = 0;
+    memset(rip->indices, 0x00, sizeof(rip->indices));
+    memset(rip->mcn,     0x00, sizeof(rip->mcn));
+    memset(rip->isrc,    0x00, sizeof(rip->isrc));
+    rip->noisy_pregap = 0;
+    rip->silent_pregap = 0;
+    rip->year = 0;
 
-    trackHint = 0;
-    crcFailure = crcSuccess = 0;
+    rip->trackHint = 0;
+    rip->crcFailure = 0;
+    rip->crcSuccess = 0;
 }
 
 
-static void cued_parse_qsc(qsc_buffer_t *qsc)
+static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
 {
     qsc_index_t index;
     lba_t *currLba;
     char *isrc;
 
     if (qsc_check_crc(qsc)) {
-        ++crcFailure;
+        ++rip->crcFailure;
         return;
     }
 
-    ++crcSuccess;
+    ++rip->crcSuccess;
 
     switch (qsc_get_mode(qsc)) {
 
@@ -78,9 +70,9 @@ static void cued_parse_qsc(qsc_buffer_t *qsc)
             if (!qsc_get_index(qsc, &index)) {
 
                 // set this for ISRC case
-                trackHint = index.track;
+                rip->trackHint = index.track;
 
-                currLba = &rip_indices[ index.track ][ index.index ];
+                currLba = &rip->indices[ index.track ][ index.index ];
                 if (!*currLba || index.absoluteLba < *currLba) {
                     *currLba = index.absoluteLba;
                 }
@@ -91,23 +83,23 @@ static void cued_parse_qsc(qsc_buffer_t *qsc)
             break;
 
         case QSC_MODE_MCN:
-            if (!rip_mcn[0]) {
-                if (qsc_get_mcn(qsc, rip_mcn)) {
+            if (!rip->mcn[0]) {
+                if (qsc_get_mcn(qsc, rip->mcn)) {
                     cdio_warn("invalid mcn found in q sub-channel");
-                    rip_mcn[0] = 0;
+                    rip->mcn[0] = 0;
                 }
             }
             break;
 
         case QSC_MODE_ISRC:
-            isrc = rip_isrc[trackHint];
+            isrc = rip->isrc[rip->trackHint];
             if (!isrc[0]) {
                 if (qsc_get_isrc(qsc, isrc)) {
                     cdio_warn("invalid isrc found in q sub-channel");
                     isrc[0] = 0;
-                } else if (!rip_year) {
-                    rip_year = qsc_get_isrc_year(isrc);
-                    cdio_info("set rip year to %d\n", rip_year);
+                } else if (!rip->year) {
+                    rip->year = qsc_get_isrc_year(isrc);
+                    cdio_info("set rip year to %d\n", rip->year);
                 }
             }
             break;
@@ -168,7 +160,7 @@ static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
                 pwsc_get_qsc(&rip->audioBuf.rawPWsc, &qsc.buf);
             }
 
-            cued_parse_qsc(&qsc.buf);
+            cued_parse_qsc(&qsc.buf, rip);
 
             if (rip->qSubChannelFileName) {
                 qsc.requested = currSector;
@@ -306,18 +298,18 @@ void cued_rip_to_file(rip_context_t *rip)
             cdio2_abort("failed to write to file \"%s\" due to \"%s\"", rip->fileNameBuffer, sf_strerror(sfObj));
         }
 
-        if (!track && !rip_noisy_pregap) {
+        if (!track && !rip->noisy_pregap) {
             for (i = 0;  i < wordsToWrite;  ++i) {
                 if (pbuf[i]) {
-                    rip_noisy_pregap = 1;
+                    rip->noisy_pregap = 1;
                     break;
                 }
             }
         }
     }
 
-    if (!track && !rip_noisy_pregap) {
-        rip_silent_pregap = 1;
+    if (!track && !rip->noisy_pregap) {
+        rip->silent_pregap = 1;
     }
 
     sf_close(sfObj);
@@ -399,11 +391,11 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
             mbuf += sizeof(paranoia_audio_buffer_t);
 
             if (rip->useFormattedQsc) {
-                cued_parse_qsc((qsc_buffer_t *) mbuf);
+                cued_parse_qsc((qsc_buffer_t *) mbuf, rip);
                 mbuf += sizeof(qsc_buffer_t);
             } else {
                 pwsc_get_qsc((mmc_raw_pwsc_t *) mbuf, &qsc);
-                cued_parse_qsc(&qsc);
+                cued_parse_qsc(&qsc, rip);
                 mbuf += sizeof(mmc_raw_pwsc_t);
             }
 
@@ -527,7 +519,7 @@ void cued_rip_disc(rip_context_t *rip)
             // rip first track pregap to track 00 file
             if (1 == track && rip->firstSector > 0) {
 
-                rip_context_t rip0 = *rip;
+                lsn_t saveFirstSector = rip->firstSector;
 
                 // does not return on error
                 (void) format_get_file_path(rip->cdObj, rip->cddbObj,
@@ -538,16 +530,18 @@ void cued_rip_disc(rip_context_t *rip)
                     printf("progress: reading track %02d\n", 0);
                 }
 
-                rip0.firstSector = 0;
-                rip0.lastSector = rip->firstSector - 1;
-                rip0.currentTrack = 0;
-                cued_rip_to_file(&rip0);
+                rip->lastSector = rip->firstSector - 1;
+                rip->firstSector = 0;
+                rip->currentTrack = 0;
+                cued_rip_to_file(rip);
 
-                if (rip_silent_pregap) {
+                if (rip->silent_pregap) {
                     if (unlink(rip->fileNameBuffer)) {
                         cdio2_unix_error("unlink", rip->fileNameBuffer, 1);
                     }
                 }
+
+                rip->firstSector = saveFirstSector;
             }
 
             rip->lastSector = cdio_get_track_last_lsn(rip->cdObj, track);
@@ -580,12 +574,14 @@ void cued_rip_disc(rip_context_t *rip)
         fclose(rip->qSubChannelFile);
     }
 
-    if (crcFailure || crcSuccess) {
-        if (crcFailure * 100 / (crcSuccess + crcFailure) > 5) {
+    if (rip->crcFailure || rip->crcSuccess) {
+        int totalCrcs = rip->crcSuccess + rip->crcFailure;
+
+        if (rip->crcFailure * 100 / totalCrcs > 5) {
             cdio_warn("greater than 5 percent of Q sub-channel records failed CRC check (try --qsc-fq?)");
         }
         if (verbose) {
-            printf("progress: correctly read %d of %d Q sub-channel records\n", crcSuccess, crcSuccess + crcFailure);
+            printf("progress: correctly read %d of %d Q sub-channel records\n", rip->crcSuccess, totalCrcs);
         }
     }
 }

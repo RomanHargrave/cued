@@ -401,6 +401,11 @@ int main(int argc, char *const argv[])
         }
     }
 
+    // must be called whether ripping tracks or merely creating cuesheet
+    // because cuesheet relies on rip data being initialized
+    //
+    cued_init_rip_data(&rip);
+
     if (rip.fileNamePattern) {
 
         format_make_tag_files(
@@ -416,7 +421,7 @@ int main(int argc, char *const argv[])
             cued_rip_disc(&rip);
 
             // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
-            if (format_has_tags() && 1 == rip.firstTrack && !rip_noisy_pregap) {
+            if (format_has_tags() && 1 == rip.firstTrack && !rip.noisy_pregap) {
                 cddb_track_t *trackObj = cddb2_get_track(rip.cddbObj, 0);
                 if (!format_apply_pattern(rip.cdObj, rip.cddbObj, trackObj,
                         rip.fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0))
@@ -445,7 +450,7 @@ int main(int argc, char *const argv[])
             // for image files, libcdio may have the pregap;  if so, use it
             pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
             if (CDIO_INVALID_LBA != pregap) {
-                ripLba = rip_indices[track];
+                ripLba = rip.indices[track];
                 if (!ripLba[0]) {
                     ripLba[0] = pregap;
                     cdio_info("using pregap from cdio");
@@ -463,8 +468,8 @@ int main(int argc, char *const argv[])
             // for image files, libcdio may have the isrc;  if so, use it
             isrc = cdio_get_track_isrc(rip.cdObj, track);
             if (isrc) {
-                // rip_isrc[track] is already null terminated
-                strncpy(rip_isrc[track], isrc, ISRC_LEN);
+                // rip.isrc[track] is already null terminated
+                strncpy(rip.isrc[track], isrc, ISRC_LEN);
                 free(isrc);
             }
         }
@@ -480,14 +485,14 @@ int main(int argc, char *const argv[])
                 // (heuristic) check for DAO
                 if (mcn) {
                     free(mcn);
-                    rip_indices[firstTrack][0] = CDIO_PREGAP_SECTORS;
-                    rip_indices[firstTrack][1] = lba;
+                    rip.indices[firstTrack][0] = CDIO_PREGAP_SECTORS;
+                    rip.indices[firstTrack][1] = lba;
                 }
             }
         }
 
         // this could (should?) use paranoia in the future
-        cued_write_cuefile(rip.cueFile, rip.cdObj, devName, firstTrack, lastTrack);
+        cued_write_cuefile(&rip, devName, firstTrack, lastTrack);
     }
 
     //cued_cleanup_rip_data();

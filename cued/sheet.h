@@ -22,12 +22,14 @@
 
 #include <stdio.h>
 
+#include "rip.h"
+
 
 extern void cued_write_cuefile(
-    FILE *cueFile,
-    CdIo_t *cdObj,
+    rip_context_t *rip,
     const char *devName,
-    track_t firstTrack, track_t lastTrack
+    track_t firstTrack,
+    track_t lastTrack
     );
 
 
