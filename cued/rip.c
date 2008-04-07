@@ -432,6 +432,51 @@ static const char *cued_fmt_to_ext(int soundFileFormat)
 
 void cued_rip_disc(rip_context_t *rip)
 {
+    if (rip->useParanoia) {
+        char *msg = 0;
+        int rc;
+
+        // N.B. this behavior does not match documentation:
+        // the 0 here appears to prevent the message "Checking <filename> for cdrom..."
+        rip->paranoiaCtlObj = cdio_cddap_identify_cdio(rip->cdObj, 0, &msg);
+        if (rip->paranoiaCtlObj) {
+
+            if (msg) {
+                cdio_warn("identify returned paranoia message(s) \"%s\"", msg);
+            }
+            cdio_cddap_verbose_set(rip->paranoiaCtlObj, CDDA_MESSAGE_LOGIT, CDDA_MESSAGE_LOGIT);
+
+            rc = cdio_cddap_open(rip->paranoiaCtlObj);
+            cdio2_paranoia_msg(rip->paranoiaCtlObj, "open of device");
+            if (!rc) {
+                rip->paranoiaRipObj = cdio_paranoia_init(rip->paranoiaCtlObj);
+                cdio2_paranoia_msg(rip->paranoiaCtlObj, "initialization of paranoia");
+                if (!rip->paranoiaRipObj) {
+                    cdio2_abort("out of memory initializing paranoia");
+                }
+
+                cdio_paranoia_modeset(rip->paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
+                // N.B. not needed at the moment
+                cdio2_paranoia_msg(rip->paranoiaCtlObj, "setting of paranoia mode");
+
+                if (rip->getIndices) {
+                    rip->save_read_paranoid = rip->paranoiaCtlObj->read_audio;
+                    rip->paranoiaCtlObj->read_audio = cued_read_paranoid;
+                    rip->mmcBuf = NULL;
+                    rip->allocatedSectors = 0;
+                }
+            } else {
+                cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
+
+                cdio_error("disabling paranoia");
+                rip->useParanoia = 0;
+            }
+        } else {
+            cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
+            rip->useParanoia = 0;
+        }
+    }
+
     if (rip->qSubChannelFileName) {
         if (!strcmp("-", rip->qSubChannelFileName)) {
             rip->qSubChannelFile = stdout;
@@ -454,13 +499,6 @@ void cued_rip_disc(rip_context_t *rip)
         cdio2_abort("failed to get last sector number");
     } else {
         //cdio_debug("end of disc sector is %d", rip->endOfDiscSector);
-    }
-
-    if (rip->useParanoia && rip->getIndices) {
-        rip->save_read_paranoid = rip->paranoiaCtlObj->read_audio;
-        rip->paranoiaCtlObj->read_audio = cued_read_paranoid;
-        rip->mmcBuf = NULL;
-        rip->allocatedSectors = 0;
     }
 
     if (rip->ripToOneFile) {
@@ -565,9 +603,13 @@ void cued_rip_disc(rip_context_t *rip)
         }
     }
 
-    if (rip->useParanoia && rip->getIndices) {
-        rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
-        free(rip->mmcBuf);
+    if (rip->useParanoia) {
+        if (rip->getIndices) {
+            free(rip->mmcBuf);
+            rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
+        }
+        cdio_paranoia_free(rip->paranoiaRipObj);
+        cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
     }
 
     if (rip->qSubChannelFileName && rip->qSubChannelFile != stdout) {

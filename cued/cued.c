@@ -182,7 +182,7 @@ int main(int argc, char *const argv[])
     rip_context_t rip;
     PIT(const char, devName);
     PIT(const char, exeName);
-    int rc, i;
+    int i;
     track_t firstTrack, lastTrack, tracks;
     char fileNameBuffer[PATH_MAX];
 
@@ -297,46 +297,6 @@ int main(int argc, char *const argv[])
             cdio_warn("not an audio disc; ignoring non-audio tracks");
         }
 
-        if (rip.useParanoia) {
-            char *msg = 0;
-
-            // N.B. this behavior does not match documentation:
-            // the 0 here appears to prevent the message "Checking <filename> for cdrom..."
-            rip.paranoiaCtlObj = cdio_cddap_identify_cdio(rip.cdObj, 0, &msg);
-            if (rip.paranoiaCtlObj) {
-
-                if (msg) {
-                    cdio_warn("identify returned paranoia message(s) \"%s\"", msg);
-                }
-                cdio_cddap_verbose_set(rip.paranoiaCtlObj, CDDA_MESSAGE_LOGIT, CDDA_MESSAGE_LOGIT);
-
-                rc = cdio_cddap_open(rip.paranoiaCtlObj);
-                cdio2_paranoia_msg(rip.paranoiaCtlObj, "open of device");
-                if (!rc) {
-                    rip.paranoiaRipObj = cdio_paranoia_init(rip.paranoiaCtlObj);
-                    cdio2_paranoia_msg(rip.paranoiaCtlObj, "initialization of paranoia");
-                    if (!rip.paranoiaRipObj) {
-                        cdio2_abort("out of memory initializing paranoia");
-                    }
-
-                    cdio_paranoia_modeset(rip.paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
-                    // N.B. not needed at the moment
-                    cdio2_paranoia_msg(rip.paranoiaCtlObj, "setting of paranoia mode");
-                } else {
-                    cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
-
-                    cdio_error("disabling paranoia");
-                    rip.useParanoia = 0;
-                }
-            } else {
-                cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
-                rip.useParanoia = 0;
-            }
-        }
-
-        // these could (should?) use paranoia in the future
-        //
-
         tracks = cdio_get_num_tracks(rip.cdObj);
         if (CDIO_INVALID_TRACK == tracks) {
             cdio2_abort("failed to get number of tracks");
@@ -373,7 +333,6 @@ int main(int argc, char *const argv[])
             rip.lastTrack = optLastRipTrack;
         }
 
-        // this could (should?) use paranoia in the future
         rip.cddbObj = cddb2_get_disc(rip.cdObj);
 
         // user may want to know cue file will not be created before ripping all tracks
@@ -491,16 +450,11 @@ int main(int argc, char *const argv[])
                 }
             }
 
-            // this could (should?) use paranoia in the future
             cued_write_cuefile(&rip, devName, firstTrack, lastTrack);
         }
 
         if (rip.cddbObj) {
             cddb_disc_destroy(rip.cddbObj);
-        }
-        if (rip.useParanoia) {
-            cdio_paranoia_free(rip.paranoiaRipObj);
-            cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
         }
         if (util_remove_context(rip.cdObj)) {
             cdio2_abort("failed to remove rip context");
