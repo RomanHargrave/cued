@@ -41,6 +41,7 @@ int   rip_noisy_pregap;
 int   rip_year;
 
 static int trackHint;
+static int crcFailure;
 
 
 void cued_cleanup_rip_data()
@@ -48,10 +49,12 @@ void cued_cleanup_rip_data()
     memset(rip_indices, 0x00, sizeof(rip_indices));
     memset(rip_mcn,     0x00, sizeof(rip_mcn));
     memset(rip_isrc,    0x00, sizeof(rip_isrc));
-    trackHint = 0;
     rip_noisy_pregap = 0;
     rip_silent_pregap = 0;
     rip_year = 0;
+
+    trackHint = 0;
+    crcFailure = 0;
 }
 
 
@@ -62,6 +65,9 @@ static void cued_parse_qsc(qsc_buffer_t *qsc)
     char *isrc;
 
     if (qsc_check_crc(qsc)) {
+        if (++crcFailure == 10000) {
+            cdio_warn("excessive number of crc failures in Q sub-channel (try option --qsc-fq?)");
+        }
         return;
     }
 
