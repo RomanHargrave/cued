@@ -41,7 +41,7 @@ int   rip_noisy_pregap;
 int   rip_year;
 
 static int trackHint;
-static int crcFailure;
+static int crcFailure, crcSuccess;
 
 
 void cued_cleanup_rip_data()
@@ -54,7 +54,7 @@ void cued_cleanup_rip_data()
     rip_year = 0;
 
     trackHint = 0;
-    crcFailure = 0;
+    crcFailure = crcSuccess = 0;
 }
 
 
@@ -65,11 +65,11 @@ static void cued_parse_qsc(qsc_buffer_t *qsc)
     char *isrc;
 
     if (qsc_check_crc(qsc)) {
-        if (++crcFailure == 10000) {
-            cdio_warn("excessive number of crc failures in Q sub-channel (try option --qsc-fq?)");
-        }
+        ++crcFailure;
         return;
     }
+
+    ++crcSuccess;
 
     switch (qsc_get_mode(qsc)) {
 
@@ -581,5 +581,14 @@ void cued_rip_disc(rip_context_t *rip)
 
     if (rip->qSubChannelFileName && rip->qSubChannelFile != stdout) {
         fclose(rip->qSubChannelFile);
+    }
+
+    if (crcFailure || crcSuccess) {
+        if (crcFailure * 100 / (crcSuccess + crcFailure) > 5) {
+            cdio_warn("greater than 5%% of Q sub-channel records failed CRC check (try --qsc-fq?)");
+        }
+        if (verbose) {
+            printf("progress: correctly read %d of %d Q sub-channel records\n", crcSuccess, crcSuccess + crcFailure);
+        }
     }
 }
