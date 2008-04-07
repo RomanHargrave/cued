@@ -35,8 +35,15 @@ static void copy_data_int(SNDFILE *outfile, SNDFILE *infile, int channels);
 
 
 #define BUFFER_LEN      (64 * 1024)
-#define FP_BUFFER_LEN   (BUFFER_LEN / sizeof(double))
+#define DBL_BUFFER_LEN  (BUFFER_LEN / sizeof(double))
 #define INT_BUFFER_LEN  (BUFFER_LEN / sizeof(int))
+
+union _data {
+
+    double d[DBL_BUFFER_LEN];
+    int    i[INT_BUFFER_LEN];
+
+} data;
 
 
 typedef struct {
@@ -367,28 +374,28 @@ static void copy_metadata(SNDFILE *outfile, SNDFILE *infile)
 
 static void copy_data_fp(SNDFILE *outfile, SNDFILE *infile, int channels)
 {
-    static double data[FP_BUFFER_LEN], max;
+    double max;
     int frames, readcount, i;
 
-    readcount = frames = FP_BUFFER_LEN / channels;
+    readcount = frames = DBL_BUFFER_LEN / channels;
 
     sf_command(infile, SFC_CALC_SIGNAL_MAX, &max, sizeof(max));
 
     /* RWF: range is inclusive of 1.0, not exclusive;  changed < to <= */
     if (max <= 1.0) {
         while (readcount > 0) {
-            readcount = sf_readf_double(infile, data, frames);
-            sf_writef_double(outfile, data, readcount);
+            readcount = sf_readf_double(infile, data.d, frames);
+            sf_writef_double(outfile, data.d, readcount);
         }
     } else {
         sf_command(infile, SFC_SET_NORM_DOUBLE, NULL, SF_FALSE);
 
         while (readcount > 0) {
-            readcount = sf_readf_double(infile, data, frames);
+            readcount = sf_readf_double(infile, data.d, frames);
             for (i = 0;  i < readcount * channels;  ++i) {
-                data[i] /= max;
+                data.d[i] /= max;
             }
-            sf_writef_double(outfile, data, readcount);
+            sf_writef_double(outfile, data.d, readcount);
         }
     }
 
@@ -397,14 +404,13 @@ static void copy_data_fp(SNDFILE *outfile, SNDFILE *infile, int channels)
 
 static void copy_data_int(SNDFILE *outfile, SNDFILE *infile, int channels)
 {
-    static int data[INT_BUFFER_LEN];
     int frames, readcount;
 
     readcount = frames = INT_BUFFER_LEN / channels;
 
     while (readcount > 0) {
-        readcount = sf_readf_int(infile, data, frames);
-        sf_writef_int(outfile, data, readcount);
+        readcount = sf_readf_int(infile, data.i, frames);
+        sf_writef_int(outfile, data.i, readcount);
     }
 
 } /* copy_data_int */
