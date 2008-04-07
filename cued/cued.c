@@ -85,7 +85,7 @@ static void usage(const char *exeName)
                 "\t-n format      name tag and wave files (see --format-help)\n"
                 "\t-o samples     offset correction (EAC-30) (requires -x)\n"
                 "\t-p             enable paranoia (requires -x)\n"
-                "\t-q filename    output Q sub-channel (requires -x without -p)\n"
+                "\t-q format      output Q sub-channel (requires -x without -p)\n"
                 "\t-r retries     defaults to %d (requires -p)\n"
                 "\t-s speed       set CD-ROM drive speed\n"
                 "\t-t format      tag; use repeatedly (requires -n; see --format-help)\n"

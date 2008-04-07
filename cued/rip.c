@@ -446,10 +446,13 @@ void cued_rip_disc(rip_context_t *rip)
         if (!strcmp("-", rip->qSubChannelFileName)) {
             rip->qSubChannelFile = stdout;
         } else {
-            rip->qSubChannelFile = fopen2(rip->qSubChannelFileName, O_WRONLY | O_CREAT | O_EXCL | O_APPEND, 0666);
+            (void) format_get_file_path(rip->cdObj, rip->cddbObj, rip->qSubChannelFileName, "", 0, rip->fileNameBuffer, rip->bufferSize);
+
+            // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
+            rip->qSubChannelFile = fopen2(rip->fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
             if (!rip->qSubChannelFile) {
-                cdio2_unix_error("fopen2", rip->qSubChannelFileName, 0);
-                cdio_error("not creating sub-channel file \"%s\"", rip->qSubChannelFileName);
+                cdio2_unix_error("fopen2", rip->fileNameBuffer, 0);
+                cdio_error("not creating sub-channel file \"%s\"", rip->fileNameBuffer);
 
                 rip->qSubChannelFileName = 0;
             }
