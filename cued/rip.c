@@ -585,7 +585,7 @@ void cued_rip_disc(rip_context_t *rip)
 
     if (crcFailure || crcSuccess) {
         if (crcFailure * 100 / (crcSuccess + crcFailure) > 5) {
-            cdio_warn("greater than 5%% of Q sub-channel records failed CRC check (try --qsc-fq?)");
+            cdio_warn("greater than 5 percent of Q sub-channel records failed CRC check (try --qsc-fq?)");
         }
         if (verbose) {
             printf("progress: correctly read %d of %d Q sub-channel records\n", crcSuccess, crcSuccess + crcFailure);
