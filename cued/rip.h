@@ -22,6 +22,7 @@
 
 #include "cddb2.h" // cddb_disc_t
 #include "qsc.h" // MCN_LEN, ISRC_LEN
+#include "pwsc.h"
 
 #include <cdio/paranoia.h>
 #include <stdio.h>
@@ -29,61 +30,75 @@
 
 #define CUED_MAX_INDICES 100
 
-extern void cued_rip_disc(
 
-    // sound file information
+typedef struct _mmc_audio_buffer_t {
+
+    int16_t buf[CD_FRAMEWORDS];
+    union {
+        mmc_raw_pwsc_t rawPWsc;
+        qsc_buffer_t fmtQsc;
+    };
+
+} mmc_audio_buffer_t;
+
+typedef struct _rip_context_t {
     //
-    const char *fileNamePattern,
-    cddb_disc_t *cddbObj,
-    int soundFileFormat,
-
-    CdIo_t *cdObj,
-    lsn_t firstTrack, lsn_t lastTrack,
-
-    int ripToOneFile,
-    int offsetWords,
-    int getIndices,
-
-    // paranoia
+    // parameters through bufferSize must be provided by caller
+    // of cued_rip_disc
     //
-    int useParanoia,
-    cdrom_drive_t *paranoiaCtlObj, cdrom_paranoia_t *paranoiaRipObj,
-    int retries,
 
-    const char *qSubChannelFileName,
+    CdIo_t *cdObj;
 
-    char *fileNameBuffer, int bufferSize
-    );
-
-extern void cued_rip_to_file(
-
-    // sound file information
+    // sound file naming information
     //
-    char *filename,
-    int channels, int soundFileFormat,
+    const char *fileNamePattern;
+    int soundFileFormat;
+    cddb_disc_t *cddbObj;
 
-    CdIo_t *cdObj,
-    lsn_t firstSector, lsn_t lastSector,
-
-    track_t track,
-    int offsetWords,
-    lsn_t endOfDiscSector,
-    int getIndices,
-
-    // paranoia
+    // rip parameters
     //
-    int useParanoia,
-    cdrom_drive_t *paranoiaCtlObj, cdrom_paranoia_t *paranoiaRipObj,
-    int retries,
+    lsn_t firstTrack;
+    lsn_t lastTrack;
+    int ripToOneFile;
+    int offsetWords;
+    int getIndices;
+    int useFormattedQsc;
+    const char *qSubChannelFileName;
 
-    // for error reporting
-    const char *qSubChannelFileName, FILE *qSubChannelFile
-    );
+    // paranoia parameters
+    //
+    int useParanoia;
+    cdrom_drive_t *paranoiaCtlObj;
+    cdrom_paranoia_t *paranoiaRipObj;
+    int retries;
 
-extern long cued_read_audio(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector, long sectors);
+    // buffer for naming files
+    //
+    char *fileNameBuffer;
+    int bufferSize;
+
+    // parameters through qSubChannelFile must be provided by caller
+    // of cued_rip_to_file
+    //
+    lsn_t firstSector, lastSector;
+    track_t currentTrack;
+
+    int channels;
+
+    lsn_t endOfDiscSector;
+    FILE *qSubChannelFile;
+
+    // for use by cued_read_audio
+    mmc_audio_buffer_t audioBuf;    
+
+} rip_context_t;
+
+
+extern void cued_rip_disc   (rip_context_t *rip);
+extern void cued_rip_to_file(rip_context_t *rip);
 
 extern void cued_cleanup_rip_data();
-extern void cued_free_paranoia_buf();
+
 
 extern char  rip_mcn[ MCN_LEN + 1 ];
 extern char  rip_isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];

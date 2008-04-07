@@ -84,29 +84,38 @@ typedef struct _qsc_read_cd {
 
     union {
         struct {
-
-            uint8_t ctl_adr;
             union {
+                struct {
 
-                qsc_mode_1 mode_1;
-                qsc_mode_2 mode_2;
-                qsc_mode_3 mode_3;
+                    uint8_t ctl_adr;
+                    union {
+
+                        qsc_mode_1 mode_1;
+                        qsc_mode_2 mode_2;
+                        qsc_mode_3 mode_3;
+                    };
+                };
+
+                uint8_t crc_data[10];
+
+                struct {
+
+                    uint8_t unused[8];
+                    uint8_t absolute_frame;
+                };
             };
+
+            uint8_t crc_msb;
+            uint8_t crc_lsb;
+            uint8_t pad[3];
+            uint8_t zero_psc;
         };
 
-        uint8_t crc_data[10];
-
-        struct {
-
-            uint8_t unused[8];
-            uint8_t absolute_frame;
-        };
+        // for compatibility between qsc_buffer_t and qsc_read_cd_t pointers
+        // (ISO C aliasing rules)
+        //
+        qsc_buffer_t buf;
     };
-
-    uint8_t crc_msb;
-    uint8_t crc_lsb;
-    uint8_t pad[3];
-    uint8_t zero_psc;
 
 } qsc_read_cd_t;
 
@@ -173,7 +182,7 @@ uint8_t NABBLE(uint8_t *v, int n)
 }
 
 
-int qsc_get_mcn(void *p, char *mcn)
+int qsc_get_mcn(qsc_buffer_t *p, char *mcn)
 {
     int i;
     uint8_t nibble;
@@ -211,7 +220,7 @@ int qsc_get_isrc_year(char *isrc)
 }
 
 
-int qsc_get_isrc(void *p, char *isrc)
+int qsc_get_isrc(qsc_buffer_t *p, char *isrc)
 {
     int i;
     uint8_t nibble, nabble;
@@ -397,7 +406,7 @@ int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii)
 }
 
 
-int qsc_get_index(void *p, qsc_index_t *index)
+int qsc_get_index(qsc_buffer_t *p, qsc_index_t *index)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
@@ -470,7 +479,7 @@ crc16_t qsc_crc_data(uint8_t *data, ssize_t len)
 }
 
 
-int qsc_check_crc(void *p)
+int qsc_check_crc(qsc_buffer_t *p)
 {
     crc16_t crc;
 
@@ -496,7 +505,7 @@ int qsc_check_crc(void *p)
 }
 
 
-int qsc_get_psc(void *p)
+int qsc_get_psc(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
@@ -504,7 +513,7 @@ int qsc_get_psc(void *p)
 }
 
 
-qsc_mode_t qsc_get_mode(void *p)
+qsc_mode_t qsc_get_mode(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
     int adr = ADR_MASK(qsc->ctl_adr);

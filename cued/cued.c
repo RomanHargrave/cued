@@ -92,6 +92,7 @@ static void usage(const char *exeName)
                 "\t-v             report progress\n"
                 "\t-w             rip to one file (requires -x and -n)\n"
                 "\t-x             extract tracks (requires -n)\n"
+                "\t--qsc-fq       reading of Q sub-channel uses formatted Q method\n"
                 "\t--format-help  display format help\n"
                 "\n"
                 , exeName
@@ -180,7 +181,7 @@ int main(int argc, char *const argv[])
     //
     const char *cueFileNamePattern, *fileNamePattern, *qSubChannelFileName;
     int firstRipTrack, lastRipTrack;
-    int ripToOneFile, extract, speed, useParanoia, offsetWords, getIndices;
+    int ripToOneFile, extract, speed, useParanoia, offsetWords, getIndices, useFormattedQsc;
     int retries, soundFileFormat;
 
     // things that do not need to be freed and will be initialized on first use
@@ -202,7 +203,7 @@ int main(int argc, char *const argv[])
     cueFileNamePattern = fileNamePattern = qSubChannelFileName = NULL;
     verbose = 0;
     firstRipTrack = lastRipTrack = 0;
-    ripToOneFile = extract = speed = useParanoia = offsetWords = getIndices = 0;
+    ripToOneFile = extract = speed = useParanoia = offsetWords = getIndices = useFormattedQsc = 0;
     retries = CUED_DEFAULT_RETRIES;
     soundFileFormat = SF_FORMAT_WAV;
 
@@ -224,6 +225,7 @@ int main(int argc, char *const argv[])
         { "v", &verbose,                opt_set_flag,       OPT_NONE },
         { "w", &ripToOneFile,           opt_set_flag,       OPT_NONE },
         { "x", &extract,                opt_set_flag,       OPT_NONE },
+        { "qsc-fq", &useFormattedQsc,   opt_set_flag,       OPT_NONE },
         { "format-help",   NULL,        cued_format_help,   OPT_NONE }
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
@@ -303,10 +305,6 @@ int main(int argc, char *const argv[])
                 cdio_paranoia_modeset(paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
                 // N.B. not needed at the moment
                 cdio2_paranoia_msg(paranoiaCtlObj, "setting of paranoia mode");
-
-                if (getIndices) {
-                    paranoiaCtlObj->read_audio = cued_read_audio;
-                }
             } else {
                 cdio_cddap_close_no_free_cdio(paranoiaCtlObj);
 
@@ -393,21 +391,33 @@ int main(int argc, char *const argv[])
             );
 
         if (extract) {
-            cued_rip_disc(
-                fileNamePattern,
-                cddbObj,
-                soundFileFormat,
-                cdObj,
-                firstRipTrack, lastRipTrack,
-                ripToOneFile,
-                offsetWords,
-                getIndices,
-                useParanoia,
-                paranoiaCtlObj, paranoiaRipObj,
-                retries,
-                qSubChannelFileName,
-                fileNameBuffer, sizeof(fileNameBuffer)
-                );
+
+            rip_context_t rip;
+            memset(&rip, 0xFF, sizeof(rip));
+    
+            rip.cdObj               = cdObj;
+
+            rip.fileNamePattern     = fileNamePattern;
+            rip.soundFileFormat     = soundFileFormat;
+            rip.cddbObj             = cddbObj;
+
+            rip.firstTrack          = firstRipTrack;
+            rip.lastTrack           = lastRipTrack;
+            rip.ripToOneFile        = ripToOneFile;
+            rip.offsetWords         = offsetWords;
+            rip.getIndices          = getIndices;
+            rip.useFormattedQsc     = useFormattedQsc;
+            rip.qSubChannelFileName = qSubChannelFileName;
+
+            rip.useParanoia         = useParanoia;
+            rip.paranoiaCtlObj      = paranoiaCtlObj;
+            rip.paranoiaRipObj      = paranoiaRipObj;
+            rip.retries             = retries;
+
+            rip.fileNameBuffer      = fileNameBuffer;
+            rip.bufferSize          = sizeof(fileNameBuffer);
+
+            cued_rip_disc(&rip);
 
             // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
             if (format_has_tags() && 1 == firstRipTrack && !rip_noisy_pregap) {

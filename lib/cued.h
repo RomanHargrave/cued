@@ -22,7 +22,7 @@
 
 
 #define CUED_PRODUCT_NAME   "cued"
-#define CUED_VERSION        "v.b6"
+#define CUED_VERSION        "v.b7"
 
 extern int verbose;
 

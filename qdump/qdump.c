@@ -62,14 +62,6 @@ void usage(const char *exeName)
 }
 
 
-typedef struct _qsc_buffer_t {
-
-    DECLARE_QSC(qsc);
-    lsn_t requested;
-
-} qsc_buffer_t;
-
-
 // procedural model fits too nicely;  no object disorientation needed
 //
 
@@ -89,7 +81,7 @@ int main(int argc, char *const argv[])
 
     PIT(const char, exeName);
     int psc, notpsc, crc_fail;
-    qsc_buffer_t qscBuf;
+    qsc_file_buffer_t qsc;
 
     qSubChannelFileName = NULL;
 
@@ -144,27 +136,27 @@ int main(int argc, char *const argv[])
 
     for (psc = notpsc = crc_fail = 0;  ;  ) {
 
-        memset(&qscBuf.qsc, 0x00, sizeof(qscBuf.qsc));
-        if (1 != fread(&qscBuf, sizeof(qscBuf), 1, qSubChannelFile)) {
+        memset(&qsc.buf, 0x00, sizeof(qsc.buf));
+        if (1 != fread(&qsc, sizeof(qsc), 1, qSubChannelFile)) {
             break;
         }
 
-        if (qsc_check_crc(&qscBuf.qsc)) {
+        if (qsc_check_crc(&qsc.buf)) {
 #ifdef DEBUG_CRC
-            fprintf(stderr, "skipping sector %d due to CRC mismatch\n", qscBuf.requested);
+            fprintf(stderr, "skipping sector %d due to CRC mismatch\n", qsc.requested);
 #endif
             ++crc_fail;
             continue;
         }
 
         // this splits psc count exactly in half on the microadvantage, which is a non-standard way of indicating psc is not supported?
-        if (qsc_get_psc(&qscBuf.qsc)) {
+        if (qsc_get_psc(&qsc.buf)) {
             ++psc;
         } else {
             ++notpsc;
         }
 
-        switch (qsc_get_mode(&qscBuf.qsc)) {
+        switch (qsc_get_mode(&qsc.buf)) {
 
             case QSC_MODE_INDEX:
             {
@@ -173,13 +165,13 @@ int main(int argc, char *const argv[])
                 char  absoluteMsf[ MSF_LEN + 1 ];
                 char  relativeMsf[ MSF_LEN + 1 ];
 
-                if (   qsc_get_index(&qscBuf.qsc, &index)
-                    || qsc_lsn_to_ascii(qscBuf.requested, requestedMsf)
+                if (   qsc_get_index(&qsc.buf, &index)
+                    || qsc_lsn_to_ascii(qsc.requested, requestedMsf)
                     || qsc_lba_to_ascii(index.relativeLba, relativeMsf)
                     || qsc_lba_to_ascii(index.absoluteLba, absoluteMsf)
                    )
                 {
-                    fprintf(stderr, "index at sector %d has out of range members\n", qscBuf.requested);
+                    fprintf(stderr, "index at sector %d has out of range members\n", qsc.requested);
                     continue;
                 }
 
@@ -193,7 +185,7 @@ int main(int argc, char *const argv[])
                     , absoluteMsf
                     , QSC_LBA_TO_LSN(index.absoluteLba)
                     , requestedMsf
-                    , qscBuf.requested
+                    , qsc.requested
                     );
 #endif
                 break;
@@ -203,12 +195,12 @@ int main(int argc, char *const argv[])
             {
                 char mcn[ MCN_LEN + 1 ];
 
-                if (qsc_get_mcn(&qscBuf.qsc, mcn)) {
-                    fprintf(stderr, "mcn at sector %d has out of range members\n", qscBuf.requested);
+                if (qsc_get_mcn(&qsc.buf, mcn)) {
+                    fprintf(stderr, "mcn at sector %d has out of range members\n", qsc.requested);
                     continue;
                 }
 #ifdef DEBUG_MCN
-                printf("mcn at sector %d is %s\n", qscBuf.requested, mcn);
+                printf("mcn at sector %d is %s\n", qsc.requested, mcn);
 #endif
                 break;
             }
@@ -218,12 +210,12 @@ int main(int argc, char *const argv[])
             {
                 char isrc[ ISRC_LEN + 1 ];
 
-                if (qsc_get_isrc(&qscBuf.qsc, isrc)) {
-                    fprintf(stderr, "isrc at sector %d has out of range members\n", qscBuf.requested);
+                if (qsc_get_isrc(&qsc.buf, isrc)) {
+                    fprintf(stderr, "isrc at sector %d has out of range members\n", qsc.requested);
                     continue;
                 }
 #ifdef DEBUG_ISRC
-                printf("isrc at sector %d is %s\n", qscBuf.requested, isrc);
+                printf("isrc at sector %d is %s\n", qsc.requested, isrc);
 #endif
                 break;
 
@@ -234,11 +226,11 @@ int main(int argc, char *const argv[])
             //
 
             case QSC_MODE_LEAD_IN:
-                printf("lead-in at sector %d\n", qscBuf.requested);
+                printf("lead-in at sector %d\n", qsc.requested);
                 break;
 
             case QSC_MODE_UNKNOWN:
-                fprintf(stderr, "unrecognized ctl_adr at sector %d\n", qscBuf.requested);
+                fprintf(stderr, "unrecognized ctl_adr at sector %d\n", qsc.requested);
                 break;
         }
     }

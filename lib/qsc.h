@@ -57,18 +57,29 @@ typedef struct _qsc_index_t {
 
 } qsc_index_t;
 
+typedef struct _qsc_buffer_t {
 
-#define DECLARE_QSC(n) uint8_t n[16]
+    uint8_t subcodeData[16];
 
-extern int qsc_check_crc(void *qsc);
+} qsc_buffer_t;
 
-extern qsc_mode_t qsc_get_mode(void *qsc);
+typedef struct _qsc_file_buffer_t {
 
-extern int qsc_get_mcn  (void *qsc, char *mcn);
-extern int qsc_get_isrc (void *qsc, char *isrc);
-extern int qsc_get_index(void *qsc, qsc_index_t *index);
+    qsc_buffer_t buf;
+    lsn_t requested;
 
-extern int qsc_get_psc  (void *qsc);
+} qsc_file_buffer_t;
+
+
+extern int qsc_check_crc(qsc_buffer_t *qsc);
+
+extern qsc_mode_t qsc_get_mode(qsc_buffer_t *qsc);
+
+extern int qsc_get_mcn  (qsc_buffer_t *qsc, char *mcn);
+extern int qsc_get_isrc (qsc_buffer_t *qsc, char *isrc);
+extern int qsc_get_index(qsc_buffer_t *qsc, qsc_index_t *index);
+
+extern int qsc_get_psc  (qsc_buffer_t *qsc);
 
 extern int qsc_get_isrc_year(char *isrc);
 

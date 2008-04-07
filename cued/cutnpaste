@@ -568,3 +568,9 @@ printf("firstRipTrack is %d; lastRipTrack is %d; first track is %d; last track i
     // because cuesheet relies on rip data being initialized
     //
     cued_init_rip_data();
+
+
+
+                if (getIndices) {
+                    paranoiaCtlObj->read_audio = cued_read_paranoid;
+                }
