@@ -169,23 +169,16 @@ static void cued_format_help(void *context, char *optarg, const char *optionName
 
 int main(int argc, char *const argv[])
 {
-    // things that will need to be freed
-    //
-    PIT(CdIo_t, cdObj);
-    PIT(cdrom_drive_t, paranoiaCtlObj);
-    PIT(cdrom_paranoia_t, paranoiaRipObj);
-    PIT(FILE, cueFile);
-    cddb_disc_t *cddbObj = NULL;
-
     // things that need default values
     //
-    const char *cueFileNamePattern, *fileNamePattern, *qSubChannelFileName;
-    int firstRipTrack, lastRipTrack;
-    int ripToOneFile, extract, speed, useParanoia, offsetWords, getIndices, useFormattedQsc;
-    int retries, soundFileFormat;
+    const char *optCueFileNamePattern, *optFileNamePattern, *optQSubChannelFileName;
+    int optFirstRipTrack, optLastRipTrack;
+    int optRipToOneFile, optExtract, optSpeed, optUseParanoia, optOffsetWords, optGetIndices, optUseFormattedQsc;
+    int optRetries, optSoundFileFormat;
 
     // things that do not need to be freed and will be initialized on first use
     //
+    rip_context_t rip;
     PIT(const char, devName);
     PIT(const char, exeName);
     int rc;
@@ -200,33 +193,33 @@ int main(int argc, char *const argv[])
     // set defaults before option parsing
     //
     cdio_loglevel_default = CDIO_LOG_WARN;
-    cueFileNamePattern = fileNamePattern = qSubChannelFileName = NULL;
     verbose = 0;
-    firstRipTrack = lastRipTrack = 0;
-    ripToOneFile = extract = speed = useParanoia = offsetWords = getIndices = useFormattedQsc = 0;
-    retries = CUED_DEFAULT_RETRIES;
-    soundFileFormat = SF_FORMAT_WAV;
+    optCueFileNamePattern = optFileNamePattern = optQSubChannelFileName = NULL;
+    optFirstRipTrack = optLastRipTrack = 0;
+    optRipToOneFile = optExtract = optSpeed = optUseParanoia = optOffsetWords = optGetIndices = optUseFormattedQsc = 0;
+    optRetries = CUED_DEFAULT_RETRIES;
+    optSoundFileFormat = SF_FORMAT_WAV;
 
     exeName = basename2(argv[0]);
     opt_param_t opts[] = {
-        { "b", &firstRipTrack,          opt_set_nat_no,     OPT_REQUIRED },
-        { "c", &cueFileNamePattern,     opt_set_string,     OPT_REQUIRED },
-        { "d", NULL,                    cued_set_loglevel,  OPT_REQUIRED },
-        { "e", &lastRipTrack,           opt_set_nat_no,     OPT_REQUIRED },
-        { "f", &soundFileFormat,        cued_set_sf,        OPT_NONE },
-        { "i", &getIndices,             opt_set_flag,       OPT_NONE },
-        { "n", &fileNamePattern,        opt_set_string,     OPT_REQUIRED },
-        { "o", &offsetWords,            opt_set_int,        OPT_REQUIRED },
-        { "p", &useParanoia,            opt_set_flag,       OPT_NONE },
-        { "q", &qSubChannelFileName,    opt_set_string,     OPT_REQUIRED },
-        { "r", &retries,                opt_set_whole_no,   OPT_REQUIRED },
-        { "s", &speed,                  opt_set_nat_no,     OPT_REQUIRED },
-        { "t", NULL,                    format_set_tag,     OPT_REQUIRED },
-        { "v", &verbose,                opt_set_flag,       OPT_NONE },
-        { "w", &ripToOneFile,           opt_set_flag,       OPT_NONE },
-        { "x", &extract,                opt_set_flag,       OPT_NONE },
-        { "qsc-fq", &useFormattedQsc,   opt_set_flag,       OPT_NONE },
-        { "format-help",   NULL,        cued_format_help,   OPT_NONE }
+        { "b", &optFirstRipTrack,           opt_set_nat_no,     OPT_REQUIRED },
+        { "c", &optCueFileNamePattern,      opt_set_string,     OPT_REQUIRED },
+        { "d", NULL,                        cued_set_loglevel,  OPT_REQUIRED },
+        { "e", &optLastRipTrack,            opt_set_nat_no,     OPT_REQUIRED },
+        { "f", &optSoundFileFormat,         cued_set_sf,        OPT_NONE },
+        { "i", &optGetIndices,              opt_set_flag,       OPT_NONE },
+        { "n", &optFileNamePattern,         opt_set_string,     OPT_REQUIRED },
+        { "o", &optOffsetWords,             opt_set_int,        OPT_REQUIRED },
+        { "p", &optUseParanoia,             opt_set_flag,       OPT_NONE },
+        { "q", &optQSubChannelFileName,     opt_set_string,     OPT_REQUIRED },
+        { "r", &optRetries,                 opt_set_whole_no,   OPT_REQUIRED },
+        { "s", &optSpeed,                   opt_set_nat_no,     OPT_REQUIRED },
+        { "t", NULL,                        format_set_tag,     OPT_REQUIRED },
+        { "v", &verbose,                    opt_set_flag,       OPT_NONE },
+        { "w", &optRipToOneFile,            opt_set_flag,       OPT_NONE },
+        { "x", &optExtract,                 opt_set_flag,       OPT_NONE },
+        { "qsc-fq", &optUseFormattedQsc,    opt_set_flag,       OPT_NONE },
+        { "format-help", NULL,              cued_format_help,   OPT_NONE }
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {
@@ -249,8 +242,8 @@ int main(int argc, char *const argv[])
             break;
     }
 
-    if (offsetWords) {
-        offsetWords = (offsetWords - 30) * 2;
+    if (optOffsetWords) {
+        optOffsetWords = (optOffsetWords - 30) * 2;
     }
 
     // there should be only one argument after the options
@@ -263,69 +256,88 @@ int main(int argc, char *const argv[])
         usage(exeName);
     }
 
+    // TODO:  loop would begin hereish
+
     devName = argv[optind];
 
-    cdObj = cdio_open(devName, DRIVER_UNKNOWN);
-    if (!cdObj) {
+    rip.fileNamePattern     = optFileNamePattern;
+    rip.soundFileFormat     = optSoundFileFormat;
+
+    rip.ripToOneFile        = optRipToOneFile;
+    rip.offsetWords         = optOffsetWords;
+    rip.getIndices          = optGetIndices;
+    rip.useFormattedQsc     = optUseFormattedQsc;
+    rip.qSubChannelFileName = optQSubChannelFileName;
+
+    rip.useParanoia         = optUseParanoia;
+    rip.retries             = optRetries;
+
+    rip.fileNameBuffer      = fileNameBuffer;
+    rip.bufferSize          = sizeof(fileNameBuffer);
+
+    rip.cueFileNamePattern  = optCueFileNamePattern;
+
+    rip.cdObj = cdio_open(devName, DRIVER_UNKNOWN);
+    if (!rip.cdObj) {
         cdio2_abort("unrecognized device \"%s\"", devName);
     }
 
-    if (speed) {
+    if (optSpeed) {
         driver_return_code_t rc;
-        rc = cdio_set_speed(cdObj, speed);
+        rc = cdio_set_speed(rip.cdObj, optSpeed);
         cdio2_driver_error(rc, "set CD-ROM speed");
     }
 
-    if (CDIO_DISC_MODE_CD_DA != cdio_get_discmode(cdObj)) {
+    if (CDIO_DISC_MODE_CD_DA != cdio_get_discmode(rip.cdObj)) {
         cdio_warn("not an audio disc; ignoring non-audio tracks");
     }
 
-    if (useParanoia) {
+    if (rip.useParanoia) {
         char *msg = 0;
 
         // N.B. this behavior does not match documentation:
         // the 0 here appears to prevent the message "Checking <filename> for cdrom..."
-        paranoiaCtlObj = cdio_cddap_identify_cdio(cdObj, 0, &msg);
-        if (paranoiaCtlObj) {
+        rip.paranoiaCtlObj = cdio_cddap_identify_cdio(rip.cdObj, 0, &msg);
+        if (rip.paranoiaCtlObj) {
 
             if (msg) {
                 cdio_warn("identify returned paranoia message(s) \"%s\"", msg);
             }
-            cdio_cddap_verbose_set(paranoiaCtlObj, CDDA_MESSAGE_LOGIT, CDDA_MESSAGE_LOGIT);
+            cdio_cddap_verbose_set(rip.paranoiaCtlObj, CDDA_MESSAGE_LOGIT, CDDA_MESSAGE_LOGIT);
 
-            rc = cdio_cddap_open(paranoiaCtlObj);
-            cdio2_paranoia_msg(paranoiaCtlObj, "open of device");
+            rc = cdio_cddap_open(rip.paranoiaCtlObj);
+            cdio2_paranoia_msg(rip.paranoiaCtlObj, "open of device");
             if (!rc) {
-                paranoiaRipObj = cdio_paranoia_init(paranoiaCtlObj);
-                cdio2_paranoia_msg(paranoiaCtlObj, "initialization of paranoia");
-                if (!paranoiaRipObj) {
+                rip.paranoiaRipObj = cdio_paranoia_init(rip.paranoiaCtlObj);
+                cdio2_paranoia_msg(rip.paranoiaCtlObj, "initialization of paranoia");
+                if (!rip.paranoiaRipObj) {
                     cdio2_abort("out of memory initializing paranoia");
                 }
 
-                cdio_paranoia_modeset(paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
+                cdio_paranoia_modeset(rip.paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
                 // N.B. not needed at the moment
-                cdio2_paranoia_msg(paranoiaCtlObj, "setting of paranoia mode");
+                cdio2_paranoia_msg(rip.paranoiaCtlObj, "setting of paranoia mode");
             } else {
-                cdio_cddap_close_no_free_cdio(paranoiaCtlObj);
+                cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
 
                 cdio_error("disabling paranoia");
-                useParanoia = 0;
+                rip.useParanoia = 0;
             }
         } else {
             cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
-            useParanoia = 0;
+            rip.useParanoia = 0;
         }
     }
 
     // these could (should?) use paranoia in the future
     //
 
-    tracks = cdio_get_num_tracks(cdObj);
+    tracks = cdio_get_num_tracks(rip.cdObj);
     if (CDIO_INVALID_TRACK == tracks) {
         cdio2_abort("failed to get number of tracks");
     }
 
-    firstTrack = cdio_get_first_track_num(cdObj);
+    firstTrack = cdio_get_first_track_num(rip.cdObj);
     if (CDIO_INVALID_TRACK == firstTrack) {
         cdio2_abort("failed to get first track number");
     }
@@ -335,105 +347,88 @@ int main(int argc, char *const argv[])
     // firstRipTrack and lastRipTrack cannot be negative because opt_set_nat_no is used
     //
 
-    if (!firstRipTrack) {
-        firstRipTrack = firstTrack;
-    } else if (firstRipTrack > lastTrack) {
-        cdio2_abort("cannot rip track %d; last track is %02d; check -b option", firstRipTrack, lastTrack);
-        firstRipTrack = lastTrack;
+    if (!optFirstRipTrack) {
+        rip.firstTrack = firstTrack;
+    } else if (optFirstRipTrack > lastTrack) {
+        cdio2_abort("cannot rip track %d; last track is %02d; check -b option", optFirstRipTrack, lastTrack);
+        rip.firstTrack = lastTrack;
+    } else {
+        rip.firstTrack = optFirstRipTrack;
     }
 
-    if (!lastRipTrack) {
-        lastRipTrack = lastTrack;
-    } else if (lastRipTrack > lastTrack) {
-        cdio2_abort("cannot rip track %d; last track is %02d; check -e option", lastRipTrack, lastTrack);
-        lastRipTrack = lastTrack;
-    } else if (lastRipTrack < firstRipTrack) {
-        cdio2_abort("end track is less than begin track (%02d < %02d); check -b and -e options", lastRipTrack, firstRipTrack);
-        lastRipTrack = firstRipTrack;
+    if (!optLastRipTrack) {
+        rip.lastTrack = lastTrack;
+    } else if (optLastRipTrack > lastTrack) {
+        cdio2_abort("cannot rip track %d; last track is %02d; check -e option", optLastRipTrack, lastTrack);
+        rip.lastTrack = lastTrack;
+    } else if (optLastRipTrack < rip.firstTrack) {
+        cdio2_abort("end track is less than begin track (%02d < %02d); check -b and -e options", optLastRipTrack, rip.firstTrack);
+        rip.lastTrack = rip.firstTrack;
+    } else {
+        rip.lastTrack = optLastRipTrack;
     }
 
     // this could (should?) use paranoia in the future
-    cddbObj = cddb2_get_disc(cdObj);
+    rip.cddbObj = cddb2_get_disc(rip.cdObj);
 
     // user may want to know cue file will not be created before ripping all tracks
     // b/c they may have specified -i
     //
-    if (cueFileNamePattern) {
+    if (rip.cueFileNamePattern) {
 
         // set output file from options
         //
-        if (!strcmp("-", cueFileNamePattern)) {
-            cueFile = stdout;
+        if (!strcmp("-", rip.cueFileNamePattern)) {
+            rip.cueFile = stdout;
         } else {
 
             // removed ".cue" extension to allow using /dev/null for testing
-            (void) format_get_file_path(cdObj, cddbObj, cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
+            (void) format_get_file_path(rip.cdObj, rip.cddbObj, rip.cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
 
             // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
-            cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
-            if (!cueFile) {
+            rip.cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
+            if (!rip.cueFile) {
                 cdio2_unix_error("fopen2", fileNameBuffer, 0);
                 cdio_error("not creating cue file \"%s\"", fileNameBuffer);
 
-                cueFileNamePattern = 0;
+                rip.cueFileNamePattern = 0;
             }
         }
     }
 
-    if (fileNamePattern) {
+    if (rip.fileNamePattern) {
 
         format_make_tag_files(
-            cdObj, cddbObj,
-            fileNamePattern, TAG_FILE_EXT,
-            (1 == firstRipTrack) ? 0 : firstRipTrack,
-            lastRipTrack,
+            rip.cdObj, rip.cddbObj,
+            rip.fileNamePattern, TAG_FILE_EXT,
+            (1 == rip.firstTrack) ? 0 : rip.firstTrack,
+            rip.lastTrack,
             fileNameBuffer, sizeof(fileNameBuffer)
             );
 
-        if (extract) {
-
-            rip_context_t rip;
-            memset(&rip, 0xFF, sizeof(rip));
-    
-            rip.cdObj               = cdObj;
-
-            rip.fileNamePattern     = fileNamePattern;
-            rip.soundFileFormat     = soundFileFormat;
-            rip.cddbObj             = cddbObj;
-
-            rip.firstTrack          = firstRipTrack;
-            rip.lastTrack           = lastRipTrack;
-            rip.ripToOneFile        = ripToOneFile;
-            rip.offsetWords         = offsetWords;
-            rip.getIndices          = getIndices;
-            rip.useFormattedQsc     = useFormattedQsc;
-            rip.qSubChannelFileName = qSubChannelFileName;
-
-            rip.useParanoia         = useParanoia;
-            rip.paranoiaCtlObj      = paranoiaCtlObj;
-            rip.paranoiaRipObj      = paranoiaRipObj;
-            rip.retries             = retries;
-
-            rip.fileNameBuffer      = fileNameBuffer;
-            rip.bufferSize          = sizeof(fileNameBuffer);
+        if (optExtract) {
 
             cued_rip_disc(&rip);
 
             // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
-            if (format_has_tags() && 1 == firstRipTrack && !rip_noisy_pregap) {
-                cddb_track_t *trackObj = cddb2_get_track(cddbObj, 0);
-                if (!format_apply_pattern(cdObj, cddbObj, trackObj, fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0)) {
+            if (format_has_tags() && 1 == rip.firstTrack && !rip_noisy_pregap) {
+                cddb_track_t *trackObj = cddb2_get_track(rip.cddbObj, 0);
+                if (!format_apply_pattern(rip.cdObj, rip.cddbObj, trackObj,
+                        rip.fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0))
+                {
                     if (unlink(fileNameBuffer)) {
                         cdio2_unix_error("unlink", fileNameBuffer, 0);
                     }
-                } else {
+                }
+                else
+                {
                     cdio_error("could not make filename to unlink track 0 tag file");
                 }
             }
         }
     }
 
-    if (cueFileNamePattern) {
+    if (rip.cueFileNamePattern) {
 
         lba_t *ripLba;
         char *isrc;
@@ -443,7 +438,7 @@ int main(int argc, char *const argv[])
         for (track = firstTrack;  track <= lastTrack;  ++track) {
 
             // for image files, libcdio may have the pregap;  if so, use it
-            pregap = cdio_get_track_pregap_lba(cdObj, track);
+            pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
             if (CDIO_INVALID_LBA != pregap) {
                 ripLba = rip_indices[track];
                 if (!ripLba[0]) {
@@ -453,7 +448,7 @@ int main(int argc, char *const argv[])
                     cdio_warn("ignoring cdio pregap for track %02d because Q sub-channel had pregap", track);
                 }
                 if (!ripLba[1]) {
-                    ripLba[1] = cdio_get_track_lba(cdObj, track);
+                    ripLba[1] = cdio_get_track_lba(rip.cdObj, track);
                     if (CDIO_INVALID_LBA == ripLba[1]) {
                         cdio2_abort("failed to get first sector number for track %02d", track);
                     }
@@ -461,7 +456,7 @@ int main(int argc, char *const argv[])
             }
 
             // for image files, libcdio may have the isrc;  if so, use it
-            isrc = cdio_get_track_isrc(cdObj, track);
+            isrc = cdio_get_track_isrc(rip.cdObj, track);
             if (isrc) {
                 // rip_isrc[track] is already null terminated
                 strncpy(rip_isrc[track], isrc, ISRC_LEN);
@@ -470,12 +465,12 @@ int main(int argc, char *const argv[])
         }
 
         // Nero does not properly handle the pregap for the first track
-        if (DRIVER_NRG == cdio_get_driver_id(cdObj) && 1 == firstTrack) {
-            lba_t lba = cdio_get_track_lba(cdObj, firstTrack);
+        if (DRIVER_NRG == cdio_get_driver_id(rip.cdObj) && 1 == firstTrack) {
+            lba_t lba = cdio_get_track_lba(rip.cdObj, firstTrack);
             if (CDIO_INVALID_LBA == lba) {
                 cdio2_abort("failed to get first sector number for track %02d", firstTrack);
             } else if (CDIO_PREGAP_SECTORS != lba) {
-                char *mcn = cdio_get_mcn(cdObj);
+                char *mcn = cdio_get_mcn(rip.cdObj);
 
                 // (heuristic) check for DAO
                 if (mcn) {
@@ -487,22 +482,22 @@ int main(int argc, char *const argv[])
         }
 
         // this could (should?) use paranoia in the future
-        cued_write_cuefile(cueFile, cdObj, devName, firstTrack, lastTrack);
+        cued_write_cuefile(rip.cueFile, rip.cdObj, devName, firstTrack, lastTrack);
     }
 
     //cued_cleanup_rip_data();
 
-    if (cddbObj) {
-        cddb_disc_destroy(cddbObj);
+    if (rip.cddbObj) {
+        cddb_disc_destroy(rip.cddbObj);
 
         // for looping
-        //cddbObj = NULL;
+        //rip.cddbObj = NULL;
     }
-    if (useParanoia) {
-        cdio_paranoia_free(paranoiaRipObj);
-        cdio_cddap_close_no_free_cdio(paranoiaCtlObj);
+    if (rip.useParanoia) {
+        cdio_paranoia_free(rip.paranoiaRipObj);
+        cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
     }
-    cdio_destroy(cdObj);
+    cdio_destroy(rip.cdObj);
 
     cddb2_cleanup();
     format_cleanup();

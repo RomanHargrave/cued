@@ -42,9 +42,9 @@ typedef struct _mmc_audio_buffer_t {
 } mmc_audio_buffer_t;
 
 typedef struct _rip_context_t {
+
     //
-    // parameters through bufferSize must be provided by caller
-    // of cued_rip_disc
+    // cued_rip_disc parameters
     //
 
     CdIo_t *cdObj;
@@ -77,9 +77,10 @@ typedef struct _rip_context_t {
     char *fileNameBuffer;
     int bufferSize;
 
-    // parameters through qSubChannelFile must be provided by caller
-    // of cued_rip_to_file
     //
+    // cued_rip_to_file parameters
+    //
+
     lsn_t firstSector, lastSector;
     track_t currentTrack;
 
@@ -88,8 +89,17 @@ typedef struct _rip_context_t {
     lsn_t endOfDiscSector;
     FILE *qSubChannelFile;
 
-    // for use by cued_read_audio
-    mmc_audio_buffer_t audioBuf;    
+    //
+    // cued_write_cuefile parameters
+    //
+
+    const char *cueFileNamePattern;
+    FILE *cueFile;
+
+    //
+    // cued_read_audio buffer
+    //
+    mmc_audio_buffer_t audioBuf;
 
 } rip_context_t;
 
