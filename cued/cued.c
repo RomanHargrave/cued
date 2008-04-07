@@ -74,7 +74,7 @@
 static void usage(const char *exeName)
 {
     fprintf(stderr,
-        "%s [options] <device>\n"
+        "%s [options] <device1> [device2] [device3...]\n"
         "    where [options] are:\n"
                 CDDB2_OPTIONS
                 "\t-b track       begin ripping at track (default is first)\n"
@@ -182,7 +182,7 @@ int main(int argc, char *const argv[])
     rip_context_t rip;
     PIT(const char, devName);
     PIT(const char, exeName);
-    int rc;
+    int rc, i;
     track_t firstTrack, lastTrack, tracks;
     char fileNameBuffer[PATH_MAX];
 
@@ -247,272 +247,266 @@ int main(int argc, char *const argv[])
         optOffsetWords = (optOffsetWords - 30) * 2;
     }
 
-    // there should be only one argument after the options
-    if (argc - 1 != optind) {
-        if (argc - 1 > optind) {
-            cdio_log(CDIO_LOG_ASSERT, "more than one device specified");
-        } else {
-            cdio_log(CDIO_LOG_ASSERT, "no device specified");
-        }
+    // there should be at least one argument after the options
+    if (argc - 1 < optind) {
+        cdio_log(CDIO_LOG_ASSERT, "no device specified");
         usage(exeName);
     }
 
-    // TODO:  loop would begin hereish
+    for (i = optind;  i < argc;  ++i) {
 
-    devName = argv[optind];
+        devName = argv[i];
 
-    rip.fileNamePattern     = optFileNamePattern;
-    rip.soundFileFormat     = optSoundFileFormat;
+        rip.fileNamePattern     = optFileNamePattern;
+        rip.soundFileFormat     = optSoundFileFormat;
 
-    rip.ripToOneFile        = optRipToOneFile;
-    rip.offsetWords         = optOffsetWords;
-    rip.getIndices          = optGetIndices;
-    rip.useFormattedQsc     = optUseFormattedQsc;
-    rip.qSubChannelFileName = optQSubChannelFileName;
+        rip.ripToOneFile        = optRipToOneFile;
+        rip.offsetWords         = optOffsetWords;
+        rip.getIndices          = optGetIndices;
+        rip.useFormattedQsc     = optUseFormattedQsc;
+        rip.qSubChannelFileName = optQSubChannelFileName;
 
-    rip.useParanoia         = optUseParanoia;
-    rip.retries             = optRetries;
+        rip.useParanoia         = optUseParanoia;
+        rip.retries             = optRetries;
 
-    rip.fileNameBuffer      = fileNameBuffer;
-    rip.bufferSize          = sizeof(fileNameBuffer);
+        rip.fileNameBuffer      = fileNameBuffer;
+        rip.bufferSize          = sizeof(fileNameBuffer);
 
-    rip.cueFileNamePattern  = optCueFileNamePattern;
+        rip.cueFileNamePattern  = optCueFileNamePattern;
 
-    rip.cdObj = cdio_open(devName, DRIVER_UNKNOWN);
-    if (!rip.cdObj) {
-        cdio2_abort("unrecognized device \"%s\"", devName);
-    }
+        rip.cdObj = cdio_open(devName, DRIVER_UNKNOWN);
+        if (!rip.cdObj) {
+            cdio2_abort("unrecognized device \"%s\"", devName);
+        }
 
-    if (util_add_context(rip.cdObj, &rip)) {
-        cdio2_abort("out of memory allocating rip context");
-    }
+        if (verbose) {
+            printf("progress: opened device \"%s\"\n", devName);
+        }
 
-    if (optSpeed) {
-        driver_return_code_t rc;
-        rc = cdio_set_speed(rip.cdObj, optSpeed);
-        cdio2_driver_error(rc, "set CD-ROM speed");
-    }
+        if (util_add_context(rip.cdObj, &rip)) {
+            cdio2_abort("out of memory allocating rip context");
+        }
 
-    if (CDIO_DISC_MODE_CD_DA != cdio_get_discmode(rip.cdObj)) {
-        cdio_warn("not an audio disc; ignoring non-audio tracks");
-    }
+        if (optSpeed) {
+            driver_return_code_t rc;
+            rc = cdio_set_speed(rip.cdObj, optSpeed);
+            cdio2_driver_error(rc, "set CD-ROM speed");
+        }
 
-    if (rip.useParanoia) {
-        char *msg = 0;
+        if (CDIO_DISC_MODE_CD_DA != cdio_get_discmode(rip.cdObj)) {
+            cdio_warn("not an audio disc; ignoring non-audio tracks");
+        }
 
-        // N.B. this behavior does not match documentation:
-        // the 0 here appears to prevent the message "Checking <filename> for cdrom..."
-        rip.paranoiaCtlObj = cdio_cddap_identify_cdio(rip.cdObj, 0, &msg);
-        if (rip.paranoiaCtlObj) {
+        if (rip.useParanoia) {
+            char *msg = 0;
 
-            if (msg) {
-                cdio_warn("identify returned paranoia message(s) \"%s\"", msg);
-            }
-            cdio_cddap_verbose_set(rip.paranoiaCtlObj, CDDA_MESSAGE_LOGIT, CDDA_MESSAGE_LOGIT);
+            // N.B. this behavior does not match documentation:
+            // the 0 here appears to prevent the message "Checking <filename> for cdrom..."
+            rip.paranoiaCtlObj = cdio_cddap_identify_cdio(rip.cdObj, 0, &msg);
+            if (rip.paranoiaCtlObj) {
 
-            rc = cdio_cddap_open(rip.paranoiaCtlObj);
-            cdio2_paranoia_msg(rip.paranoiaCtlObj, "open of device");
-            if (!rc) {
-                rip.paranoiaRipObj = cdio_paranoia_init(rip.paranoiaCtlObj);
-                cdio2_paranoia_msg(rip.paranoiaCtlObj, "initialization of paranoia");
-                if (!rip.paranoiaRipObj) {
-                    cdio2_abort("out of memory initializing paranoia");
+                if (msg) {
+                    cdio_warn("identify returned paranoia message(s) \"%s\"", msg);
                 }
+                cdio_cddap_verbose_set(rip.paranoiaCtlObj, CDDA_MESSAGE_LOGIT, CDDA_MESSAGE_LOGIT);
 
-                cdio_paranoia_modeset(rip.paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
-                // N.B. not needed at the moment
-                cdio2_paranoia_msg(rip.paranoiaCtlObj, "setting of paranoia mode");
+                rc = cdio_cddap_open(rip.paranoiaCtlObj);
+                cdio2_paranoia_msg(rip.paranoiaCtlObj, "open of device");
+                if (!rc) {
+                    rip.paranoiaRipObj = cdio_paranoia_init(rip.paranoiaCtlObj);
+                    cdio2_paranoia_msg(rip.paranoiaCtlObj, "initialization of paranoia");
+                    if (!rip.paranoiaRipObj) {
+                        cdio2_abort("out of memory initializing paranoia");
+                    }
+
+                    cdio_paranoia_modeset(rip.paranoiaRipObj, PARANOIA_MODE_FULL ^ PARANOIA_MODE_NEVERSKIP);
+                    // N.B. not needed at the moment
+                    cdio2_paranoia_msg(rip.paranoiaCtlObj, "setting of paranoia mode");
+                } else {
+                    cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
+
+                    cdio_error("disabling paranoia");
+                    rip.useParanoia = 0;
+                }
             } else {
-                cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
-
-                cdio_error("disabling paranoia");
+                cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
                 rip.useParanoia = 0;
             }
-        } else {
-            cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
-            rip.useParanoia = 0;
         }
-    }
 
-    // these could (should?) use paranoia in the future
-    //
-
-    tracks = cdio_get_num_tracks(rip.cdObj);
-    if (CDIO_INVALID_TRACK == tracks) {
-        cdio2_abort("failed to get number of tracks");
-    }
-
-    firstTrack = cdio_get_first_track_num(rip.cdObj);
-    if (CDIO_INVALID_TRACK == firstTrack) {
-        cdio2_abort("failed to get first track number");
-    }
-
-    lastTrack = firstTrack + tracks - 1;
-
-    // firstRipTrack and lastRipTrack cannot be negative because opt_set_nat_no is used
-    //
-
-    if (!optFirstRipTrack) {
-        rip.firstTrack = firstTrack;
-    } else if (optFirstRipTrack > lastTrack) {
-        cdio2_abort("cannot rip track %d; last track is %02d; check -b option", optFirstRipTrack, lastTrack);
-        rip.firstTrack = lastTrack;
-    } else {
-        rip.firstTrack = optFirstRipTrack;
-    }
-
-    if (!optLastRipTrack) {
-        rip.lastTrack = lastTrack;
-    } else if (optLastRipTrack > lastTrack) {
-        cdio2_abort("cannot rip track %d; last track is %02d; check -e option", optLastRipTrack, lastTrack);
-        rip.lastTrack = lastTrack;
-    } else if (optLastRipTrack < rip.firstTrack) {
-        cdio2_abort("end track is less than begin track (%02d < %02d); check -b and -e options", optLastRipTrack, rip.firstTrack);
-        rip.lastTrack = rip.firstTrack;
-    } else {
-        rip.lastTrack = optLastRipTrack;
-    }
-
-    // this could (should?) use paranoia in the future
-    rip.cddbObj = cddb2_get_disc(rip.cdObj);
-
-    // user may want to know cue file will not be created before ripping all tracks
-    // b/c they may have specified -i
-    //
-    if (rip.cueFileNamePattern) {
-
-        // set output file from options
+        // these could (should?) use paranoia in the future
         //
-        if (!strcmp("-", rip.cueFileNamePattern)) {
-            rip.cueFile = stdout;
+
+        tracks = cdio_get_num_tracks(rip.cdObj);
+        if (CDIO_INVALID_TRACK == tracks) {
+            cdio2_abort("failed to get number of tracks");
+        }
+
+        firstTrack = cdio_get_first_track_num(rip.cdObj);
+        if (CDIO_INVALID_TRACK == firstTrack) {
+            cdio2_abort("failed to get first track number");
+        }
+
+        lastTrack = firstTrack + tracks - 1;
+
+        // firstRipTrack and lastRipTrack cannot be negative because opt_set_nat_no is used
+        //
+
+        if (!optFirstRipTrack) {
+            rip.firstTrack = firstTrack;
+        } else if (optFirstRipTrack > lastTrack) {
+            cdio2_abort("cannot rip track %d; last track is %02d; check -b option", optFirstRipTrack, lastTrack);
+            rip.firstTrack = lastTrack;
         } else {
-
-            // removed ".cue" extension to allow using /dev/null for testing
-            (void) format_get_file_path(rip.cdObj, rip.cddbObj, rip.cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
-
-            // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
-            rip.cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
-            if (!rip.cueFile) {
-                cdio2_unix_error("fopen2", fileNameBuffer, 0);
-                cdio_error("not creating cue file \"%s\"", fileNameBuffer);
-
-                rip.cueFileNamePattern = 0;
-            }
-        }
-    }
-
-    // must be called whether ripping tracks or merely creating cuesheet
-    // because cuesheet relies on rip data being initialized
-    //
-    cued_init_rip_data(&rip);
-
-    if (rip.fileNamePattern) {
-
-        format_make_tag_files(
-            rip.cdObj, rip.cddbObj,
-            rip.fileNamePattern, TAG_FILE_EXT,
-            (1 == rip.firstTrack) ? 0 : rip.firstTrack,
-            rip.lastTrack,
-            fileNameBuffer, sizeof(fileNameBuffer)
-            );
-
-        if (optExtract) {
-
-            cued_rip_disc(&rip);
-
-            // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
-            if (format_has_tags() && 1 == rip.firstTrack && !rip.noisy_pregap) {
-                cddb_track_t *trackObj = cddb2_get_track(rip.cddbObj, 0);
-                if (!format_apply_pattern(rip.cdObj, rip.cddbObj, trackObj,
-                        rip.fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0))
-                {
-                    if (unlink(fileNameBuffer)) {
-                        cdio2_unix_error("unlink", fileNameBuffer, 0);
-                    }
-                }
-                else
-                {
-                    cdio_error("could not make filename to unlink track 0 tag file");
-                }
-            }
-        }
-    }
-
-    if (rip.cueFileNamePattern) {
-
-        lba_t *ripLba;
-        char *isrc;
-        lba_t pregap;
-        track_t track;
-
-        for (track = firstTrack;  track <= lastTrack;  ++track) {
-
-            // for image files, libcdio may have the pregap;  if so, use it
-            pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
-            if (CDIO_INVALID_LBA != pregap) {
-                ripLba = rip.indices[track];
-                if (!ripLba[0]) {
-                    ripLba[0] = pregap;
-                    cdio_info("using pregap from cdio");
-                } else {
-                    cdio_warn("ignoring cdio pregap for track %02d because Q sub-channel had pregap", track);
-                }
-                if (!ripLba[1]) {
-                    ripLba[1] = cdio_get_track_lba(rip.cdObj, track);
-                    if (CDIO_INVALID_LBA == ripLba[1]) {
-                        cdio2_abort("failed to get first sector number for track %02d", track);
-                    }
-                }
-            }
-
-            // for image files, libcdio may have the isrc;  if so, use it
-            isrc = cdio_get_track_isrc(rip.cdObj, track);
-            if (isrc) {
-                // rip.isrc[track] is already null terminated
-                strncpy(rip.isrc[track], isrc, ISRC_LEN);
-                free(isrc);
-            }
+            rip.firstTrack = optFirstRipTrack;
         }
 
-        // Nero does not properly handle the pregap for the first track
-        if (DRIVER_NRG == cdio_get_driver_id(rip.cdObj) && 1 == firstTrack) {
-            lba_t lba = cdio_get_track_lba(rip.cdObj, firstTrack);
-            if (CDIO_INVALID_LBA == lba) {
-                cdio2_abort("failed to get first sector number for track %02d", firstTrack);
-            } else if (CDIO_PREGAP_SECTORS != lba) {
-                char *mcn = cdio_get_mcn(rip.cdObj);
-
-                // (heuristic) check for DAO
-                if (mcn) {
-                    free(mcn);
-                    rip.indices[firstTrack][0] = CDIO_PREGAP_SECTORS;
-                    rip.indices[firstTrack][1] = lba;
-                }
-            }
+        if (!optLastRipTrack) {
+            rip.lastTrack = lastTrack;
+        } else if (optLastRipTrack > lastTrack) {
+            cdio2_abort("cannot rip track %d; last track is %02d; check -e option", optLastRipTrack, lastTrack);
+            rip.lastTrack = lastTrack;
+        } else if (optLastRipTrack < rip.firstTrack) {
+            cdio2_abort("end track is less than begin track (%02d < %02d); check -b and -e options", optLastRipTrack, rip.firstTrack);
+            rip.lastTrack = rip.firstTrack;
+        } else {
+            rip.lastTrack = optLastRipTrack;
         }
 
         // this could (should?) use paranoia in the future
-        cued_write_cuefile(&rip, devName, firstTrack, lastTrack);
+        rip.cddbObj = cddb2_get_disc(rip.cdObj);
+
+        // user may want to know cue file will not be created before ripping all tracks
+        // b/c they may have specified -i
+        //
+        if (rip.cueFileNamePattern) {
+
+            // set output file from options
+            //
+            if (!strcmp("-", rip.cueFileNamePattern)) {
+                rip.cueFile = stdout;
+            } else {
+
+                // removed ".cue" extension to allow using /dev/null for testing
+                (void) format_get_file_path(rip.cdObj, rip.cddbObj, rip.cueFileNamePattern, "", 0, fileNameBuffer, sizeof(fileNameBuffer));
+
+                // replaced O_EXCL with O_TRUNC to allow using /dev/null for testing
+                rip.cueFile = fopen2(fileNameBuffer, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
+                if (!rip.cueFile) {
+                    cdio2_unix_error("fopen2", fileNameBuffer, 0);
+                    cdio_error("not creating cue file \"%s\"", fileNameBuffer);
+
+                    rip.cueFileNamePattern = 0;
+                }
+            }
+        }
+
+        // must be called whether ripping tracks or merely creating cuesheet
+        // because cuesheet relies on rip data being initialized
+        //
+        cued_init_rip_data(&rip);
+
+        if (rip.fileNamePattern) {
+
+            format_make_tag_files(
+                rip.cdObj, rip.cddbObj,
+                rip.fileNamePattern, TAG_FILE_EXT,
+                (1 == rip.firstTrack) ? 0 : rip.firstTrack,
+                rip.lastTrack,
+                fileNameBuffer, sizeof(fileNameBuffer)
+                );
+
+            if (optExtract) {
+
+                cued_rip_disc(&rip);
+
+                // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
+                if (format_has_tags() && 1 == rip.firstTrack && !rip.noisy_pregap) {
+                    cddb_track_t *trackObj = cddb2_get_track(rip.cddbObj, 0);
+                    if (!format_apply_pattern(rip.cdObj, rip.cddbObj, trackObj,
+                            rip.fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0))
+                    {
+                        if (unlink(fileNameBuffer)) {
+                            cdio2_unix_error("unlink", fileNameBuffer, 0);
+                        }
+                    }
+                    else
+                    {
+                        cdio_error("could not make filename to unlink track 0 tag file");
+                    }
+                }
+            }
+        }
+
+        if (rip.cueFileNamePattern) {
+
+            lba_t *ripLba;
+            char *isrc;
+            lba_t pregap;
+            track_t track;
+
+            for (track = firstTrack;  track <= lastTrack;  ++track) {
+
+                // for image files, libcdio may have the pregap;  if so, use it
+                pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
+                if (CDIO_INVALID_LBA != pregap) {
+                    ripLba = rip.indices[track];
+                    if (!ripLba[0]) {
+                        ripLba[0] = pregap;
+                        cdio_info("using pregap from cdio");
+                    } else {
+                        cdio_warn("ignoring cdio pregap for track %02d because Q sub-channel had pregap", track);
+                    }
+                    if (!ripLba[1]) {
+                        ripLba[1] = cdio_get_track_lba(rip.cdObj, track);
+                        if (CDIO_INVALID_LBA == ripLba[1]) {
+                            cdio2_abort("failed to get first sector number for track %02d", track);
+                        }
+                    }
+                }
+
+                // for image files, libcdio may have the isrc;  if so, use it
+                isrc = cdio_get_track_isrc(rip.cdObj, track);
+                if (isrc) {
+                    // rip.isrc[track] is already null terminated
+                    strncpy(rip.isrc[track], isrc, ISRC_LEN);
+                    free(isrc);
+                }
+            }
+
+            // Nero does not properly handle the pregap for the first track
+            if (DRIVER_NRG == cdio_get_driver_id(rip.cdObj) && 1 == firstTrack) {
+                lba_t lba = cdio_get_track_lba(rip.cdObj, firstTrack);
+                if (CDIO_INVALID_LBA == lba) {
+                    cdio2_abort("failed to get first sector number for track %02d", firstTrack);
+                } else if (CDIO_PREGAP_SECTORS != lba) {
+                    char *mcn = cdio_get_mcn(rip.cdObj);
+
+                    // (heuristic) check for DAO
+                    if (mcn) {
+                        free(mcn);
+                        rip.indices[firstTrack][0] = CDIO_PREGAP_SECTORS;
+                        rip.indices[firstTrack][1] = lba;
+                    }
+                }
+            }
+
+            // this could (should?) use paranoia in the future
+            cued_write_cuefile(&rip, devName, firstTrack, lastTrack);
+        }
+
+        if (rip.cddbObj) {
+            cddb_disc_destroy(rip.cddbObj);
+        }
+        if (rip.useParanoia) {
+            cdio_paranoia_free(rip.paranoiaRipObj);
+            cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
+        }
+        if (util_remove_context(rip.cdObj)) {
+            cdio2_abort("failed to remove rip context");
+        }
+        cdio_destroy(rip.cdObj);
     }
-
-    //cued_cleanup_rip_data();
-
-    if (rip.cddbObj) {
-        cddb_disc_destroy(rip.cddbObj);
-
-        // for looping
-        //rip.cddbObj = NULL;
-    }
-    if (rip.useParanoia) {
-        cdio_paranoia_free(rip.paranoiaRipObj);
-        cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
-    }
-
-    if (util_remove_context(rip.cdObj)) {
-        cdio2_abort("failed to remove rip context");
-    }
-
-    cdio_destroy(rip.cdObj);
 
     cddb2_cleanup();
     format_cleanup();

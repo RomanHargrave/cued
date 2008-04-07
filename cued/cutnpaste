@@ -577,3 +577,14 @@ extern int   rip_silent_pregap;
 extern int   rip_noisy_pregap;
 extern int   rip_year;
 
+
+
+
+    if (argc - 1 != optind) {
+        if (argc - 1 > optind) {
+            cdio_log(CDIO_LOG_ASSERT, "more than one device specified");
+        } else {
+            cdio_log(CDIO_LOG_ASSERT, "no device specified");
+        }
+        usage(exeName);
+    }
