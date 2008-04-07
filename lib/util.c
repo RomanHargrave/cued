@@ -18,11 +18,12 @@
 //
 
 #include "util.h"
+#include "dlist.h"
 
 #include <stdlib.h>
 
 
-int reallocItems(void **items, int itemSize, int *itemAlloc, int numItems, int newItems, int itemHint)
+int util_realloc_items(void **items, int itemSize, int *itemAlloc, int numItems, int newItems, int itemHint)
 {
     void *rcAlloc;
     int emptyItems, allocItems;
@@ -54,4 +55,61 @@ int reallocItems(void **items, int itemSize, int *itemAlloc, int numItems, int n
     }
 
     return 0;
+}
+
+
+typedef struct _util_context_t
+{
+    void *key, *value;
+    d_list_node_t listNode;
+
+} util_context_t;
+
+static DLIST_DECLARE(utilList)
+
+
+int util_add_context(void *key, void *value)
+{
+    util_context_t *context = (util_context_t *) malloc(sizeof(util_context_t));
+    if (!context) {
+        return -1;
+    }
+
+    context->key   = key;
+    context->value = value;
+    dListInsertHead(&utilList, &context->listNode);
+    return 0;
+}
+
+
+void *util_get_context(void *key)
+{
+    d_list_node_t *node;
+    util_context_t *context;
+
+    for (node = utilList.next;  node != &utilList;  node = node->next) {
+        context = FIELD_TO_STRUCT(node, listNode, util_context_t);
+        if (key == context->key) {
+            return context->value;
+        }
+    }
+
+    return NULL;
+}
+
+
+int util_remove_context(void *key)
+{
+    d_list_node_t *node;
+    util_context_t *context;
+
+    for (node = utilList.next;  node != &utilList;  node = node->next) {
+        context = FIELD_TO_STRUCT(node, listNode, util_context_t);
+        if (key == context->key) {
+            free(context);
+            return 0;
+        }
+    }
+
+    return -1;
 }

@@ -20,6 +20,7 @@
 #include "macros.h"
 #include "unix.h"
 #include "cued.h"
+#include "util.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
@@ -330,45 +331,36 @@ typedef struct _paranoia_audio_buffer_t {
 } paranoia_audio_buffer_t;
 
 
-rip_context_t *ripContext;
-static uint8_t *mmcBuf;
-static long allocatedSectors;
-
-
-void cued_free_paranoia_buf()
-{
-    free(mmcBuf);
-    mmcBuf = NULL;
-    allocatedSectors = 0;
-    ripContext = NULL;
-}
-
-
 long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector, long sectors)
 {
     paranoia_audio_buffer_t *pbuf = (paranoia_audio_buffer_t *) pb;
+    rip_context_t *rip;
     uint8_t *mbuf;
-
     long rc;
     driver_return_code_t drc;
     int i;
     qsc_buffer_t qsc;
 
-    if (sectors > allocatedSectors) {
-        free(mmcBuf);
-        mmcBuf = (uint8_t *) malloc(sectors * (sizeof(paranoia_audio_buffer_t)
-               + (ripContext->useFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t))));
-        if (mmcBuf) {
-            allocatedSectors = sectors;
+    rip = (rip_context_t *) util_get_context(paranoiaCtlObj->p_cdio);
+    if (!rip) {
+        cdio2_abort("failed to get rip context in paranoid read");
+    }
+
+    if (sectors > rip->allocatedSectors) {
+        free(rip->mmcBuf);
+        rip->mmcBuf = (uint8_t *) malloc(sectors * (sizeof(paranoia_audio_buffer_t)
+                    + (rip->useFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t))));
+        if (rip->mmcBuf) {
+            rip->allocatedSectors = sectors;
         } else {
-            allocatedSectors = 0;
+            rip->allocatedSectors = 0;
             cdio2_abort("out of memory reading %ld sectors", sectors);
         }
     }
 
     drc = mmc_read_cd(
         paranoiaCtlObj->p_cdio,
-        mmcBuf,
+        rip->mmcBuf,
         firstSector,
 
         // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
@@ -395,18 +387,18 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
         false,
 
         // select sub-channel
-        (ripContext->useFormattedQsc ? 2 : 1),
-        (ripContext->useFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
+        (rip->useFormattedQsc ? 2 : 1),
+        (rip->useFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
         sectors);
 
     if (DRIVER_OP_SUCCESS == drc) {
-        mbuf = mmcBuf;
+        mbuf = rip->mmcBuf;
         for (i = 0;  i < sectors;  ++i) {
 
             memcpy(pbuf[i].buf, mbuf, sizeof(paranoia_audio_buffer_t));
             mbuf += sizeof(paranoia_audio_buffer_t);
 
-            if (ripContext->useFormattedQsc) {
+            if (rip->useFormattedQsc) {
                 cued_parse_qsc((qsc_buffer_t *) mbuf);
                 mbuf += sizeof(qsc_buffer_t);
             } else {
@@ -473,8 +465,10 @@ void cued_rip_disc(rip_context_t *rip)
     }
 
     if (rip->useParanoia && rip->getIndices) {
+        rip->save_read_paranoid = rip->paranoiaCtlObj->read_audio;
         rip->paranoiaCtlObj->read_audio = cued_read_paranoid;
-        ripContext = rip;
+        rip->mmcBuf = NULL;
+        rip->allocatedSectors = 0;
     }
 
     if (rip->ripToOneFile) {
@@ -577,7 +571,10 @@ void cued_rip_disc(rip_context_t *rip)
         }
     }
 
-    cued_free_paranoia_buf();
+    if (rip->useParanoia && rip->getIndices) {
+        rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
+        free(rip->mmcBuf);
+    }
 
     if (rip->qSubChannelFileName && rip->qSubChannelFile != stdout) {
         fclose(rip->qSubChannelFile);

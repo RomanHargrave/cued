@@ -101,6 +101,13 @@ typedef struct _rip_context_t {
     //
     mmc_audio_buffer_t audioBuf;
 
+    //
+    // cued_read_paranoid parameters
+    //
+    uint8_t *mmcBuf;
+    long allocatedSectors;
+    long (*save_read_paranoid)(cdrom_drive_t *, void *, lsn_t, long);
+
 } rip_context_t;
 
 

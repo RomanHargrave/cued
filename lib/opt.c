@@ -65,8 +65,8 @@ void opt_register_params(opt_param_t opts[], int numOpts, int longOptHint, int s
     vLongOpts = longOpts;
 
     // expand the arrays to hold the new options
-    if (   reallocItems(&vShrtOpts, sizeof(opt_param_t), &shrtOptAlloc, numShrtOpts, newShrtOpts, shrtOptHint)
-        || reallocItems(&vLongOpts, sizeof(opt_param_t), &longOptAlloc, numLongOpts, newLongOpts, longOptHint))
+    if (   util_realloc_items(&vShrtOpts, sizeof(opt_param_t), &shrtOptAlloc, numShrtOpts, newShrtOpts, shrtOptHint)
+        || util_realloc_items(&vLongOpts, sizeof(opt_param_t), &longOptAlloc, numLongOpts, newLongOpts, longOptHint))
     {
         errFn("out of memory allocating memory for options");
         return;

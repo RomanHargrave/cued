@@ -50,6 +50,7 @@
 #include "macros.h"
 #include "cued.h" // CUED_VERSION
 #include "opt.h"
+#include "util.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
@@ -282,6 +283,10 @@ int main(int argc, char *const argv[])
         cdio2_abort("unrecognized device \"%s\"", devName);
     }
 
+    if (util_add_context(rip.cdObj, &rip)) {
+        cdio2_abort("out of memory allocating rip context");
+    }
+
     if (optSpeed) {
         driver_return_code_t rc;
         rc = cdio_set_speed(rip.cdObj, optSpeed);
@@ -497,6 +502,11 @@ int main(int argc, char *const argv[])
         cdio_paranoia_free(rip.paranoiaRipObj);
         cdio_cddap_close_no_free_cdio(rip.paranoiaCtlObj);
     }
+
+    if (util_remove_context(rip.cdObj)) {
+        cdio2_abort("failed to remove rip context");
+    }
+
     cdio_destroy(rip.cdObj);
 
     cddb2_cleanup();
