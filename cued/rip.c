@@ -34,8 +34,6 @@
 #include <sndfile.h>
 
 
-
-
 void cued_init_rip_data(rip_context_t *rip)
 {
     memset(rip->indices, 0x00, sizeof(rip->indices));
