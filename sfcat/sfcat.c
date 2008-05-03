@@ -140,7 +140,7 @@ static void print_usage(char *progname)
        "    Force the <infile> with the following [options]:\n"
        "        --in-pcms8,   --in-pcmu8,   --in-pcm16,  --in-pcm24, --in-pcm32\n"
        "        --in-float32, --in-float64, --in-gsm610\n"
-       "        --in-channels=number of channels,   --in-rate==sample rate (Hz)\n"
+       "        --in-channels=number of channels,   --in-rate=sample rate (Hz)\n"
        "        --in-cd : shorthand for --in-pcm16, --in-rate=44100, --in-channels=2\n"
        "    Miscellaneous [options]:\n"
        "        --silent : do not display progress messages\n"
