@@ -56,8 +56,9 @@ typedef struct _mmc_audio_buffer_t {
 #define ripVerbose          TSTF(RIP_FLAG_VERBOSE,              rip->flags)
 #define ripToOneFile        TSTF(RIP_FLAG_RIP_TO_ONE_FILE,      rip->flags)
 #define ripGetIndices       TSTF(RIP_FLAG_GET_INDICES,          rip->flags)
-#define ripUseParanoia      TSTF(RIP_FLAG_USE_PARANOIA,         rip->flags)
 #define ripUseFormattedQsc  TSTF(RIP_FLAG_USE_FORMATTED_QSC,    rip->flags)
+#define ripUseParanoia      TSTF(RIP_FLAG_USE_PARANOIA,         rip->flags)
+#define ripExtract          TSTF(RIP_FLAG_EXTRACT,              rip->flags)
 #define ripSilentPregap     TSTF(RIP_FLAG_SILENT_PREGAP,        rip->flags)
 #define ripNoisyPregap      TSTF(RIP_FLAG_NOISY_PREGAP,         rip->flags)
 

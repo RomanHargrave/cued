@@ -81,17 +81,17 @@ static void usage(const char *exeName)
                 "\t-c format      generate cue sheet (see --format-help)\n"
                 "\t-d debug level defaults to \"%s\"\n"
                 "\t-e track       end ripping at track (default is last)\n"
-                "\t-f             extract to flac (requires -x)\n"
-                "\t-i             get ALL indices (requires -x and -c)\n"
+                "\t-f             extract to flac (requires -x and -n)\n"
+                "\t-i             get ALL indices\n"
                 "\t-n format      name tag and wave files (see --format-help)\n"
-                "\t-o samples     offset correction (EAC-30) (requires -x)\n"
-                "\t-p             enable paranoia (requires -x)\n"
-                "\t-q format      output Q sub-channel (requires -x without -p)\n"
+                "\t-o samples     offset correction (EAC-30)\n"
+                "\t-p             enable paranoia\n"
+                "\t-q format      output Q sub-channel (mutually exclusive with -p)\n"
                 "\t-r retries     defaults to %d (requires -p)\n"
                 "\t-s speed       set CD-ROM drive speed\n"
                 "\t-t format      tag; use repeatedly (requires -n; see --format-help)\n"
                 "\t-v             report progress\n"
-                "\t-w             rip to one file (requires -x and -n)\n"
+                "\t-w             rip to one file (requires -x and -n, or -q, or -i)\n"
                 "\t-x             extract tracks (requires -n)\n"
                 "\t--qsc-fq       reading of Q sub-channel uses formatted Q method\n"
                 "\t--format-help  display format help\n"
@@ -390,6 +390,8 @@ int main(int argc, char *const argv[])
                     }
                 }
             }
+        } else if (TSTF(RIP_FLAG_GET_INDICES, rip.flags) || rip.qSubChannelFileName) {
+            cued_rip_disc(&rip);
         }
 
         if (rip.cueFileNamePattern) {

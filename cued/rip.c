@@ -183,6 +183,27 @@ static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
 }
 
 
+static const char *cued_fmt_to_ext(int soundFileFormat)
+{
+    switch (soundFileFormat) {
+
+        case SF_FORMAT_WAV:
+            return ".wav";
+            break;
+
+        case SF_FORMAT_FLAC:
+            return ".flac";
+            break;
+
+        default:
+            cdio2_abort("internal error of unknown sound file format 0x%X specified", soundFileFormat);
+            break;
+    }
+
+    return ".unknown";
+}
+
+
 void cued_rip_to_file(rip_context_t *rip)
 {
     SF_INFO sfinfo;
@@ -233,11 +254,20 @@ void cued_rip_to_file(rip_context_t *rip)
         }
     }
 
-    sfObj = sf_open(rip->fileNameBuffer, SFM_WRITE, &sfinfo);
-    if (!sfObj) {
-        cdio_error("sf_open(\"%s\") returned \"%s\"; skipping extraction of track %02d", rip->fileNameBuffer, sf_strerror(sfObj), track);
+    if (ripExtract) {
 
-        return;
+        // does not return on error
+        (void) format_get_file_path(rip->cdObj, rip->cddbObj,
+            rip->fileNamePattern, cued_fmt_to_ext(rip->soundFileFormat), track,
+            rip->fileNameBuffer, rip->bufferSize
+            );
+
+        sfObj = sf_open(rip->fileNameBuffer, SFM_WRITE, &sfinfo);
+        if (!sfObj) {
+            cdio_error("sf_open(\"%s\") returned \"%s\"; skipping extraction of track %02d", rip->fileNameBuffer, sf_strerror(sfObj), track);
+
+            return;
+        }
     }
 
     for (;  currSector <= rip->lastSector;  ++currSector) {
@@ -286,11 +316,13 @@ void cued_rip_to_file(rip_context_t *rip)
             }
         }
 
-        wordsWritten = sf_write_short(sfObj, pbuf, wordsToWrite);
-        if (wordsWritten != wordsToWrite) {
+        if (ripExtract) {
+            wordsWritten = sf_write_short(sfObj, pbuf, wordsToWrite);
+            if (wordsWritten != wordsToWrite) {
 
-            // probably out of disk space, which is bad, because most things rely on it
-            cdio2_abort("failed to write to file \"%s\" due to \"%s\"", rip->fileNameBuffer, sf_strerror(sfObj));
+                // probably out of disk space, which is bad, because most things rely on it
+                cdio2_abort("failed to write to file \"%s\" due to \"%s\"", rip->fileNameBuffer, sf_strerror(sfObj));
+            }
         }
 
         if (!track && !ripNoisyPregap) {
@@ -307,7 +339,9 @@ void cued_rip_to_file(rip_context_t *rip)
         SETF(RIP_FLAG_SILENT_PREGAP, rip->flags);
     }
 
-    sf_close(sfObj);
+    if (ripExtract) {
+        sf_close(sfObj);
+    }
 }
 
 
@@ -404,27 +438,6 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
 }
 
 
-static const char *cued_fmt_to_ext(int soundFileFormat)
-{
-    switch (soundFileFormat) {
-
-        case SF_FORMAT_WAV:
-            return ".wav";
-            break;
-
-        case SF_FORMAT_FLAC:
-            return ".flac";
-            break;
-
-        default:
-            cdio2_abort("internal error of unknown sound file format 0x%X specified", soundFileFormat);
-            break;
-    }
-
-    return ".unknown";
-}
-
-
 void cued_rip_disc(rip_context_t *rip)
 {
     if (ripUseParanoia) {
@@ -518,12 +531,6 @@ void cued_rip_disc(rip_context_t *rip)
 
         rip->channels = cdio2_get_track_channels(rip->cdObj, rip->firstTrack);
 
-        // does not return on error
-        (void) format_get_file_path(rip->cdObj, rip->cddbObj,
-            rip->fileNamePattern, cued_fmt_to_ext(rip->soundFileFormat), 0,
-            rip->fileNameBuffer, rip->bufferSize
-            );
-
         if (ripVerbose) {
             printf("progress: reading sectors from %d to %d\n", rip->firstSector, rip->lastSector);
         }
@@ -554,11 +561,6 @@ void cued_rip_disc(rip_context_t *rip)
 
                 lsn_t saveFirstSector = rip->firstSector;
 
-                // does not return on error
-                (void) format_get_file_path(rip->cdObj, rip->cddbObj,
-                    rip->fileNamePattern, cued_fmt_to_ext(rip->soundFileFormat), 0,
-                    rip->fileNameBuffer, rip->bufferSize);
-
                 if (ripVerbose) {
                     printf("progress: reading track %02d\n", 0);
                 }
@@ -568,7 +570,7 @@ void cued_rip_disc(rip_context_t *rip)
                 rip->currentTrack = 0;
                 cued_rip_to_file(rip);
 
-                if (ripSilentPregap) {
+                if (ripSilentPregap && ripExtract) {
                     if (unlink(rip->fileNameBuffer)) {
                         cdio2_unix_error("unlink", rip->fileNameBuffer, 1);
                     }
@@ -583,11 +585,6 @@ void cued_rip_disc(rip_context_t *rip)
             } else {
                 //cdio_debug("track %02d last sector is %d", track, rip->lastSector);
             }
-
-            // does not return on error
-            (void) format_get_file_path(rip->cdObj, rip->cddbObj,
-                rip->fileNamePattern, cued_fmt_to_ext(rip->soundFileFormat), track,
-                rip->fileNameBuffer, rip->bufferSize);
 
             if (ripVerbose) {
                 printf("progress: reading track %02d\n", track);
