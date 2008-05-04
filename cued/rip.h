@@ -23,6 +23,7 @@
 #include "cddb2.h" // cddb_disc_t
 #include "qsc.h" // MCN_LEN, ISRC_LEN
 #include "pwsc.h"
+#include "macros.h"
 
 #include <cdio/paranoia.h>
 #include <stdio.h>
@@ -40,6 +41,26 @@ typedef struct _mmc_audio_buffer_t {
     };
 
 } mmc_audio_buffer_t;
+
+
+#define RIP_FLAG_VERBOSE                0x00000001
+#define RIP_FLAG_RIP_TO_ONE_FILE        0x00000002
+#define RIP_FLAG_GET_INDICES            0x00000004
+#define RIP_FLAG_USE_FORMATTED_QSC      0x00000008
+#define RIP_FLAG_USE_PARANOIA           0x00000010
+#define RIP_FLAG_EXTRACT                0x00000020
+#define RIP_FLAG_SILENT_PREGAP          0x00000040
+#define RIP_FLAG_NOISY_PREGAP           0x00000080
+
+
+#define ripVerbose          TSTF(RIP_FLAG_VERBOSE,              rip->flags)
+#define ripToOneFile        TSTF(RIP_FLAG_RIP_TO_ONE_FILE,      rip->flags)
+#define ripGetIndices       TSTF(RIP_FLAG_GET_INDICES,          rip->flags)
+#define ripUseParanoia      TSTF(RIP_FLAG_USE_PARANOIA,         rip->flags)
+#define ripUseFormattedQsc  TSTF(RIP_FLAG_USE_FORMATTED_QSC,    rip->flags)
+#define ripSilentPregap     TSTF(RIP_FLAG_SILENT_PREGAP,        rip->flags)
+#define ripNoisyPregap      TSTF(RIP_FLAG_NOISY_PREGAP,         rip->flags)
+
 
 typedef struct _rip_context_t {
 
@@ -59,15 +80,12 @@ typedef struct _rip_context_t {
     //
     lsn_t firstTrack;
     lsn_t lastTrack;
-    int ripToOneFile;
+    int flags;
     int offsetWords;
-    int getIndices;
-    int useFormattedQsc;
     const char *qSubChannelFileName;
 
     // paranoia parameters
     //
-    int useParanoia;
     cdrom_drive_t *paranoiaCtlObj;
     cdrom_paranoia_t *paranoiaRipObj;
     int retries;
@@ -114,8 +132,6 @@ typedef struct _rip_context_t {
     char  mcn[ MCN_LEN + 1 ];
     char  isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
     lsn_t indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
-    int   silent_pregap;
-    int   noisy_pregap;
     int   year;
 
     //

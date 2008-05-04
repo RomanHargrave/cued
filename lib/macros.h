@@ -34,5 +34,9 @@
 //
 #define ssizeof(x) ((ssize_t) sizeof(x))
 
+#define TSTF(f, v) ((v)  &  (f))
+#define SETF(f, v) ((v) |=  (f))
+#define CLRF(f, v) ((v) &= ~(f))
+
 
 #endif // MACROS_H_INCLUDED

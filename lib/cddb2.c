@@ -343,7 +343,7 @@ cleanup:
 }
 
 
-cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj)
+cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj, int verbose)
 {
     cddb_conn_t *dbObj = NULL;
     cddb_disc_t *discObj = NULL;

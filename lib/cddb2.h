@@ -41,7 +41,7 @@ extern void cddb2_cleanup();
 extern void cddb2_set_log_handler();
 extern void cddb2_opt_register_params();
 
-extern cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj);
+extern cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj, int verbose);
 extern cddb_disc_t *cddb2_get_match      (CdIo_t *cdObj, cddb_conn_t **dbObj, int *matches, int matchIndex);
 extern cddb_disc_t *cddb2_get_first_match(CdIo_t *cdObj, cddb_conn_t **dbObj, int *matches);
 extern cddb_disc_t *cddb2_get_next_match(cddb_conn_t *dbObj);

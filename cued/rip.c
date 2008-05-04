@@ -17,7 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "macros.h"
 #include "unix.h"
 #include "cued.h"
 #include "util.h"
@@ -39,8 +38,6 @@ void cued_init_rip_data(rip_context_t *rip)
     memset(rip->indices, 0x00, sizeof(rip->indices));
     memset(rip->mcn,     0x00, sizeof(rip->mcn));
     memset(rip->isrc,    0x00, sizeof(rip->isrc));
-    rip->noisy_pregap = 0;
-    rip->silent_pregap = 0;
     rip->year = 0;
 
     rip->trackHint = 0;
@@ -113,7 +110,7 @@ static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
     driver_return_code_t rc;
     qsc_file_buffer_t qsc;
 
-    if (rip->qSubChannelFileName || rip->getIndices) {
+    if (rip->qSubChannelFileName || ripGetIndices) {
 
         rc = mmc_read_cd(
             rip->cdObj,
@@ -144,15 +141,15 @@ static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
             false,
 
             // select sub-channel
-            (rip->useFormattedQsc ? 2 : 1),
-            (rip->useFormattedQsc ? sizeof(rip->audioBuf.fmtQsc) : sizeof(rip->audioBuf.rawPWsc)) + sizeof(rip->audioBuf.buf),
+            (ripUseFormattedQsc ? 2 : 1),
+            (ripUseFormattedQsc ? sizeof(rip->audioBuf.fmtQsc) : sizeof(rip->audioBuf.rawPWsc)) + sizeof(rip->audioBuf.buf),
 
             // number of sectors
             1);
 
         if (DRIVER_OP_SUCCESS == rc) {
 
-            if (rip->useFormattedQsc) {
+            if (ripUseFormattedQsc) {
                 qsc.buf = rip->audioBuf.fmtQsc;
             } else {
                 pwsc_get_qsc(&rip->audioBuf.rawPWsc, &qsc.buf);
@@ -216,7 +213,7 @@ void cued_rip_to_file(rip_context_t *rip)
 
     currSector = rip->firstSector;
 
-    if (rip->useParanoia) {
+    if (ripUseParanoia) {
         lsn_t seekSector;
 
         if (currSector < 0) {
@@ -254,7 +251,7 @@ void cued_rip_to_file(rip_context_t *rip)
 
             // TODO:  need to update track indices on skip of sector (continue)
 
-            if (rip->useParanoia) {
+            if (ripUseParanoia) {
                 pbuf = cdio_paranoia_read_limited(rip->paranoiaRipObj, cdio2_paranoia_callback, rip->retries);
                 cdio2_paranoia_msg(rip->paranoiaCtlObj, "read of audio sector");
                 if (!pbuf) {
@@ -296,18 +293,18 @@ void cued_rip_to_file(rip_context_t *rip)
             cdio2_abort("failed to write to file \"%s\" due to \"%s\"", rip->fileNameBuffer, sf_strerror(sfObj));
         }
 
-        if (!track && !rip->noisy_pregap) {
+        if (!track && !ripNoisyPregap) {
             for (i = 0;  i < wordsToWrite;  ++i) {
                 if (pbuf[i]) {
-                    rip->noisy_pregap = 1;
+                    SETF(RIP_FLAG_NOISY_PREGAP, rip->flags);
                     break;
                 }
             }
         }
     }
 
-    if (!track && !rip->noisy_pregap) {
-        rip->silent_pregap = 1;
+    if (!track && !ripNoisyPregap) {
+        SETF(RIP_FLAG_SILENT_PREGAP, rip->flags);
     }
 
     sf_close(sfObj);
@@ -339,7 +336,7 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
     if (sectors > rip->allocatedSectors) {
         free(rip->mmcBuf);
         rip->mmcBuf = (uint8_t *) malloc(sectors * (sizeof(paranoia_audio_buffer_t)
-                    + (rip->useFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t))));
+                    + (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t))));
         if (rip->mmcBuf) {
             rip->allocatedSectors = sectors;
         } else {
@@ -377,8 +374,8 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
         false,
 
         // select sub-channel
-        (rip->useFormattedQsc ? 2 : 1),
-        (rip->useFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
+        (ripUseFormattedQsc ? 2 : 1),
+        (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
         sectors);
 
     if (DRIVER_OP_SUCCESS == drc) {
@@ -388,7 +385,7 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
             memcpy(pbuf[i].buf, mbuf, sizeof(paranoia_audio_buffer_t));
             mbuf += sizeof(paranoia_audio_buffer_t);
 
-            if (rip->useFormattedQsc) {
+            if (ripUseFormattedQsc) {
                 cued_parse_qsc((qsc_buffer_t *) mbuf, rip);
                 mbuf += sizeof(qsc_buffer_t);
             } else {
@@ -430,7 +427,7 @@ static const char *cued_fmt_to_ext(int soundFileFormat)
 
 void cued_rip_disc(rip_context_t *rip)
 {
-    if (rip->useParanoia) {
+    if (ripUseParanoia) {
         char *msg = 0;
         int rc;
 
@@ -457,7 +454,7 @@ void cued_rip_disc(rip_context_t *rip)
                 // N.B. not needed at the moment
                 cdio2_paranoia_msg(rip->paranoiaCtlObj, "setting of paranoia mode");
 
-                if (rip->getIndices) {
+                if (ripGetIndices) {
                     rip->save_read_paranoid = rip->paranoiaCtlObj->read_audio;
                     rip->paranoiaCtlObj->read_audio = cued_read_paranoid;
                     rip->mmcBuf = NULL;
@@ -467,11 +464,11 @@ void cued_rip_disc(rip_context_t *rip)
                 cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
 
                 cdio_error("disabling paranoia");
-                rip->useParanoia = 0;
+                CLRF(RIP_FLAG_USE_PARANOIA, rip->flags);
             }
         } else {
             cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
-            rip->useParanoia = 0;
+            CLRF(RIP_FLAG_USE_PARANOIA, rip->flags);
         }
     }
 
@@ -499,7 +496,7 @@ void cued_rip_disc(rip_context_t *rip)
         //cdio_debug("end of disc sector is %d", rip->endOfDiscSector);
     }
 
-    if (rip->ripToOneFile) {
+    if (ripToOneFile) {
 
         if (TRACK_FORMAT_AUDIO != cdio_get_track_format(rip->cdObj, rip->firstTrack)) {
             cdio2_abort("track %02d is not an audio track", rip->firstTrack);
@@ -527,7 +524,7 @@ void cued_rip_disc(rip_context_t *rip)
             rip->fileNameBuffer, rip->bufferSize
             );
 
-        if (verbose) {
+        if (ripVerbose) {
             printf("progress: reading sectors from %d to %d\n", rip->firstSector, rip->lastSector);
         }
 
@@ -562,7 +559,7 @@ void cued_rip_disc(rip_context_t *rip)
                     rip->fileNamePattern, cued_fmt_to_ext(rip->soundFileFormat), 0,
                     rip->fileNameBuffer, rip->bufferSize);
 
-                if (verbose) {
+                if (ripVerbose) {
                     printf("progress: reading track %02d\n", 0);
                 }
 
@@ -571,7 +568,7 @@ void cued_rip_disc(rip_context_t *rip)
                 rip->currentTrack = 0;
                 cued_rip_to_file(rip);
 
-                if (rip->silent_pregap) {
+                if (ripSilentPregap) {
                     if (unlink(rip->fileNameBuffer)) {
                         cdio2_unix_error("unlink", rip->fileNameBuffer, 1);
                     }
@@ -592,7 +589,7 @@ void cued_rip_disc(rip_context_t *rip)
                 rip->fileNamePattern, cued_fmt_to_ext(rip->soundFileFormat), track,
                 rip->fileNameBuffer, rip->bufferSize);
 
-            if (verbose) {
+            if (ripVerbose) {
                 printf("progress: reading track %02d\n", track);
             }
 
@@ -601,8 +598,8 @@ void cued_rip_disc(rip_context_t *rip)
         }
     }
 
-    if (rip->useParanoia) {
-        if (rip->getIndices) {
+    if (ripUseParanoia) {
+        if (ripGetIndices) {
             free(rip->mmcBuf);
             rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
         }
@@ -620,7 +617,7 @@ void cued_rip_disc(rip_context_t *rip)
         if (rip->crcFailure * 100 / totalCrcs > 5) {
             cdio_warn("greater than 5 percent of Q sub-channel records failed CRC check (try --qsc-fq?)");
         }
-        if (verbose) {
+        if (ripVerbose) {
             printf("progress: correctly read %d of %d Q sub-channel records\n", rip->crcSuccess, totalCrcs);
         }
     }

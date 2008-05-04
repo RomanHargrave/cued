@@ -27,7 +27,9 @@ typedef enum _opt_mode_t {
 
     OPT_NONE,
     OPT_REQUIRED,
-    OPT_OPTIONAL
+    OPT_OPTIONAL,
+    OPT_SET_FLAG,
+    OPT_CLR_FLAG
 
 } opt_mode_t;
 
@@ -45,8 +47,8 @@ typedef struct _opt_param_t {
     const char *opt;
     void *context;
     opt_fn_t fn;
-
     opt_mode_t mode;
+    int flag;
     
 } opt_param_t;
 

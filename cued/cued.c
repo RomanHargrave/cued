@@ -132,8 +132,6 @@ static void cued_set_sf(void *context, char *optarg, const char *optionName)
     *(int *) context = SF_FORMAT_FLAC;
 }
 
-int verbose;
-
 
 static void cued_format_help(void *context, char *optarg, const char *optionName)
 {
@@ -174,7 +172,7 @@ int main(int argc, char *const argv[])
     //
     const char *optCueFileNamePattern, *optFileNamePattern, *optQSubChannelFileName;
     int optFirstRipTrack, optLastRipTrack;
-    int optRipToOneFile, optExtract, optSpeed, optUseParanoia, optOffsetWords, optGetIndices, optUseFormattedQsc;
+    int optFlags, optSpeed, optOffsetWords;
     int optRetries, optSoundFileFormat;
 
     // things that do not need to be freed and will be initialized on first use
@@ -194,33 +192,33 @@ int main(int argc, char *const argv[])
     // set defaults before option parsing
     //
     cdio_loglevel_default = CDIO_LOG_WARN;
-    verbose = 0;
     optCueFileNamePattern = optFileNamePattern = optQSubChannelFileName = NULL;
     optFirstRipTrack = optLastRipTrack = 0;
-    optRipToOneFile = optExtract = optSpeed = optUseParanoia = optOffsetWords = optGetIndices = optUseFormattedQsc = 0;
+    optFlags = optSpeed = optOffsetWords = 0;
     optRetries = CUED_DEFAULT_RETRIES;
     optSoundFileFormat = SF_FORMAT_WAV;
 
     exeName = basename2(argv[0]);
     opt_param_t opts[] = {
-        { "b", &optFirstRipTrack,           opt_set_nat_no,     OPT_REQUIRED },
-        { "c", &optCueFileNamePattern,      opt_set_string,     OPT_REQUIRED },
-        { "d", NULL,                        cued_set_loglevel,  OPT_REQUIRED },
-        { "e", &optLastRipTrack,            opt_set_nat_no,     OPT_REQUIRED },
-        { "f", &optSoundFileFormat,         cued_set_sf,        OPT_NONE },
-        { "i", &optGetIndices,              opt_set_flag,       OPT_NONE },
-        { "n", &optFileNamePattern,         opt_set_string,     OPT_REQUIRED },
-        { "o", &optOffsetWords,             opt_set_int,        OPT_REQUIRED },
-        { "p", &optUseParanoia,             opt_set_flag,       OPT_NONE },
-        { "q", &optQSubChannelFileName,     opt_set_string,     OPT_REQUIRED },
-        { "r", &optRetries,                 opt_set_whole_no,   OPT_REQUIRED },
-        { "s", &optSpeed,                   opt_set_nat_no,     OPT_REQUIRED },
-        { "t", NULL,                        format_set_tag,     OPT_REQUIRED },
-        { "v", &verbose,                    opt_set_flag,       OPT_NONE },
-        { "w", &optRipToOneFile,            opt_set_flag,       OPT_NONE },
-        { "x", &optExtract,                 opt_set_flag,       OPT_NONE },
-        { "qsc-fq", &optUseFormattedQsc,    opt_set_flag,       OPT_NONE },
-        { "format-help", NULL,              cued_format_help,   OPT_NONE }
+        { "b", &optFirstRipTrack,        opt_set_nat_no,     OPT_REQUIRED },
+        { "c", &optCueFileNamePattern,   opt_set_string,     OPT_REQUIRED },
+        { "d", NULL,                     cued_set_loglevel,  OPT_REQUIRED },
+        { "e", &optLastRipTrack,         opt_set_nat_no,     OPT_REQUIRED },
+        { "f", &optSoundFileFormat,      cued_set_sf,        OPT_NONE },
+        { "n", &optFileNamePattern,      opt_set_string,     OPT_REQUIRED },
+        { "o", &optOffsetWords,          opt_set_int,        OPT_REQUIRED },
+        { "q", &optQSubChannelFileName,  opt_set_string,     OPT_REQUIRED },
+        { "r", &optRetries,              opt_set_whole_no,   OPT_REQUIRED },
+        { "s", &optSpeed,                opt_set_nat_no,     OPT_REQUIRED },
+        { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
+        { "format-help", NULL,           cued_format_help,   OPT_NONE },
+
+        { "i", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_GET_INDICES },
+        { "p", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_USE_PARANOIA },
+        { "v", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_VERBOSE },
+        { "w", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_RIP_TO_ONE_FILE },
+        { "x", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_EXTRACT },
+        { "qsc-fq", &optFlags, NULL, OPT_SET_FLAG, RIP_FLAG_USE_FORMATTED_QSC },
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {
@@ -260,13 +258,10 @@ int main(int argc, char *const argv[])
         rip.fileNamePattern     = optFileNamePattern;
         rip.soundFileFormat     = optSoundFileFormat;
 
-        rip.ripToOneFile        = optRipToOneFile;
+        rip.flags               = optFlags;
         rip.offsetWords         = optOffsetWords;
-        rip.getIndices          = optGetIndices;
-        rip.useFormattedQsc     = optUseFormattedQsc;
         rip.qSubChannelFileName = optQSubChannelFileName;
 
-        rip.useParanoia         = optUseParanoia;
         rip.retries             = optRetries;
 
         rip.fileNameBuffer      = fileNameBuffer;
@@ -279,7 +274,7 @@ int main(int argc, char *const argv[])
             cdio2_abort("unrecognized device \"%s\"", devName);
         }
 
-        if (verbose) {
+        if (TSTF(RIP_FLAG_VERBOSE, rip.flags)) {
             printf("progress: opened device \"%s\"\n", devName);
         }
 
@@ -333,7 +328,7 @@ int main(int argc, char *const argv[])
             rip.lastTrack = optLastRipTrack;
         }
 
-        rip.cddbObj = cddb2_get_disc(rip.cdObj);
+        rip.cddbObj = cddb2_get_disc(rip.cdObj, TSTF(RIP_FLAG_VERBOSE, rip.flags));
 
         // user may want to know cue file will not be created before ripping all tracks
         // b/c they may have specified -i
@@ -375,12 +370,12 @@ int main(int argc, char *const argv[])
                 fileNameBuffer, sizeof(fileNameBuffer)
                 );
 
-            if (optExtract) {
+            if (TSTF(RIP_FLAG_EXTRACT, rip.flags)) {
 
                 cued_rip_disc(&rip);
 
                 // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
-                if (format_has_tags() && 1 == rip.firstTrack && !rip.noisy_pregap) {
+                if (format_has_tags() && 1 == rip.firstTrack && !TSTF(RIP_FLAG_NOISY_PREGAP, rip.flags)) {
                     cddb_track_t *trackObj = cddb2_get_track(rip.cddbObj, 0);
                     if (!format_apply_pattern(rip.cdObj, rip.cddbObj, trackObj,
                             rip.fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0))

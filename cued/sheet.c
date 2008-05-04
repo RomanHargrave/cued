@@ -156,7 +156,7 @@ void cued_write_cuefile(
                     useLba = lba;
                 }
 
-                if (1 == track && !index && rip->silent_pregap) {
+                if (1 == track && !index && ripSilentPregap) {
 
                     // pregap for first track was silent; track 0 was deleted; use PREGAP directive in cuesheet
                     if (!qsc_lsn_to_ascii_for_cue(firstTrackSector, msfStr)) {
@@ -167,7 +167,7 @@ void cued_write_cuefile(
                 } else {
 
                     // if pregap is silent, adjust index for the fact that pregap was not saved
-                    if (rip->silent_pregap) {
+                    if (ripSilentPregap) {
                         useLba -= firstTrackSector;
                     }
 
@@ -181,7 +181,7 @@ void cued_write_cuefile(
         } else {
             useLba = lba;
 
-            if (rip->silent_pregap) {
+            if (ripSilentPregap) {
                 useLba -= firstTrackSector;
                 if (1 == track) {
                     if (!qsc_lsn_to_ascii_for_cue(firstTrackSector, msfStr)) {

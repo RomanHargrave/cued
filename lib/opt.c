@@ -116,6 +116,8 @@ opt_result_t opt_parse_args(int argc, char *const argv[])
         switch (longOpts[i].mode) {
 
             case OPT_NONE:
+            case OPT_SET_FLAG:
+            case OPT_CLR_FLAG:
                 opts[i].has_arg = no_argument;
                 break;
 
@@ -149,6 +151,8 @@ opt_result_t opt_parse_args(int argc, char *const argv[])
         switch (shrtOpts[i].mode) {
 
             case OPT_NONE:
+            case OPT_SET_FLAG:
+            case OPT_CLR_FLAG:
                 break;
 
             case OPT_REQUIRED:
@@ -175,7 +179,20 @@ opt_result_t opt_parse_args(int argc, char *const argv[])
                 if (longIndex < 0 || longIndex >= numLongOpts) {
                     opt2_error("getopt_long returned illegal index (broken libc?)");
                 }
-                longOpts[longIndex].fn(longOpts[longIndex].context, optarg, longOpts[longIndex].opt);
+                switch (longOpts[longIndex].mode) {
+
+                    case OPT_SET_FLAG:
+                        SETF(longOpts[longIndex].flag, *(int *) longOpts[longIndex].context);
+                        break;
+
+                    case OPT_CLR_FLAG:
+                        CLRF(longOpts[longIndex].flag, *(int *) longOpts[longIndex].context);
+                        break;
+
+                    default:
+                        longOpts[longIndex].fn(longOpts[longIndex].context, optarg, longOpts[longIndex].opt);
+                        break;
+                }
                 break;
 
             case '?':
@@ -184,7 +201,20 @@ opt_result_t opt_parse_args(int argc, char *const argv[])
             default:
                 for (i = 0;  i < numShrtOpts;  ++i) {
                     if (option == shrtOpts[i].opt[0]) {
-                        shrtOpts[i].fn(shrtOpts[i].context, optarg, shrtOpts[i].opt);
+                        switch (shrtOpts[i].mode) {
+
+                            case OPT_SET_FLAG:
+                                SETF(shrtOpts[i].flag, *(int *) shrtOpts[i].context);
+                                break;
+
+                            case OPT_CLR_FLAG:
+                                CLRF(shrtOpts[i].flag, *(int *) shrtOpts[i].context);
+                                break;
+
+                            default:
+                                shrtOpts[i].fn(shrtOpts[i].context, optarg, shrtOpts[i].opt);
+                                break;
+                        }
                         goto next;
                     }
                 }
