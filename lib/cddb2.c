@@ -103,10 +103,11 @@ static void cddb2_error(const char *format, ...)
 }
 
 
-static int disableCddb;
-static int disableCache;
-static int useHttp;
+#define CDDB2_FLAG_DISABLE_CDDB     0x00000001
+#define CDDB2_FLAG_DISABLE_CACHE    0x00000002
+#define CDDB2_FLAG_USE_HTTP         0x00000004
 
+static int flags;
 static char *cacheDir;
 static char *server;
 static int port;
@@ -118,9 +119,9 @@ void cddb2_opt_register_params()
 {
     opt_param_t opts[] = {
 
-        { "no-cddb",        &disableCddb,   opt_set_flag,       OPT_NONE },
-        { "no-cddb-cache",  &disableCache,  opt_set_flag,       OPT_NONE },
-        { "cddb-http",      &useHttp,       opt_set_flag,       OPT_NONE },
+        { "no-cddb",       &flags, NULL, OPT_SET_FLAG, CDDB2_FLAG_DISABLE_CDDB },
+        { "no-cddb-cache", &flags, NULL, OPT_SET_FLAG, CDDB2_FLAG_DISABLE_CACHE },
+        { "cddb-http",     &flags, NULL, OPT_SET_FLAG, CDDB2_FLAG_USE_HTTP },
 
         { "cddb-match",     &matchIndex,    opt_set_nat_no,     OPT_REQUIRED },
         { "cddb-server",    &server,        opt_set_string,     OPT_REQUIRED },
@@ -144,11 +145,11 @@ static cddb_conn_t *cddb2_create_connection_object()
         cddb2_fatal("out of memory creating CDDB connection object");
     }
 
-    if (disableCache) {
+    if (TSTF(CDDB2_FLAG_DISABLE_CACHE, flags)) {
         cddb_cache_disable(dbObj);
     }
 
-    if (useHttp) {
+    if (TSTF(CDDB2_FLAG_USE_HTTP, flags)) {
         cddb_http_enable(dbObj);
         if (!port) {
             cddb_set_server_port(dbObj, 80);
@@ -350,7 +351,7 @@ cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj, int verbose)
     FILE *save;
     int matches = 0;
 
-    if (disableCddb) {
+    if (TSTF(CDDB2_FLAG_DISABLE_CDDB, flags)) {
         return NULL;
     } else if (verbose) {
         printf("progress: querying cddb\n");
