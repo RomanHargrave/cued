@@ -2,15 +2,11 @@ create toc file (-t)
     why not?
         cue sheet is well supported by cdrdao
 
-handle multi-session?
-    why not?
-        does this case matter?
-    paranoia example uses alternate sector routines...
-        should use with paranoia?
-
 add alternate Q subchannel read method?
+
     why not?
         too complicated and newer drives support mmc read
+
     use DAP and position commands
 
     10% of track back until index that is non-zero found, then read forward?
