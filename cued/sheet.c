@@ -128,8 +128,8 @@ void cued_write_cuefile(
             fprintf(rip->cueFile, "    FLAGS%s%s%s\n", copy ? " DCP" : "", (4 == channels) ? " 4CH" : "", preemp ? " PRE" : "");
         }
 
-        if (rip->isrc[track][0]) {
-            fprintf(rip->cueFile, "    ISRC %s\n", rip->isrc[track]);
+        if (rip->ripData[track].isrc[0]) {
+            fprintf(rip->cueFile, "    ISRC %s\n", rip->ripData[track].isrc);
         }
 
         lba = cdio_get_track_lba(rip->cdObj, track);
@@ -137,7 +137,7 @@ void cued_write_cuefile(
             cdio2_abort("failed to get first sector number for track %02d", track);
         }
 
-        ripLba = rip->indices[track];
+        ripLba = rip->ripData[track].indices;
         if (ripLba[1]) {
             for (index = 0;  index < CUED_MAX_INDICES;  ++index) {
 

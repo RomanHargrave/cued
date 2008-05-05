@@ -32,6 +32,14 @@
 #define CUED_MAX_INDICES 100
 
 
+typedef struct _rip_data_t {
+
+    lsn_t indices[ CUED_MAX_INDICES ];
+    char  isrc   [ ISRC_LEN + 1 ];
+
+} rip_data_t;
+
+
 typedef struct _mmc_audio_buffer_t {
 
     int16_t buf[CD_FRAMEWORDS];
@@ -130,10 +138,9 @@ typedef struct _rip_context_t {
     //
     // rip data
     //
-    char  mcn[ MCN_LEN + 1 ];
-    char  isrc   [ CDIO_CD_MAX_TRACKS + 1 ][ ISRC_LEN + 1 ];
-    lsn_t indices[ CDIO_CD_MAX_TRACKS + 1 ][ CUED_MAX_INDICES ];
-    int   year;
+    rip_data_t ripData[ CDIO_CD_MAX_TRACKS + 1 ];
+    char mcn[ MCN_LEN + 1 ];
+    int year;
 
     //
     // cued_parse_qsc variables

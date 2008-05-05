@@ -406,7 +406,7 @@ int main(int argc, char *const argv[])
                 // for image files, libcdio may have the pregap;  if so, use it
                 pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
                 if (CDIO_INVALID_LBA != pregap) {
-                    ripLba = rip.indices[track];
+                    ripLba = rip.ripData[track].indices;
                     if (!ripLba[0]) {
                         ripLba[0] = pregap;
                         cdio_info("using pregap from cdio");
@@ -424,8 +424,8 @@ int main(int argc, char *const argv[])
                 // for image files, libcdio may have the isrc;  if so, use it
                 isrc = cdio_get_track_isrc(rip.cdObj, track);
                 if (isrc) {
-                    // rip.isrc[track] is already null terminated
-                    strncpy(rip.isrc[track], isrc, ISRC_LEN);
+                    // rip.ripData[track].isrc is already null terminated
+                    strncpy(rip.ripData[track].isrc, isrc, ISRC_LEN);
                     free(isrc);
                 }
             }
@@ -441,8 +441,8 @@ int main(int argc, char *const argv[])
                     // (heuristic) check for DAO
                     if (mcn) {
                         free(mcn);
-                        rip.indices[firstTrack][0] = CDIO_PREGAP_SECTORS;
-                        rip.indices[firstTrack][1] = lba;
+                        rip.ripData[firstTrack].indices[0] = CDIO_PREGAP_SECTORS;
+                        rip.ripData[firstTrack].indices[1] = lba;
                     }
                 }
             }

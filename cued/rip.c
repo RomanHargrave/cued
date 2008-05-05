@@ -35,9 +35,8 @@
 
 void cued_init_rip_data(rip_context_t *rip)
 {
-    memset(rip->indices, 0x00, sizeof(rip->indices));
+    memset(rip->ripData, 0x00, sizeof(rip->ripData));
     memset(rip->mcn,     0x00, sizeof(rip->mcn));
-    memset(rip->isrc,    0x00, sizeof(rip->isrc));
     rip->year = 0;
 
     rip->trackHint = 0;
@@ -67,7 +66,7 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
                 // set this for ISRC case
                 rip->trackHint = index.track;
 
-                currLba = &rip->indices[ index.track ][ index.index ];
+                currLba = &rip->ripData[index.track].indices[index.index];
                 if (!*currLba || index.absoluteLba < *currLba) {
                     *currLba = index.absoluteLba;
                 }
@@ -87,7 +86,7 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
             break;
 
         case QSC_MODE_ISRC:
-            isrc = rip->isrc[rip->trackHint];
+            isrc = rip->ripData[rip->trackHint].isrc;
             if (!isrc[0]) {
                 if (qsc_get_isrc(qsc, isrc)) {
                     cdio_warn("invalid isrc found in q sub-channel");
