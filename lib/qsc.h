@@ -79,6 +79,10 @@ extern int qsc_get_mcn  (qsc_buffer_t *qsc, char *mcn);
 extern int qsc_get_isrc (qsc_buffer_t *qsc, char *isrc);
 extern int qsc_get_index(qsc_buffer_t *qsc, qsc_index_t *index);
 
+extern int qsc_has_pre_emphasis  (qsc_buffer_t *qsc);
+extern int qsc_has_copy_permitted(qsc_buffer_t *qsc);
+extern int qsc_has_four_channels (qsc_buffer_t *qsc);
+
 extern int qsc_get_psc  (qsc_buffer_t *qsc);
 
 extern int qsc_get_isrc_year(char *isrc);

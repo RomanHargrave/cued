@@ -93,7 +93,7 @@ void cued_write_cuefile(
         lba_t *ripLba;
         lba_t lba, useLba;
         track_flag_t flagrc;
-        int preemp, copy, index;
+        int preemp, copy, index, flags;
         char msfStr[ MSF_LEN + 1 ];
 
         if (TRACK_FORMAT_AUDIO != cdio_get_track_format(rip->cdObj, track)) {
@@ -117,6 +117,22 @@ void cued_write_cuefile(
             copy = 0;
         } else {
             copy = (CDIO_TRACK_FLAG_TRUE == flagrc) ? 1 : 0;
+        }
+
+        flags = rip->ripData[track].flags;
+        if (TSTF(RIP_F_DATA_VALID, flags)) {
+            if (!copy && TSTF(RIP_F_DATA_COPY_PERMITTED, flags)) {
+                cdio_warn("Q sub-channel indicates copy is permitted for track %02d whereas TOC does not;  setting copy permitted", track);
+                copy = 1;
+            }
+            if (!preemp && TSTF(RIP_F_DATA_PRE_EMPHASIS, flags)) {
+                cdio_warn("Q sub-channel indicates pre-emphasis for track %02d whereas TOC does not;  setting pre-emphasis", track);
+                preemp = 1;
+            }
+            if (2 == channels && TSTF(RIP_F_DATA_FOUR_CHANNELS, flags)) {
+                cdio_warn("Q sub-channel indicates four channels for track %02d whereas TOC does not;  setting four channels", track);
+                channels = 4;
+            }
         }
 
         // output track level cue info

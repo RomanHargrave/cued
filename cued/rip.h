@@ -36,6 +36,7 @@ typedef struct _rip_data_t {
 
     lsn_t indices[ CUED_MAX_INDICES ];
     char  isrc   [ ISRC_LEN + 1 ];
+    int flags;
 
 } rip_data_t;
 
@@ -51,24 +52,29 @@ typedef struct _mmc_audio_buffer_t {
 } mmc_audio_buffer_t;
 
 
-#define RIP_FLAG_VERBOSE                0x00000001
-#define RIP_FLAG_RIP_TO_ONE_FILE        0x00000002
-#define RIP_FLAG_GET_INDICES            0x00000004
-#define RIP_FLAG_USE_FORMATTED_QSC      0x00000008
-#define RIP_FLAG_USE_PARANOIA           0x00000010
-#define RIP_FLAG_EXTRACT                0x00000020
-#define RIP_FLAG_SILENT_PREGAP          0x00000040
-#define RIP_FLAG_NOISY_PREGAP           0x00000080
+#define RIP_F_VERBOSE             0x00000001
+#define RIP_F_RIP_TO_ONE_FILE     0x00000002
+#define RIP_F_GET_INDICES         0x00000004
+#define RIP_F_USE_FORMATTED_QSC   0x00000008
+#define RIP_F_USE_PARANOIA        0x00000010
+#define RIP_F_EXTRACT             0x00000020
+#define RIP_F_SILENT_PREGAP       0x00000040
+#define RIP_F_NOISY_PREGAP        0x00000080
+
+#define RIP_F_DATA_VALID          0x00000001
+#define RIP_F_DATA_PRE_EMPHASIS   0x00000002
+#define RIP_F_DATA_COPY_PERMITTED 0x00000004
+#define RIP_F_DATA_FOUR_CHANNELS  0x00000008
 
 
-#define ripVerbose          TSTF(RIP_FLAG_VERBOSE,              rip->flags)
-#define ripToOneFile        TSTF(RIP_FLAG_RIP_TO_ONE_FILE,      rip->flags)
-#define ripGetIndices       TSTF(RIP_FLAG_GET_INDICES,          rip->flags)
-#define ripUseFormattedQsc  TSTF(RIP_FLAG_USE_FORMATTED_QSC,    rip->flags)
-#define ripUseParanoia      TSTF(RIP_FLAG_USE_PARANOIA,         rip->flags)
-#define ripExtract          TSTF(RIP_FLAG_EXTRACT,              rip->flags)
-#define ripSilentPregap     TSTF(RIP_FLAG_SILENT_PREGAP,        rip->flags)
-#define ripNoisyPregap      TSTF(RIP_FLAG_NOISY_PREGAP,         rip->flags)
+#define ripVerbose          TSTF(RIP_F_VERBOSE,              rip->flags)
+#define ripToOneFile        TSTF(RIP_F_RIP_TO_ONE_FILE,      rip->flags)
+#define ripGetIndices       TSTF(RIP_F_GET_INDICES,          rip->flags)
+#define ripUseFormattedQsc  TSTF(RIP_F_USE_FORMATTED_QSC,    rip->flags)
+#define ripUseParanoia      TSTF(RIP_F_USE_PARANOIA,         rip->flags)
+#define ripExtract          TSTF(RIP_F_EXTRACT,              rip->flags)
+#define ripSilentPregap     TSTF(RIP_F_SILENT_PREGAP,        rip->flags)
+#define ripNoisyPregap      TSTF(RIP_F_NOISY_PREGAP,         rip->flags)
 
 
 typedef struct _rip_context_t {

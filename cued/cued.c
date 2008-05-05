@@ -213,12 +213,12 @@ int main(int argc, char *const argv[])
         { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
         { "format-help", NULL,           cued_format_help,   OPT_NONE },
 
-        { "i", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_GET_INDICES },
-        { "p", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_USE_PARANOIA },
-        { "v", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_VERBOSE },
-        { "w", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_RIP_TO_ONE_FILE },
-        { "x", &optFlags, NULL,      OPT_SET_FLAG, RIP_FLAG_EXTRACT },
-        { "qsc-fq", &optFlags, NULL, OPT_SET_FLAG, RIP_FLAG_USE_FORMATTED_QSC },
+        { "i", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_GET_INDICES },
+        { "p", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_USE_PARANOIA },
+        { "v", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_VERBOSE },
+        { "w", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
+        { "x", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_EXTRACT },
+        { "qsc-fq", &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {
@@ -274,7 +274,7 @@ int main(int argc, char *const argv[])
             cdio2_abort("unrecognized device \"%s\"", devName);
         }
 
-        if (TSTF(RIP_FLAG_VERBOSE, rip.flags)) {
+        if (TSTF(RIP_F_VERBOSE, rip.flags)) {
             printf("progress: opened device \"%s\"\n", devName);
         }
 
@@ -328,7 +328,7 @@ int main(int argc, char *const argv[])
             rip.lastTrack = optLastRipTrack;
         }
 
-        rip.cddbObj = cddb2_get_disc(rip.cdObj, TSTF(RIP_FLAG_VERBOSE, rip.flags));
+        rip.cddbObj = cddb2_get_disc(rip.cdObj, TSTF(RIP_F_VERBOSE, rip.flags));
 
         // user may want to know cue file will not be created before ripping all tracks
         // b/c they may have specified -i
@@ -370,12 +370,12 @@ int main(int argc, char *const argv[])
                 fileNameBuffer, sizeof(fileNameBuffer)
                 );
 
-            if (TSTF(RIP_FLAG_EXTRACT, rip.flags)) {
+            if (TSTF(RIP_F_EXTRACT, rip.flags)) {
 
                 cued_rip_disc(&rip);
 
                 // remove track 0 tag file if track 0 pre-gap file was either removed or never generated
-                if (format_has_tags() && 1 == rip.firstTrack && !TSTF(RIP_FLAG_NOISY_PREGAP, rip.flags)) {
+                if (format_has_tags() && 1 == rip.firstTrack && !TSTF(RIP_F_NOISY_PREGAP, rip.flags)) {
                     cddb_track_t *trackObj = cddb2_get_track(rip.cddbObj, 0);
                     if (!format_apply_pattern(rip.cdObj, rip.cddbObj, trackObj,
                             rip.fileNamePattern, TAG_FILE_EXT, 0, fileNameBuffer, sizeof(fileNameBuffer), 0))
@@ -390,7 +390,7 @@ int main(int argc, char *const argv[])
                     }
                 }
             }
-        } else if (TSTF(RIP_FLAG_GET_INDICES, rip.flags) || rip.qSubChannelFileName) {
+        } else if (TSTF(RIP_F_GET_INDICES, rip.flags) || rip.qSubChannelFileName) {
             cued_rip_disc(&rip);
         }
 

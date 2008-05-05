@@ -182,6 +182,33 @@ uint8_t NABBLE(uint8_t *v, int n)
 }
 
 
+int qsc_has_pre_emphasis(qsc_buffer_t *p)
+{
+    qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
+    int ctl = CTL_MASK(qsc->ctl_adr);
+
+    return (qsc_ctl_flag_audio_pre_emphasis & ctl);
+}
+
+
+int qsc_has_copy_permitted(qsc_buffer_t *p)
+{
+    qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
+    int ctl = CTL_MASK(qsc->ctl_adr);
+
+    return (qsc_ctl_flag_copy_permitted & ctl);
+}
+
+
+int qsc_has_four_channels(qsc_buffer_t *p)
+{
+    qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
+    int ctl = CTL_MASK(qsc->ctl_adr);
+
+    return (qsc_ctl_flag_audio_four_channel & ctl);
+}
+
+
 int qsc_get_mcn(qsc_buffer_t *p, char *mcn)
 {
     int i;

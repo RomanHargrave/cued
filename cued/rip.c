@@ -47,6 +47,7 @@ void cued_init_rip_data(rip_context_t *rip)
 
 static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
 {
+    int flags;
     qsc_index_t index;
     lba_t *currLba;
     char *isrc;
@@ -69,8 +70,21 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
                 currLba = &rip->ripData[index.track].indices[index.index];
                 if (!*currLba || index.absoluteLba < *currLba) {
                     *currLba = index.absoluteLba;
-                }
 
+                    // do not do this for every record;  hence, inside the if statement
+                    flags = 0;
+                    SETF(RIP_F_DATA_VALID, flags);
+                    if (qsc_has_pre_emphasis(qsc)) {
+                        SETF(RIP_F_DATA_PRE_EMPHASIS, flags);
+                    }
+                    if (qsc_has_copy_permitted(qsc)) {
+                        SETF(RIP_F_DATA_COPY_PERMITTED, flags);
+                    }
+                    if (qsc_has_four_channels(qsc)) {
+                        SETF(RIP_F_DATA_FOUR_CHANNELS, flags);
+                    }
+                    rip->ripData[index.track].flags = flags;
+                }
             } else {
                 cdio_warn("invalid index found in q sub-channel");
             }
@@ -327,7 +341,7 @@ void cued_rip_to_file(rip_context_t *rip)
         if (!track && !ripNoisyPregap) {
             for (i = 0;  i < wordsToWrite;  ++i) {
                 if (pbuf[i]) {
-                    SETF(RIP_FLAG_NOISY_PREGAP, rip->flags);
+                    SETF(RIP_F_NOISY_PREGAP, rip->flags);
                     break;
                 }
             }
@@ -335,7 +349,7 @@ void cued_rip_to_file(rip_context_t *rip)
     }
 
     if (!track && !ripNoisyPregap) {
-        SETF(RIP_FLAG_SILENT_PREGAP, rip->flags);
+        SETF(RIP_F_SILENT_PREGAP, rip->flags);
     }
 
     if (ripExtract) {
@@ -476,11 +490,11 @@ void cued_rip_disc(rip_context_t *rip)
                 cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
 
                 cdio_error("disabling paranoia");
-                CLRF(RIP_FLAG_USE_PARANOIA, rip->flags);
+                CLRF(RIP_F_USE_PARANOIA, rip->flags);
             }
         } else {
             cdio_error("disabling paranoia due to the following message(s):\n%s", msg);
-            CLRF(RIP_FLAG_USE_PARANOIA, rip->flags);
+            CLRF(RIP_F_USE_PARANOIA, rip->flags);
         }
     }
 
