@@ -24,27 +24,6 @@
 //      cued diskImage.cue
 //      etc.
 //
-//  TODO:
-//
-//      MEDIUM PRIORITY
-//
-//          overread support
-//              need to handle error of read inside/outside audio track during offset correction?
-//
-//              can read 2 second audio lead-in/lead-out with read-msf?  mmc-read?
-//
-//              stuff to read cd text/qsc in toc/lead-in?
-//
-//          handle other types of tracks (such as data)
-//              some cd's in my collection may be mixed mode
-//                  cddb talks about cd-extra
-//
-//      LOW PRIORITY
-//
-//          opt functions should return int?
-//
-//          always check return of cddb2_get_file_path?
-//
 
 #include "unix.h"
 #include "macros.h"
