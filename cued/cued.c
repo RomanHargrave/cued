@@ -72,7 +72,8 @@ static void usage(const char *exeName)
                 "\t-v             report progress\n"
                 "\t-w             rip to one file (requires -x and -n, or -q, or -i)\n"
                 "\t-x             extract tracks (requires -n)\n"
-                "\t--qsc-fq       reading of Q sub-channel uses formatted Q method\n"
+                "\t--qsc-ecc      read Q sub-channel using error correction (requires -i)\n"
+                "\t--qsc-fmt      read Q sub-channel using formatted method (requires -i)\n"
                 "\t--format-help  display format help\n"
                 "\n"
                 , exeName
@@ -192,12 +193,13 @@ int main(int argc, char *const argv[])
         { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
         { "format-help", NULL,           cued_format_help,   OPT_NONE },
 
-        { "i", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_GET_INDICES },
-        { "p", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_USE_PARANOIA },
-        { "v", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_VERBOSE },
-        { "w", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
-        { "x", &optFlags, NULL,      OPT_SET_FLAG, RIP_F_EXTRACT },
-        { "qsc-fq", &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
+        { "i", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_GET_INDICES },
+        { "p", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_USE_PARANOIA },
+        { "v", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_VERBOSE },
+        { "w", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
+        { "x", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_EXTRACT },
+        { "qsc-fmt", &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
+        { "qsc-ecc", &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {

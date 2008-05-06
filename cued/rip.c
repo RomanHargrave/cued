@@ -154,7 +154,7 @@ static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
             false,
 
             // select sub-channel
-            (ripUseFormattedQsc ? 2 : 1),
+            (ripUseFormattedQsc ? 2 : (ripUseEccQsc ? 4 : 1)),
             (ripUseFormattedQsc ? sizeof(rip->audioBuf.fmtQsc) : sizeof(rip->audioBuf.rawPWsc)) + sizeof(rip->audioBuf.buf),
 
             // number of sectors
@@ -421,7 +421,7 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
         false,
 
         // select sub-channel
-        (ripUseFormattedQsc ? 2 : 1),
+        (ripUseFormattedQsc ? 2 : (ripUseEccQsc ? 4 : 1)),
         (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
         sectors);
 

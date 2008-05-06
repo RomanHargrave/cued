@@ -60,6 +60,7 @@ typedef struct _mmc_audio_buffer_t {
 #define RIP_F_EXTRACT             0x00000020
 #define RIP_F_SILENT_PREGAP       0x00000040
 #define RIP_F_NOISY_PREGAP        0x00000080
+#define RIP_F_USE_ECC_QSC         0x00000100
 
 #define RIP_F_DATA_VALID          0x00000001
 #define RIP_F_DATA_PRE_EMPHASIS   0x00000002
@@ -75,6 +76,7 @@ typedef struct _mmc_audio_buffer_t {
 #define ripExtract          TSTF(RIP_F_EXTRACT,              rip->flags)
 #define ripSilentPregap     TSTF(RIP_F_SILENT_PREGAP,        rip->flags)
 #define ripNoisyPregap      TSTF(RIP_F_NOISY_PREGAP,         rip->flags)
+#define ripUseEccQsc        TSTF(RIP_F_USE_ECC_QSC,          rip->flags)
 
 
 typedef struct _rip_context_t {
