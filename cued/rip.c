@@ -451,7 +451,7 @@ long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSect
 }
 
 
-void cued_rip_disc(rip_context_t *rip)
+static void cued_rip_prologue(rip_context_t *rip)
 {
     if (ripUseParanoia) {
         char *msg = 0;
@@ -521,6 +521,40 @@ void cued_rip_disc(rip_context_t *rip)
     } else {
         //cdio_debug("end of disc sector is %d", rip->endOfDiscSector);
     }
+}
+
+
+static void cued_rip_epilogue(rip_context_t *rip)
+{
+    if (ripUseParanoia) {
+        if (ripGetIndices) {
+            free(rip->mmcBuf);
+            rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
+        }
+        cdio_paranoia_free(rip->paranoiaRipObj);
+        cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
+    }
+
+    if (rip->qSubChannelFileName && rip->qSubChannelFile != stdout) {
+        fclose(rip->qSubChannelFile);
+    }
+
+    if (rip->crcFailure || rip->crcSuccess) {
+        int totalCrcs = rip->crcSuccess + rip->crcFailure;
+
+        if (rip->crcFailure * 100 / totalCrcs > 5) {
+            cdio_warn("greater than 5 percent of Q sub-channel records failed CRC check (try --qsc-fq?)");
+        }
+        if (ripVerbose) {
+            printf("progress: correctly read %d of %d Q sub-channel records\n", rip->crcSuccess, totalCrcs);
+        }
+    }
+}
+
+
+void cued_rip_disc(rip_context_t *rip)
+{
+    cued_rip_prologue(rip);
 
     if (ripToOneFile) {
 
@@ -608,27 +642,5 @@ void cued_rip_disc(rip_context_t *rip)
         }
     }
 
-    if (ripUseParanoia) {
-        if (ripGetIndices) {
-            free(rip->mmcBuf);
-            rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
-        }
-        cdio_paranoia_free(rip->paranoiaRipObj);
-        cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
-    }
-
-    if (rip->qSubChannelFileName && rip->qSubChannelFile != stdout) {
-        fclose(rip->qSubChannelFile);
-    }
-
-    if (rip->crcFailure || rip->crcSuccess) {
-        int totalCrcs = rip->crcSuccess + rip->crcFailure;
-
-        if (rip->crcFailure * 100 / totalCrcs > 5) {
-            cdio_warn("greater than 5 percent of Q sub-channel records failed CRC check (try --qsc-fq?)");
-        }
-        if (ripVerbose) {
-            printf("progress: correctly read %d of %d Q sub-channel records\n", rip->crcSuccess, totalCrcs);
-        }
-    }
+    cued_rip_epilogue(rip);
 }

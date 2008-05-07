@@ -588,3 +588,30 @@ extern int   rip_year;
         }
         usage(exeName);
     }
+
+
+
+void cued_rip_leadin(rip_context_t *rip, const char *leadInFileName)
+{
+    lsn_t currSector;
+    PIT(int16_t, pbuf);
+
+    // does not return on error
+    (void) format_get_file_path(rip->cdObj, rip->cddbObj,
+        leadInFileName, cued_fmt_to_ext(rip->soundFileFormat), 0,
+        rip->fileNameBuffer, rip->bufferSize
+        );
+
+    rip->currentTrack = 0;
+
+    cued_rip_prologue(rip);
+
+    for (currSector = 0xF0000000;  currSector < rip->firstSector + QSC_FPG;  ++currSector) {
+
+    //currSector = 0xF0000000;
+        pbuf = cued_read_audio(rip, currSector);
+    }
+
+    cued_rip_epilogue(rip);
+}
+
