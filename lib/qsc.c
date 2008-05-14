@@ -322,6 +322,11 @@ int qsc_lba_to_msf(lba_t lba, msf_t *msf)
 {
     int min, sec, frm;
 
+    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
+    if (lba < 0) {
+        lba += 450000;
+    }
+
     min  = lba / QSC_FPM;
     lba %= QSC_FPM;
     sec  = lba / QSC_FPS;
@@ -359,6 +364,11 @@ int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
     }
 
     *lba = min * QSC_FPM + sec * QSC_FPS + frm;
+
+    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
+    if (min >= 90) {
+        *lba -= 450000;
+    }
 
     return 0;
 }
