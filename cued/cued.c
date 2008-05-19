@@ -66,14 +66,16 @@ static void usage(const char *exeName)
                 "\t-o samples     offset correction (EAC-30)\n"
                 "\t-p             enable paranoia\n"
                 "\t-q format      output Q sub-channel (mutually exclusive with -p)\n"
-                "\t-r retries     defaults to %d (requires -p)\n"
+                "\t-r retries     defaults to %d\n"
                 "\t-s speed       set CD-ROM drive speed\n"
                 "\t-t format      tag; use repeatedly (requires -n; see --format-help)\n"
                 "\t-v             report progress\n"
                 "\t-w             rip to one file (requires -x and -n, or -q, or -i)\n"
                 "\t-x             extract tracks (requires -n)\n"
+                "\t--dap-fixup    drive fixes audio errors using interpolation (>= MMC-4)\n"
                 "\t--qsc-ecc      read Q sub-channel using error correction (requires -i)\n"
-                "\t--qsc-fmt      read Q sub-channel using formatted method (requires -i)\n"
+                "\t--qsc-format   read Q sub-channel using formatted method (requires -i)\n"
+                "\t--read-pre-gap read disc pre-gap for missing samples, if necessary\n"
                 "\t--format-help  display format help\n"
                 "\n"
                 , exeName
@@ -198,8 +200,10 @@ int main(int argc, char *const argv[])
         { "v", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_VERBOSE },
         { "w", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
         { "x", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_EXTRACT },
-        { "qsc-fmt", &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
-        { "qsc-ecc", &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
+        { "dap-fixup",    &optFlags, NULL, OPT_SET_FLAG, RIP_F_DAP_FIXUP },
+        { "read-pre-gap", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
+        { "qsc-ecc",      &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
+        { "qsc-format",   &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {

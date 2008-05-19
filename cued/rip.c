@@ -33,6 +33,87 @@
 #include <sndfile.h>
 
 
+
+
+#include <cdio/util.h> // cdio_from_bcd8
+
+/* Maximum blocks to retrieve. Would be nice to customize this based on
+   drive capabilities.
+*/
+#define MAX_CD_READ_BLOCKS 16
+#define CD_READ_TIMEOUT_MS mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2)
+
+/*! issue an MMC READ CD MSF command.
+*/
+driver_return_code_t
+mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                  int read_sector_type, bool b_digital_audio_play,
+                  bool b_sync, uint8_t header_codes, bool b_user_data,
+                  bool b_edc_ecc, uint8_t c2_error_information,
+                  uint8_t subchannel_selection, uint16_t i_blocksize,
+                  uint32_t i_blocks )
+{
+  mmc_cdb_t cdb = {{0, }};
+  uint8_t cdb9 = 0;
+
+  CDIO_MMC_SET_COMMAND  (cdb.field, CDIO_MMC_GPCMD_READ_MSF);
+  CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
+  if (b_digital_audio_play) { cdb.field[1] |= 0x2; }
+  
+  if (b_sync)      { cdb9 |= 128; }
+  if (b_user_data) { cdb9 |=  16; }
+  if (b_edc_ecc)   { cdb9 |=   8; }
+  cdb9 |= (header_codes & 3)         << 5;
+  cdb9 |= (c2_error_information & 3) << 1;
+  cdb.field[9]  = cdb9;
+
+  cdb.field[10] = (subchannel_selection & 7);
+  
+  {
+    unsigned int j = 0;
+    driver_return_code_t i_ret = DRIVER_OP_SUCCESS;
+    lba_t i_lba = QSC_LSN_TO_LBA(i_lsn);
+    const uint8_t i_cdb = mmc_get_cmd_len(cdb.field[0]);
+    msf_t start_msf, end_msf;
+
+    if (qsc_lba_to_msf(i_lba, &end_msf)) {
+      return DRIVER_OP_BAD_PARAMETER;
+    }
+        
+    while (i_blocks > 0) {
+      const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
+        ? MAX_CD_READ_BLOCKS : i_blocks;
+      void *p_buf2 = ((char *)p_buf ) + (j * i_blocksize);
+
+      start_msf = end_msf;
+      if (qsc_lba_to_msf(i_lba + j + i_blocks2, &end_msf)) {
+        return DRIVER_OP_BAD_PARAMETER;
+      }
+      
+      cdb.field[3] = cdio_from_bcd8(start_msf.m);
+      cdb.field[4] = cdio_from_bcd8(start_msf.s);
+      cdb.field[5] = cdio_from_bcd8(start_msf.f);
+      cdb.field[6] = cdio_from_bcd8(  end_msf.m);
+      cdb.field[7] = cdio_from_bcd8(  end_msf.s);
+      cdb.field[8] = cdio_from_bcd8(  end_msf.f);
+
+      i_ret = mmc_run_cmd_len (p_cdio, CD_READ_TIMEOUT_MS,
+                               &cdb, i_cdb,
+                               SCSI_MMC_DATA_READ, 
+                               i_blocksize * i_blocks2,
+                               p_buf2);
+
+      if (i_ret) { return i_ret; }
+
+      i_blocks -= i_blocks2;
+      j += i_blocks2;
+    }
+
+    return i_ret;
+  }
+}
+
+
 void cued_init_rip_data(rip_context_t *rip)
 {
     memset(rip->ripData, 0x00, sizeof(rip->ripData));
@@ -118,81 +199,175 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
 }
 
 
-static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
+typedef struct _audio_buffer_t {
+
+    int16_t buf[CD_FRAMEWORDS];
+
+} audio_buffer_t;
+
+
+static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf)
 {
-    driver_return_code_t rc;
+    uint8_t *mbuf, *dbuf;
+    int blockSize, subchannel, useMmc, retry, i;
+    driver_return_code_t drc;
     qsc_file_buffer_t qsc;
 
-    if (rip->qSubChannelFileName || ripGetIndices) {
+    blockSize = sizeof(audio_buffer_t);
 
-        rc = mmc_read_cd(
-            rip->cdObj,
-            &rip->audioBuf,
-            currSector,
-
-            // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
-            CDIO_MMC_READ_TYPE_ANY,
-
-            // DAP (Digital Audio Play);  if this is true, immediate error with msi, hp, microadvantage
-            false,
-
-            // return SYNC header
-            false,
-
-            // header codes
-            0,
-
-            // must return user data according to mmc5 spec
-            true,
-
-            // no EDC or ECC is included with audio data
-            false,
-
-            // C2 error information is synthetic;  it is not needed to get Q sub-channel,
-            // even though it is an adjacent field according to the standard
-            //
-            false,
-
-            // select sub-channel
-            (ripUseFormattedQsc ? 2 : (ripUseEccQsc ? 4 : 1)),
-            (ripUseFormattedQsc ? sizeof(rip->audioBuf.fmtQsc) : sizeof(rip->audioBuf.rawPWsc)) + sizeof(rip->audioBuf.buf),
-
-            // number of sectors
-            1);
-
-        if (DRIVER_OP_SUCCESS == rc) {
-
-            if (ripUseFormattedQsc) {
-                qsc.buf = rip->audioBuf.fmtQsc;
+    if (ripGetIndices || rip->qSubChannelFileName) {
+        if (ripUseFormattedQsc) {
+            subchannel = 2;
+            blockSize += sizeof(qsc_buffer_t);
+        } else {
+            blockSize += sizeof(mmc_raw_pwsc_t);
+            if (ripUseEccQsc) {
+                subchannel = 4;
             } else {
-                pwsc_get_qsc(&rip->audioBuf.rawPWsc, &qsc.buf);
+                subchannel = 1;
+            }
+        }
+    } else {
+        subchannel = 0;
+    }
+
+    if (subchannel || ripReadPregap || ripDapFixup) {
+        useMmc = 1;
+    } else {
+        useMmc = 0;
+    }
+
+    if (sectors > rip->allocatedSectors) {
+        free(rip->mmcBuf);
+        rip->mmcBuf = (uint8_t *) malloc(sectors * blockSize);
+        if (rip->mmcBuf) {
+            rip->allocatedSectors = sectors;
+        } else {
+            rip->allocatedSectors = 0;
+            cdio2_abort("out of memory reading %ld sectors", sectors);
+        }
+    }
+
+    retry = rip->retries;
+    do {
+
+        if (useMmc) {
+
+            drc = mmc_read_cd_msf(
+                rip->cdObj,
+                (pbuf && !subchannel) ? (void *) pbuf : rip->mmcBuf,
+                firstSector,
+
+                // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
+                CDIO_MMC_READ_TYPE_ANY,
+
+                // DAP (Digital Audio Play)
+                ripDapFixup ? true : false,
+
+                // return SYNC header
+                false,
+
+                // header codes
+                0,
+
+                // must return user data according to mmc5 spec
+                true,
+
+                // no EDC or ECC is included with audio data
+                false,
+
+                // C2 error information is synthetic;  it is not needed to get Q sub-channel,
+                // even though it is an adjacent field according to the standard
+                //
+                false,
+
+                subchannel,
+                blockSize,
+                sectors);
+
+            if (DRIVER_OP_SUCCESS == drc) {
+
+                if (subchannel) {
+
+                    mbuf = dbuf = rip->mmcBuf;
+                    for (i = 0;  i < sectors;  ++i) {
+
+                        if (pbuf) {
+                            memcpy(pbuf[i].buf, mbuf, sizeof(audio_buffer_t));
+                        } else {
+                            //dbuf = rip->mmcBuf + i * sizeof(audio_buffer_t);
+                            if (dbuf != mbuf) {
+                                memmove(dbuf, mbuf, sizeof(audio_buffer_t));
+                            }
+                            dbuf += sizeof(audio_buffer_t);
+                        }
+                        mbuf += sizeof(audio_buffer_t);
+
+                        // if (subchannel) {
+
+                        if (ripUseFormattedQsc) {
+                            memcpy(&qsc.buf, mbuf, sizeof(qsc_buffer_t));
+                            mbuf += sizeof(qsc_buffer_t);
+                        } else {
+                            pwsc_get_qsc((mmc_raw_pwsc_t *) mbuf, &qsc.buf);
+                            mbuf += sizeof(mmc_raw_pwsc_t);
+                        }
+
+                        if (ripGetIndices) {
+                            cued_parse_qsc(&qsc.buf, rip);
+                        }
+
+                        if (!ripUseParanoia && rip->qSubChannelFileName) {
+                            qsc.requested = firstSector + i;
+                            if (1 != fwrite(&qsc, sizeof(qsc), 1, rip->qSubChannelFile)) {
+                                // probably out of disk space, which is bad, because most things rely on it
+                                cdio2_unix_error("fwrite", rip->qSubChannelFileName, 0);
+                                cdio2_abort("failed to write to file \"%s\"", rip->qSubChannelFileName);
+                            }
+                        }
+                    }
+                }
+
+                return drc;
             }
 
-            cued_parse_qsc(&qsc.buf, rip);
+        } else {
 
-            if (rip->qSubChannelFileName) {
-                qsc.requested = currSector;
-                if (1 != fwrite(&qsc, sizeof(qsc), 1, rip->qSubChannelFile)) {
-                    // probably out of disk space, which is bad, because most things rely on it
-                    cdio2_unix_error("fwrite", rip->qSubChannelFileName, 0);
-                    cdio2_abort("failed to write to file \"%s\"", rip->qSubChannelFileName);
-                }
+            drc = cdio_read_audio_sectors(rip->cdObj, pbuf ? (void *) pbuf : rip->mmcBuf, firstSector, sectors);
+            if (DRIVER_OP_SUCCESS == drc) {
+                return drc;
             }
         }
 
-    } else {
-        rc = cdio_read_audio_sector(rip->cdObj, rip->audioBuf.buf, currSector);
+        cdio2_driver_error(drc, "read of audio sector");
+
+    } while (retry--);
+
+    cdio_error("skipping extraction of audio sectors %d through %ld in track %02d", firstSector, firstSector + sectors - 1, rip->currentTrack);
+
+    return drc;
+}
+
+
+static long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector, long sectors)
+{
+    rip_context_t *rip;
+    long rc;
+    driver_return_code_t drc;
+
+    rip = (rip_context_t *) util_get_context(paranoiaCtlObj->p_cdio);
+    if (!rip) {
+        cdio2_abort("failed to get rip context in paranoid read");
     }
 
-    if (DRIVER_OP_SUCCESS != rc) {
-        cdio2_driver_error(rc, "read of audio sector");
-        cdio_error("skipping extraction of audio sector %d in track %02d", currSector, rip->currentTrack);
-
-        return NULL;
+    drc = cued_read_audio(rip, firstSector, sectors, (audio_buffer_t *) pb);
+    if (DRIVER_OP_SUCCESS == drc) {
+        rc = sectors;
     } else {
-
-        return rip->audioBuf.buf;
+        rc = drc;
     }
+
+    return rc;
 }
 
 
@@ -250,7 +425,7 @@ void cued_rip_to_file(rip_context_t *rip)
     if (ripUseParanoia) {
         lsn_t seekSector;
 
-        if (currSector < 0) {
+        if (currSector < 0 && !ripReadPregap) {
             seekSector = 0;
         } else {
             seekSector = currSector;
@@ -285,10 +460,22 @@ void cued_rip_to_file(rip_context_t *rip)
 
     for (;  currSector <= rip->lastSector;  ++currSector) {
 
-        if (currSector < 0 || currSector >= rip->endOfDiscSector) {
+        if ((currSector < 0 && !ripReadPregap) || currSector >= rip->endOfDiscSector) {
 
-            memset(rip->audioBuf.buf, 0x00, sizeof(rip->audioBuf.buf));
-            pbuf = rip->audioBuf.buf;
+            // N.B.  assume that if mmcBuf is not NULL, it is >= sizeof(audio_buffer_t)
+            if (!rip->mmcBuf) {
+
+                // TODO:  this is FUBAR
+                rip->mmcBuf = (uint8_t *) malloc(sizeof(audio_buffer_t) + sizeof(mmc_raw_pwsc_t));
+                if (rip->mmcBuf) {
+                    rip->allocatedSectors = 1;
+                } else {
+                    cdio2_abort("out of memory allocating overread sector");
+                }
+            }
+
+            memset(rip->mmcBuf, 0x00, sizeof(audio_buffer_t));
+            pbuf = rip->mmcBuf16;
 
         } else {
 
@@ -302,8 +489,9 @@ void cued_rip_to_file(rip_context_t *rip)
                     continue;
                 }
             } else {
-                pbuf = cued_read_audio(rip, currSector);
-                if (!pbuf) {
+                if (DRIVER_OP_SUCCESS == cued_read_audio(rip, currSector, 1, NULL)) {
+                    pbuf = rip->mmcBuf16;
+                } else {
                     continue;
                 }
             }
@@ -358,101 +546,11 @@ void cued_rip_to_file(rip_context_t *rip)
 }
 
 
-typedef struct _paranoia_audio_buffer_t {
-
-    int16_t buf[CD_FRAMEWORDS];
-
-} paranoia_audio_buffer_t;
-
-
-long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector, long sectors)
-{
-    paranoia_audio_buffer_t *pbuf = (paranoia_audio_buffer_t *) pb;
-    rip_context_t *rip;
-    uint8_t *mbuf;
-    long rc;
-    driver_return_code_t drc;
-    int i;
-    qsc_buffer_t qsc;
-
-    rip = (rip_context_t *) util_get_context(paranoiaCtlObj->p_cdio);
-    if (!rip) {
-        cdio2_abort("failed to get rip context in paranoid read");
-    }
-
-    if (sectors > rip->allocatedSectors) {
-        free(rip->mmcBuf);
-        rip->mmcBuf = (uint8_t *) malloc(sectors * (sizeof(paranoia_audio_buffer_t)
-                    + (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t))));
-        if (rip->mmcBuf) {
-            rip->allocatedSectors = sectors;
-        } else {
-            rip->allocatedSectors = 0;
-            cdio2_abort("out of memory reading %ld sectors", sectors);
-        }
-    }
-
-    drc = mmc_read_cd(
-        paranoiaCtlObj->p_cdio,
-        rip->mmcBuf,
-        firstSector,
-
-        // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
-        CDIO_MMC_READ_TYPE_ANY,
-
-        // DAP (Digital Audio Play);  if this is true, immediate error with msi, hp, microadvantage
-        false,
-
-        // return SYNC header
-        false,
-
-        // header codes
-        0,
-
-        // must return user data according to mmc5 spec
-        true,
-
-        // no EDC or ECC is included with audio data
-        false,
-
-        // C2 error information is synthetic;  it is not needed to get Q sub-channel,
-        // even though it is an adjacent field according to the standard
-        //
-        false,
-
-        // select sub-channel
-        (ripUseFormattedQsc ? 2 : (ripUseEccQsc ? 4 : 1)),
-        (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
-        sectors);
-
-    if (DRIVER_OP_SUCCESS == drc) {
-        mbuf = rip->mmcBuf;
-        for (i = 0;  i < sectors;  ++i) {
-
-            memcpy(pbuf[i].buf, mbuf, sizeof(paranoia_audio_buffer_t));
-            mbuf += sizeof(paranoia_audio_buffer_t);
-
-            if (ripUseFormattedQsc) {
-                cued_parse_qsc((qsc_buffer_t *) mbuf, rip);
-                mbuf += sizeof(qsc_buffer_t);
-            } else {
-                pwsc_get_qsc((mmc_raw_pwsc_t *) mbuf, &qsc);
-                cued_parse_qsc(&qsc, rip);
-                mbuf += sizeof(mmc_raw_pwsc_t);
-            }
-
-        }
-        rc = sectors;
-    } else {
-        rc = drc;
-    }
-
-    return rc;
-}
-
-
 static void cued_rip_prologue(rip_context_t *rip)
 {
+    rip->mmcBuf = NULL;
+    rip->allocatedSectors = 0;
+
     if (ripUseParanoia) {
         char *msg = 0;
         int rc;
@@ -480,12 +578,8 @@ static void cued_rip_prologue(rip_context_t *rip)
                 // N.B. not needed at the moment
                 cdio2_paranoia_msg(rip->paranoiaCtlObj, "setting of paranoia mode");
 
-                if (ripGetIndices) {
-                    rip->save_read_paranoid = rip->paranoiaCtlObj->read_audio;
-                    rip->paranoiaCtlObj->read_audio = cued_read_paranoid;
-                    rip->mmcBuf = NULL;
-                    rip->allocatedSectors = 0;
-                }
+                rip->save_read_paranoid = rip->paranoiaCtlObj->read_audio;
+                rip->paranoiaCtlObj->read_audio = cued_read_paranoid;
             } else {
                 cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
 
@@ -526,11 +620,10 @@ static void cued_rip_prologue(rip_context_t *rip)
 
 static void cued_rip_epilogue(rip_context_t *rip)
 {
+    free(rip->mmcBuf);
+
     if (ripUseParanoia) {
-        if (ripGetIndices) {
-            free(rip->mmcBuf);
-            rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
-        }
+        rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
         cdio_paranoia_free(rip->paranoiaRipObj);
         cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
     }

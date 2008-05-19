@@ -615,3 +615,330 @@ void cued_rip_leadin(rip_context_t *rip, const char *leadInFileName)
     cued_rip_epilogue(rip);
 }
 
+        //cued_rip_leadin(&rip, "foo");
+
+
+
+
+static int16_t *cued_read_leadin(rip_context_t *rip, lba_t currSector)
+{
+    driver_return_code_t rc;
+
+    rc = mmc_read_cd_msf(
+        rip->cdObj,
+        rip->audioBuf.buf,
+        currSector,
+
+        // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
+        CDIO_MMC_READ_TYPE_ANY,
+        //CDIO_MMC_READ_TYPE_CDDA,
+
+        // DAP (Digital Audio Play);  if this is true, immediate error with msi, hp, microadvantage
+        false,
+
+        // return SYNC header
+        false,
+
+        // header codes
+        0,
+
+        // must return user data according to mmc5 spec
+//        true,
+false,
+
+        // no EDC or ECC is included with audio data
+        false,
+
+        // C2 error information is synthetic;  it is not needed to get Q sub-channel,
+        // even though it is an adjacent field according to the standard
+        //
+        false,
+
+        // select sub-channel
+        1,
+        //0,
+
+//        sizeof(rip->audioBuf.buf) + sizeof(rip->audioBuf.rawPWsc),
+sizeof(rip->audioBuf.rawPWsc),
+        //sizeof(rip->audioBuf.buf),
+
+        // number of sectors
+        1);
+
+    if (DRIVER_OP_SUCCESS != rc) {
+        cdio2_driver_error(rc, "read of audio sector");
+        cdio_error("skipping extraction of audio sector %d in track %02d", currSector, rip->currentTrack);
+
+        return NULL;
+    } else {
+
+        return rip->audioBuf.buf;
+    }
+}
+
+
+void cued_rip_leadin(rip_context_t *rip, const char *leadInFileName)
+{
+    lba_t currSector, endSector;
+    PIT(int16_t, pbuf);
+
+#if 0
+    // does not return on error
+    (void) format_get_file_path(rip->cdObj, rip->cddbObj,
+        leadInFileName, cued_fmt_to_ext(rip->soundFileFormat), 0,
+        rip->fileNameBuffer, rip->bufferSize
+        );
+#endif
+
+    cued_rip_prologue(rip);
+
+    rip->currentTrack = 0;
+
+    //currSector = rip->endOfDiscSector + 149;
+    //endSector  = currSector + 5;
+
+    currSector = 150;
+    endSector  = currSector + 100000;
+
+    //endSector  = rip->endOfDiscSector + 150;
+    //currSector = rip->endOfDiscSector + 150;
+    //currSector = 0xF0000000;
+    //endSector  = currSector + 1;    
+
+    for (;  currSector < endSector;  ++currSector) {
+        pbuf = cued_read_leadin(rip, currSector);
+        //if (pbuf) printf("read sector %d\n", currSector);
+        fflush(stdout);
+    }
+
+    cued_rip_epilogue(rip);
+}
+
+
+//printf("reading from %d to %d\n", i_lba, i_lba + j + i_blocks2 - 1);
+
+//memset(p_buf2, 0x00, i_blocksize * i_blocks2);
+
+#if 0
+for (unsigned int k = 0;  k < i_blocksize * i_blocks2;  ++k) {
+    if ( ((char *) p_buf2)[k]) {
+        printf("block %d has data at offset %d\n", i_lba + j, k);
+        break;
+    }
+}
+#endif
+
+extern void cued_rip_leadin(rip_context_t *rip, const char *leadInFileName);
+
+
+long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector, long sectors)
+{
+    paranoia_audio_buffer_t *pbuf = (paranoia_audio_buffer_t *) pb;
+    rip_context_t *rip;
+    uint8_t *mbuf;
+    long rc;
+    driver_return_code_t drc;
+    int i;
+    qsc_buffer_t qsc;
+
+    rip = (rip_context_t *) util_get_context(paranoiaCtlObj->p_cdio);
+    if (!rip) {
+        cdio2_abort("failed to get rip context in paranoid read");
+    }
+
+    if (sectors > rip->allocatedSectors) {
+        free(rip->mmcBuf);
+        rip->mmcBuf = (uint8_t *) malloc(sectors * (sizeof(paranoia_audio_buffer_t)
+                    + (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t))));
+        if (rip->mmcBuf) {
+            rip->allocatedSectors = sectors;
+        } else {
+            rip->allocatedSectors = 0;
+            cdio2_abort("out of memory reading %ld sectors", sectors);
+        }
+    }
+
+    drc = mmc_read_cd(
+        paranoiaCtlObj->p_cdio,
+        rip->mmcBuf,
+        firstSector,
+
+        // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
+        CDIO_MMC_READ_TYPE_ANY,
+
+        // DAP (Digital Audio Play);  if this is true, immediate error with msi, hp, microadvantage
+        false,
+
+        // return SYNC header
+        false,
+
+        // header codes
+        0,
+
+        // must return user data according to mmc5 spec
+        true,
+
+        // no EDC or ECC is included with audio data
+        false,
+
+        // C2 error information is synthetic;  it is not needed to get Q sub-channel,
+        // even though it is an adjacent field according to the standard
+        //
+        false,
+
+        // select sub-channel
+        (ripUseFormattedQsc ? 2 : (ripUseEccQsc ? 4 : 1)),
+        (ripUseFormattedQsc ? sizeof(qsc_buffer_t) : sizeof(mmc_raw_pwsc_t)) + sizeof(paranoia_audio_buffer_t),
+        sectors);
+
+    if (DRIVER_OP_SUCCESS == drc) {
+        mbuf = rip->mmcBuf;
+        for (i = 0;  i < sectors;  ++i) {
+
+            memcpy(pbuf[i].buf, mbuf, sizeof(paranoia_audio_buffer_t));
+            mbuf += sizeof(paranoia_audio_buffer_t);
+
+            if (ripUseFormattedQsc) {
+                cued_parse_qsc((qsc_buffer_t *) mbuf, rip);
+                mbuf += sizeof(qsc_buffer_t);
+            } else {
+                pwsc_get_qsc((mmc_raw_pwsc_t *) mbuf, &qsc);
+                cued_parse_qsc(&qsc, rip);
+                mbuf += sizeof(mmc_raw_pwsc_t);
+            }
+
+        }
+        rc = sectors;
+    } else {
+        rc = drc;
+    }
+
+    return rc;
+}
+
+
+static int16_t *cued_read_audio(rip_context_t *rip, lsn_t currSector)
+{
+    driver_return_code_t rc;
+    qsc_file_buffer_t qsc;
+
+    if (rip->qSubChannelFileName || ripGetIndices) {
+
+        rc = mmc_read_cd(
+            rip->cdObj,
+            &rip->audioBuf,
+            currSector,
+
+            // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
+            CDIO_MMC_READ_TYPE_ANY,
+
+            // DAP (Digital Audio Play);  if this is true, immediate error with msi, hp, microadvantage
+            false,
+
+            // return SYNC header
+            false,
+
+            // header codes
+            0,
+
+            // must return user data according to mmc5 spec
+            true,
+
+            // no EDC or ECC is included with audio data
+            false,
+
+            // C2 error information is synthetic;  it is not needed to get Q sub-channel,
+            // even though it is an adjacent field according to the standard
+            //
+            false,
+
+            // select sub-channel
+            (ripUseFormattedQsc ? 2 : (ripUseEccQsc ? 4 : 1)),
+            (ripUseFormattedQsc ? sizeof(rip->audioBuf.fmtQsc) : sizeof(rip->audioBuf.rawPWsc)) + sizeof(rip->audioBuf.buf),
+
+            // number of sectors
+            1);
+
+        if (DRIVER_OP_SUCCESS == rc) {
+
+            if (ripUseFormattedQsc) {
+                qsc.buf = rip->audioBuf.fmtQsc;
+            } else {
+                pwsc_get_qsc(&rip->audioBuf.rawPWsc, &qsc.buf);
+            }
+
+            cued_parse_qsc(&qsc.buf, rip);
+
+            if (rip->qSubChannelFileName) {
+                qsc.requested = currSector;
+                if (1 != fwrite(&qsc, sizeof(qsc), 1, rip->qSubChannelFile)) {
+                    // probably out of disk space, which is bad, because most things rely on it
+                    cdio2_unix_error("fwrite", rip->qSubChannelFileName, 0);
+                    cdio2_abort("failed to write to file \"%s\"", rip->qSubChannelFileName);
+                }
+            }
+        }
+
+    } else if (ripOverreadLeadIn) {
+
+        rc = mmc_read_cd(
+            rip->cdObj,
+            rip->audioBuf.buf,
+            currSector,
+
+            // expected read_sector_type;  could be CDIO_MMC_READ_TYPE_CDDA
+            CDIO_MMC_READ_TYPE_ANY,
+
+            // DAP (Digital Audio Play);  if this is true, immediate error with msi, hp, microadvantage
+            false,
+
+            // return SYNC header
+            false,
+
+            // header codes
+            0,
+
+            // must return user data according to mmc5 spec
+            true,
+
+            // no EDC or ECC is included with audio data
+            false,
+
+            // C2 error information is synthetic;  it is not needed to get Q sub-channel,
+            // even though it is an adjacent field according to the standard
+            //
+            false,
+
+            // select sub-channel
+            0,
+
+            sizeof(rip->audioBuf.buf),
+
+            // number of sectors
+            1);
+
+    } else {
+        rc = cdio_read_audio_sector(rip->cdObj, rip->audioBuf.buf, currSector);
+    }
+
+    if (DRIVER_OP_SUCCESS != rc) {
+        cdio2_driver_error(rc, "read of audio sector");
+        cdio_error("skipping extraction of audio sector %d in track %02d", currSector, rip->currentTrack);
+
+        return NULL;
+    } else {
+
+        return rip->audioBuf.buf;
+    }
+}
+
+
+typedef struct _mmc_audio_buffer_t {
+
+    int16_t buf[CD_FRAMEWORDS];
+    union {
+        mmc_raw_pwsc_t rawPWsc;
+        qsc_buffer_t fmtQsc;
+    };
+
+} mmc_audio_buffer_t;

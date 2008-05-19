@@ -41,17 +41,6 @@ typedef struct _rip_data_t {
 } rip_data_t;
 
 
-typedef struct _mmc_audio_buffer_t {
-
-    int16_t buf[CD_FRAMEWORDS];
-    union {
-        mmc_raw_pwsc_t rawPWsc;
-        qsc_buffer_t fmtQsc;
-    };
-
-} mmc_audio_buffer_t;
-
-
 #define RIP_F_VERBOSE             0x00000001
 #define RIP_F_RIP_TO_ONE_FILE     0x00000002
 #define RIP_F_GET_INDICES         0x00000004
@@ -61,6 +50,8 @@ typedef struct _mmc_audio_buffer_t {
 #define RIP_F_SILENT_PREGAP       0x00000040
 #define RIP_F_NOISY_PREGAP        0x00000080
 #define RIP_F_USE_ECC_QSC         0x00000100
+#define RIP_F_READ_PREGAP         0x00000200
+#define RIP_F_DAP_FIXUP           0x00000400
 
 #define RIP_F_DATA_VALID          0x00000001
 #define RIP_F_DATA_PRE_EMPHASIS   0x00000002
@@ -77,6 +68,8 @@ typedef struct _mmc_audio_buffer_t {
 #define ripSilentPregap     TSTF(RIP_F_SILENT_PREGAP,        rip->flags)
 #define ripNoisyPregap      TSTF(RIP_F_NOISY_PREGAP,         rip->flags)
 #define ripUseEccQsc        TSTF(RIP_F_USE_ECC_QSC,          rip->flags)
+#define ripReadPregap       TSTF(RIP_F_READ_PREGAP,          rip->flags)
+#define ripDapFixup         TSTF(RIP_F_DAP_FIXUP,            rip->flags)
 
 
 typedef struct _rip_context_t {
@@ -134,18 +127,23 @@ typedef struct _rip_context_t {
     //
     // cued_read_audio variables
     //
-    mmc_audio_buffer_t audioBuf;
+
+    union {
+        uint8_t *mmcBuf;
+        int16_t *mmcBuf16;
+    };
+    long allocatedSectors;
 
     //
     // cued_read_paranoid parameters
     //
-    uint8_t *mmcBuf;
-    long allocatedSectors;
+
     long (*save_read_paranoid)(cdrom_drive_t *, void *, lsn_t, long);
 
     //
     // rip data
     //
+
     rip_data_t ripData[ CDIO_CD_MAX_TRACKS + 1 ];
     char mcn[ MCN_LEN + 1 ];
     int year;
@@ -153,6 +151,7 @@ typedef struct _rip_context_t {
     //
     // cued_parse_qsc variables
     //
+
     int trackHint;
     int crcFailure;
     int crcSuccess;
