@@ -201,9 +201,9 @@ int main(int argc, char *const argv[])
         { "w", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
         { "x", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_EXTRACT },
         { "dap-fixup",    &optFlags, NULL, OPT_SET_FLAG, RIP_F_DAP_FIXUP },
-        { "read-pre-gap", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
         { "qsc-ecc",      &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
         { "qsc-format",   &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
+        { "read-pre-gap", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {
