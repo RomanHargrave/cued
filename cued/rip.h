@@ -52,6 +52,7 @@ typedef struct _rip_data_t {
 #define RIP_F_USE_ECC_QSC         0x00000100
 #define RIP_F_READ_PREGAP         0x00000200
 #define RIP_F_DAP_FIXUP           0x00000400
+#define RIP_F_READ_LEADOUT        0x00000800
 
 #define RIP_F_DATA_VALID          0x00000001
 #define RIP_F_DATA_PRE_EMPHASIS   0x00000002
@@ -70,6 +71,7 @@ typedef struct _rip_data_t {
 #define ripUseEccQsc        TSTF(RIP_F_USE_ECC_QSC,          rip->flags)
 #define ripReadPregap       TSTF(RIP_F_READ_PREGAP,          rip->flags)
 #define ripDapFixup         TSTF(RIP_F_DAP_FIXUP,            rip->flags)
+#define ripReadLeadout      TSTF(RIP_F_READ_LEADOUT,         rip->flags)
 
 
 typedef struct _rip_context_t {

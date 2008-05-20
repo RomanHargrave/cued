@@ -114,6 +114,23 @@ mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 }
 
 
+driver_return_code_t
+mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                  int read_sector_type, bool b_digital_audio_play,
+                  bool b_sync, uint8_t header_codes, bool b_user_data,
+                  bool b_edc_ecc, uint8_t c2_error_information,
+                  uint8_t subchannel_selection, uint16_t i_blocksize,
+                  uint32_t i_blocks )
+{
+    driver_return_code_t drc = DRIVER_OP_SUCCESS;
+
+    cdio_warn("reading leadout does not work, yet");
+    memset(p_buf, 0x00, i_blocks * i_blocksize);
+
+    return drc;
+}
+
+
 void cued_init_rip_data(rip_context_t *rip)
 {
     memset(rip->ripData, 0x00, sizeof(rip->ripData));
@@ -206,10 +223,20 @@ typedef struct _audio_buffer_t {
 } audio_buffer_t;
 
 
+typedef driver_return_code_t
+(*mmc_read_cd_fn)(const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                  int read_sector_type, bool b_digital_audio_play,
+                  bool b_sync, uint8_t header_codes, bool b_user_data,
+                  bool b_edc_ecc, uint8_t c2_error_information,
+                  uint8_t subchannel_selection, uint16_t i_blocksize,
+                  uint32_t i_blocks);
+
+
 static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf)
 {
+    mmc_read_cd_fn readfn;
     uint8_t *mbuf, *dbuf;
-    int blockSize, subchannel, useMmc, retry, i;
+    int blockSize, subchannel, retry, i;
     driver_return_code_t drc;
     qsc_file_buffer_t qsc;
 
@@ -231,10 +258,14 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
         subchannel = 0;
     }
 
-    if (subchannel || ripReadPregap || ripDapFixup) {
-        useMmc = 1;
+    if (ripReadPregap && firstSector < 0) {
+        readfn = mmc_read_cd_msf;
+    } else if (ripReadLeadout && firstSector + sectors > rip->endOfDiscSector) {
+        readfn = mmc_read_cd_leadout;
+    } else if (subchannel || ripDapFixup) {
+        readfn = mmc_read_cd;
     } else {
-        useMmc = 0;
+        readfn = NULL;
     }
 
     if (sectors > rip->allocatedSectors) {
@@ -251,9 +282,9 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
     retry = rip->retries;
     do {
 
-        if (useMmc) {
+        if (readfn) {
 
-            drc = mmc_read_cd_msf(
+            drc = readfn(
                 rip->cdObj,
                 (pbuf && !subchannel) ? (void *) pbuf : rip->mmcBuf,
                 firstSector,
@@ -431,6 +462,7 @@ void cued_rip_to_file(rip_context_t *rip)
             seekSector = currSector;
         }
 
+        // TODO:  paranoia has a problem with reading leadout
         if (seekSector < rip->endOfDiscSector) {
             prc = cdio_paranoia_seek(rip->paranoiaRipObj, seekSector, SEEK_SET);
             cdio2_paranoia_msg(rip->paranoiaCtlObj, "paranoia seek");
@@ -460,13 +492,16 @@ void cued_rip_to_file(rip_context_t *rip)
 
     for (;  currSector <= rip->lastSector;  ++currSector) {
 
-        if ((currSector < 0 && !ripReadPregap) || currSector >= rip->endOfDiscSector) {
+        if ((currSector < 0 && !ripReadPregap) || (currSector >= rip->endOfDiscSector && !ripReadLeadout)) {
 
             // N.B.  assume that if mmcBuf is not NULL, it is >= sizeof(audio_buffer_t)
             if (!rip->mmcBuf) {
 
-                // TODO:  this is FUBAR
-                rip->mmcBuf = (uint8_t *) malloc(sizeof(audio_buffer_t) + sizeof(mmc_raw_pwsc_t));
+                // use twice the audio_buffer_t size for reading 1 sector;
+                // this should accomodate any extra headers/sub-channel data
+                // requested later in the normal read path
+                //
+                rip->mmcBuf = (uint8_t *) malloc(2 * sizeof(audio_buffer_t));
                 if (rip->mmcBuf) {
                     rip->allocatedSectors = 1;
                 } else {

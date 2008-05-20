@@ -56,27 +56,28 @@ static void usage(const char *exeName)
         "%s [options] <device1> [device2] [device3...]\n"
         "    where [options] are:\n"
                 CDDB2_OPTIONS
-                "\t-b track       begin ripping at track (default is first)\n"
-                "\t-c format      generate cue sheet (see --format-help)\n"
-                "\t-d debug level defaults to \"%s\"\n"
-                "\t-e track       end ripping at track (default is last)\n"
-                "\t-f             extract to flac (requires -x and -n)\n"
-                "\t-i             get ALL indices\n"
-                "\t-n format      name tag and wave files (see --format-help)\n"
-                "\t-o samples     offset correction (EAC-30)\n"
-                "\t-p             enable paranoia\n"
-                "\t-q format      output Q sub-channel (mutually exclusive with -p)\n"
-                "\t-r retries     defaults to %d\n"
-                "\t-s speed       set CD-ROM drive speed\n"
-                "\t-t format      tag; use repeatedly (requires -n; see --format-help)\n"
-                "\t-v             report progress\n"
-                "\t-w             rip to one file (requires -x and -n, or -q, or -i)\n"
-                "\t-x             extract tracks (requires -n)\n"
-                "\t--dap-fixup    drive fixes audio errors using interpolation (>= MMC-4)\n"
-                "\t--qsc-ecc      read Q sub-channel using error correction (requires -i)\n"
-                "\t--qsc-format   read Q sub-channel using formatted method (requires -i)\n"
-                "\t--read-pre-gap read disc pre-gap for missing samples, if necessary\n"
-                "\t--format-help  display format help\n"
+                "\t-b track        begin ripping at track (default is first)\n"
+                "\t-c format       generate cue sheet (see --format-help)\n"
+                "\t-d debug level  defaults to \"%s\"\n"
+                "\t-e track        end ripping at track (default is last)\n"
+                "\t-f              extract to flac (requires -x and -n)\n"
+                "\t-i              get ALL indices\n"
+                "\t-n format       name tag and wave files (see --format-help)\n"
+                "\t-o samples      offset correction (EAC-30)\n"
+                "\t-p              enable paranoia\n"
+                "\t-q format       output Q sub-channel (mutually exclusive with -p)\n"
+                "\t-r retries      defaults to %d\n"
+                "\t-s speed        set CD-ROM drive speed\n"
+                "\t-t format       tag; use repeatedly (requires -n; see --format-help)\n"
+                "\t-v              report progress\n"
+                "\t-w              rip to one file (requires -x and -n, or -q, or -i)\n"
+                "\t-x              extract tracks (requires -n)\n"
+                "\t--dap-fixup     drive fixes audio errors using interpolation (>= MMC-4)\n"
+                "\t--qsc-ecc       read Q sub-channel using error correction (requires -i)\n"
+                "\t--qsc-format    read Q sub-channel using formatted method (requires -i)\n"
+                "\t--read-lead-out read disc lead-out for missing samples, if necessary\n"
+                "\t--read-pre-gap  read disc pre-gap for missing samples, if necessary\n"
+                "\t--format-help   display format help\n"
                 "\n"
                 , exeName
                 , "warn"
@@ -193,17 +194,18 @@ int main(int argc, char *const argv[])
         { "r", &optRetries,              opt_set_whole_no,   OPT_REQUIRED },
         { "s", &optSpeed,                opt_set_nat_no,     OPT_REQUIRED },
         { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
-        { "format-help", NULL,           cued_format_help,   OPT_NONE },
+        { "format-help",  NULL,           cued_format_help,   OPT_NONE },
 
-        { "i", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_GET_INDICES },
-        { "p", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_USE_PARANOIA },
-        { "v", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_VERBOSE },
-        { "w", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
-        { "x", &optFlags, NULL,       OPT_SET_FLAG, RIP_F_EXTRACT },
-        { "dap-fixup",    &optFlags, NULL, OPT_SET_FLAG, RIP_F_DAP_FIXUP },
-        { "qsc-ecc",      &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
-        { "qsc-format",   &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
-        { "read-pre-gap", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
+        { "i", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_GET_INDICES },
+        { "p", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_USE_PARANOIA },
+        { "v", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_VERBOSE },
+        { "w", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
+        { "x", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_EXTRACT },
+        { "dap-fixup",     &optFlags, NULL, OPT_SET_FLAG, RIP_F_DAP_FIXUP },
+        { "qsc-ecc",       &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
+        { "qsc-format",    &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
+        { "read-lead-out", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_LEADOUT },
+        { "read-pre-gap",  &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
     };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {
