@@ -299,6 +299,7 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
             readfn = mmc_read_cd_leadout;
         } else {
             readfn = mmc_read_cd;
+            cdio_warn("reading lead-out");
         }
     } else if (subchannel || ripDapFixup) {
         readfn = mmc_read_cd;
