@@ -228,11 +228,11 @@ mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
     driver_return_code_t drc;
     int sectors;
 
-    cdio_warn("reading leadout");
+    cdio_warn("reading lead-out");
 
     rip = (rip_context_t *) util_get_context(p_cdio);
     if (!rip) {
-        cdio2_abort("failed to get rip context for reading leadout");
+        cdio2_abort("failed to get rip context for reading lead-out");
     }
 
     // (ab)use the drive's firmware by requesting a read that starts inside
