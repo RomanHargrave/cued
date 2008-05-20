@@ -23,9 +23,9 @@
 
 extern int util_realloc_items(void **items, int itemSize, int *itemAlloc, int numItems, int newItems, int itemHint);
 
-extern int   util_add_context   (void *key, void *value);
-extern void *util_get_context   (void *key);
-extern int   util_remove_context(void *key);
+extern int         util_add_context   (const void *key, const void *value);
+extern const void *util_get_context   (const void *key);
+extern int         util_remove_context(const void *key);
 
 
 #endif // UTIL_H_INCLUDED

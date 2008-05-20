@@ -114,30 +114,13 @@ mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 }
 
 
-driver_return_code_t
-mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
-                  int read_sector_type, bool b_digital_audio_play,
-                  bool b_sync, uint8_t header_codes, bool b_user_data,
-                  bool b_edc_ecc, uint8_t c2_error_information,
-                  uint8_t subchannel_selection, uint16_t i_blocksize,
-                  uint32_t i_blocks )
-{
-    driver_return_code_t drc = DRIVER_OP_SUCCESS;
-
-    cdio_warn("reading leadout does not work, yet");
-    memset(p_buf, 0x00, i_blocks * i_blocksize);
-
-    return drc;
-}
-
-
 void cued_init_rip_data(rip_context_t *rip)
 {
     memset(rip->ripData, 0x00, sizeof(rip->ripData));
     memset(rip->mcn,     0x00, sizeof(rip->mcn));
     rip->year = 0;
 
-    rip->trackHint = 0;
+    rip->trackHint  = 0;
     rip->crcFailure = 0;
     rip->crcSuccess = 0;
 }
@@ -232,6 +215,53 @@ typedef driver_return_code_t
                   uint32_t i_blocks);
 
 
+driver_return_code_t
+mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                  int read_sector_type, bool b_digital_audio_play,
+                  bool b_sync, uint8_t header_codes, bool b_user_data,
+                  bool b_edc_ecc, uint8_t c2_error_information,
+                  uint8_t subchannel_selection, uint16_t i_blocksize,
+                  uint32_t i_blocks )
+{
+    rip_context_t *rip;
+    uint8_t *buf;
+    driver_return_code_t drc;
+    int sectors;
+
+    cdio_warn("reading leadout");
+
+    rip = (rip_context_t *) util_get_context(p_cdio);
+    if (!rip) {
+        cdio2_abort("failed to get rip context for reading leadout");
+    }
+
+    // (ab)use the drive's firmware by requesting a read that starts inside
+    // the program area, but extends into the lead out (some drives do not
+    // check to see if a read terminates inside the program area)
+    // 
+
+    sectors = i_lsn - rip->endOfDiscSector + i_blocks + 1;
+    buf = (uint8_t *) malloc(sectors * i_blocksize);
+    if (!buf) {
+        cdio2_abort("out of memory reading %d sectors", sectors);
+    }
+
+    drc = mmc_read_cd(
+        p_cdio,
+        buf, rip->endOfDiscSector - 1,
+        read_sector_type, b_digital_audio_play, b_sync, header_codes, b_user_data,
+        b_edc_ecc, c2_error_information, subchannel_selection, i_blocksize,
+        sectors);
+    if (DRIVER_OP_SUCCESS == drc) {
+        memcpy(p_buf, buf + i_blocksize * (sectors - i_blocks), i_blocks);
+    }
+
+    free(buf);
+
+    return drc;
+}
+
+
 static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf)
 {
     mmc_read_cd_fn readfn;
@@ -257,6 +287,10 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
     } else {
         subchannel = 0;
     }
+
+    // TODO:  should check for ripRead* be both here and in cued_rip_to_file?
+    // does paranoia present a problem?
+    //
 
     if (ripReadPregap && firstSector < 0) {
         readfn = mmc_read_cd_msf;

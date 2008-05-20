@@ -60,7 +60,7 @@ int util_realloc_items(void **items, int itemSize, int *itemAlloc, int numItems,
 
 typedef struct _util_context_t
 {
-    void *key, *value;
+    const void *key, *value;
     d_list_node_t listNode;
 
 } util_context_t;
@@ -68,7 +68,7 @@ typedef struct _util_context_t
 static DLIST_DECLARE(utilList)
 
 
-int util_add_context(void *key, void *value)
+int util_add_context(const void *key, const void *value)
 {
     util_context_t *context = (util_context_t *) malloc(sizeof(util_context_t));
     if (!context) {
@@ -82,7 +82,7 @@ int util_add_context(void *key, void *value)
 }
 
 
-void *util_get_context(void *key)
+const void *util_get_context(const void *key)
 {
     d_list_node_t *node;
     util_context_t *context;
@@ -98,7 +98,7 @@ void *util_get_context(void *key)
 }
 
 
-int util_remove_context(void *key)
+int util_remove_context(const void *key)
 {
     d_list_node_t *node;
     util_context_t *context;
