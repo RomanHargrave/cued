@@ -253,7 +253,7 @@ mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
         b_edc_ecc, c2_error_information, subchannel_selection, i_blocksize,
         sectors);
     if (DRIVER_OP_SUCCESS == drc) {
-        memcpy(p_buf, buf + i_blocksize * (sectors - i_blocks), i_blocks);
+        memcpy(p_buf, buf + i_blocksize * (sectors - i_blocks), i_blocksize * i_blocks);
     }
 
     free(buf);
