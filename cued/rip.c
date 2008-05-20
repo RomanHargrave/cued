@@ -295,7 +295,11 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
     if (ripReadPregap && firstSector < 0) {
         readfn = mmc_read_cd_msf;
     } else if (ripReadLeadout && firstSector + sectors > rip->endOfDiscSector) {
-        readfn = mmc_read_cd_leadout;
+        if (firstSector >= rip->endOfDiscSector) {
+            readfn = mmc_read_cd_leadout;
+        } else {
+            readfn = mmc_read_cd;
+        }
     } else if (subchannel || ripDapFixup) {
         readfn = mmc_read_cd;
     } else {
