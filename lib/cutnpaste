@@ -328,3 +328,45 @@ int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii)
 
 extern int qsc_lsn_to_ascii(lsn_t lsn, char *ascii);
 extern int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii);
+
+
+lsn_t cdio2_get_track_last_lsn(CdIo_t *cdObj, track_t track, track_t discLastTrack)
+{
+    lsn_t lastSector;
+    track_format_t thisFormat, nextFormat;
+
+    lastSector = cdio_get_track_last_lsn(cdObj, track);
+    if (CDIO_INVALID_LSN == lastSector) {
+        cdio2_abort("failed to get last sector number for track %02d", track);
+        return CDIO_INVALID_LSN;
+    }
+
+    // TODO:  this is specific to cd-extra...  need to fix
+
+    if (track + 1 <= discLastTrack) {
+        nextFormat = cdio_get_track_format(cdObj, track + 1);
+        thisFormat = cdio_get_track_format(cdObj, track);
+        if (TRACK_FORMAT_ERROR == nextFormat || TRACK_FORMAT_ERROR == thisFormat) {
+            cdio2_abort("failed to get format for track %02d or track %02d", track, track + 1);
+            return CDIO_INVALID_LSN;
+        }
+
+        // TODO:  need to mark as multi-session here...
+                
+ 
+        // if the next track is a "data" track (i.e. not audio,) and the prior track
+        // is an audio track, it has to be a new session
+        //
+        if (TRACK_FORMAT_AUDIO != nextFormat && TRACK_FORMAT_AUDIO == thisFormat) {
+            //
+            // according to libcdio::common_interface.c, lead-out is 1:30,
+            // lead-in is 1:00, and first track of session has a 2 second gap;
+            // empirical data corroborates
+            //
+            lastSector -= (90 + 60 + 2) * QSC_FPS;
+        }
+    }
+
+    return lastSector;
+}
+
