@@ -223,6 +223,7 @@ lsn_t cdio2_get_track_length(CdIo_t *cdObj, track_t track)
         return CDIO_INVALID_LSN;
     }
 
+    // TODO:  problem here
     lastSector = cdio_get_track_last_lsn(cdObj, track);
     if (CDIO_INVALID_LSN == lastSector) {
         cdio2_abort("failed to get last sector number for track %02d", track);
