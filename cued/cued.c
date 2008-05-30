@@ -164,7 +164,7 @@ int main(int argc, char *const argv[])
     PIT(const char, devName);
     PIT(const char, exeName);
     int i;
-    track_t firstTrack, lastTrack, tracks;
+    track_t tracks, discFirstTrack, discLastTrack;
     char fileNameBuffer[PATH_MAX];
 
     // this should be first
@@ -284,30 +284,30 @@ int main(int argc, char *const argv[])
             cdio2_abort("failed to get number of tracks");
         }
 
-        firstTrack = cdio_get_first_track_num(rip.cdObj);
-        if (CDIO_INVALID_TRACK == firstTrack) {
+        discFirstTrack = cdio_get_first_track_num(rip.cdObj);
+        if (CDIO_INVALID_TRACK == discFirstTrack) {
             cdio2_abort("failed to get first track number");
         }
 
-        lastTrack = firstTrack + tracks - 1;
+        discLastTrack = discFirstTrack + tracks - 1;
 
         // firstRipTrack and lastRipTrack cannot be negative because opt_set_nat_no is used
         //
 
         if (!optFirstRipTrack) {
-            rip.firstTrack = firstTrack;
-        } else if (optFirstRipTrack > lastTrack) {
-            cdio2_abort("cannot rip track %d; last track is %02d; check -b option", optFirstRipTrack, lastTrack);
-            rip.firstTrack = lastTrack;
+            rip.firstTrack = discFirstTrack;
+        } else if (optFirstRipTrack > discLastTrack) {
+            cdio2_abort("cannot rip track %d; last track is %02d; check -b option", optFirstRipTrack, discLastTrack);
+            rip.firstTrack = discLastTrack;
         } else {
             rip.firstTrack = optFirstRipTrack;
         }
 
         if (!optLastRipTrack) {
-            rip.lastTrack = lastTrack;
-        } else if (optLastRipTrack > lastTrack) {
-            cdio2_abort("cannot rip track %d; last track is %02d; check -e option", optLastRipTrack, lastTrack);
-            rip.lastTrack = lastTrack;
+            rip.lastTrack = discLastTrack;
+        } else if (optLastRipTrack > discLastTrack) {
+            cdio2_abort("cannot rip track %d; last track is %02d; check -e option", optLastRipTrack, discLastTrack);
+            rip.lastTrack = discLastTrack;
         } else if (optLastRipTrack < rip.firstTrack) {
             cdio2_abort("end track is less than begin track (%02d < %02d); check -b and -e options", optLastRipTrack, rip.firstTrack);
             rip.lastTrack = rip.firstTrack;
@@ -388,7 +388,7 @@ int main(int argc, char *const argv[])
             lba_t pregap;
             track_t track;
 
-            for (track = firstTrack;  track <= lastTrack;  ++track) {
+            for (track = discFirstTrack;  track <= discLastTrack;  ++track) {
 
                 // for image files, libcdio may have the pregap;  if so, use it
                 pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
@@ -418,23 +418,23 @@ int main(int argc, char *const argv[])
             }
 
             // Nero does not properly handle the pregap for the first track
-            if (DRIVER_NRG == cdio_get_driver_id(rip.cdObj) && 1 == firstTrack) {
-                lba_t lba = cdio_get_track_lba(rip.cdObj, firstTrack);
+            if (DRIVER_NRG == cdio_get_driver_id(rip.cdObj) && 1 == discFirstTrack) {
+                lba_t lba = cdio_get_track_lba(rip.cdObj, discFirstTrack);
                 if (CDIO_INVALID_LBA == lba) {
-                    cdio2_abort("failed to get first sector number for track %02d", firstTrack);
+                    cdio2_abort("failed to get first sector number for track %02d", discFirstTrack);
                 } else if (CDIO_PREGAP_SECTORS != lba) {
                     char *mcn = cdio_get_mcn(rip.cdObj);
 
                     // (heuristic) check for DAO
                     if (mcn) {
                         free(mcn);
-                        rip.ripData[firstTrack].indices[0] = CDIO_PREGAP_SECTORS;
-                        rip.ripData[firstTrack].indices[1] = lba;
+                        rip.ripData[discFirstTrack].indices[0] = CDIO_PREGAP_SECTORS;
+                        rip.ripData[discFirstTrack].indices[1] = lba;
                     }
                 }
             }
 
-            cued_write_cuefile(&rip, devName, firstTrack, lastTrack);
+            cued_write_cuefile(&rip, devName, discFirstTrack, discLastTrack);
         }
 
         if (rip.cddbObj) {
