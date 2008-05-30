@@ -719,11 +719,61 @@ static void cued_rip_epilogue(rip_context_t *rip)
 }
 
 
+void cued_rip_data_track(rip_context_t *rip)
+{
+    uint8_t buf[CDIO_CD_FRAMESIZE];
+    FILE *dataFile;
+    lsn_t currSector;
+    driver_return_code_t drc;
+
+    if (ripExtract) {
+
+        // does not return on error
+        (void) format_get_file_path(rip->cdObj, rip->cddbObj,
+            rip->fileNamePattern, ".data", rip->currentTrack,
+            rip->fileNameBuffer, rip->bufferSize
+            );
+
+        dataFile = fopen2(rip->fileNameBuffer, O_WRONLY | O_CREAT | O_EXCL | O_APPEND, 0666);
+        if (!dataFile) {
+            cdio2_unix_error("fopen2", rip->fileNameBuffer, 0);
+            cdio_error("skipping extraction of data track %02d", rip->currentTrack);
+            return;
+        }
+
+        for (currSector = rip->firstSector;  currSector <= rip->lastSector;  ++currSector) {
+            drc = cdio_read_data_sectors(rip->cdObj, buf, currSector, CDIO_CD_FRAMESIZE, 1);
+            if (DRIVER_OP_SUCCESS == drc) {
+                if (1 != fwrite(buf, sizeof(buf), 1, dataFile)) {
+                    // probably out of disk space, which is bad, because most things rely on it
+                    cdio2_unix_error("fwrite", rip->fileNameBuffer, 0);
+                    cdio2_abort("failed to write to file \"%s\"", rip->fileNameBuffer);
+                }
+            } else {
+                cdio2_driver_error(drc, "read of data sector");
+                cdio_error("error reading sector %d; skipping extraction of data track %02d", currSector, rip->currentTrack);
+                //if (unlink(rip->fileNameBuffer)) {
+                //    cdio2_unix_error("unlink", rip->fileNameBuffer, 1);
+                //}
+                break;
+            }
+        }
+
+        fclose(dataFile);
+    }
+}
+
+
+typedef void (*rip_fn_t)(rip_context_t *rip);
+
+
 void cued_rip_disc(rip_context_t *rip)
 {
     cued_rip_prologue(rip);
 
     if (ripToOneFile) {
+
+        // TODO:  broken for cd-extra;  stop at first data track?  in cued.c?
 
         if (TRACK_FORMAT_AUDIO != cdio_get_track_format(rip->cdObj, rip->firstTrack)) {
             cdio2_abort("track %02d is not an audio track", rip->firstTrack);
@@ -738,7 +788,7 @@ void cued_rip_disc(rip_context_t *rip)
             rip->firstSector = 0;
         }
 
-        rip->lastSector = cdio_get_track_last_lsn(rip->cdObj, rip->lastTrack);
+        rip->lastSector = cdio_get_track_last_lsn(rip->cdObj, rip->lastTrack); // , rip->discLastTrack);
         if (CDIO_INVALID_LSN == rip->lastSector) {
             cdio2_abort("failed to get last sector number for track %02d", rip->lastTrack);
         }
@@ -754,46 +804,58 @@ void cued_rip_disc(rip_context_t *rip)
 
     } else {
 
+        rip_fn_t ripfn;
+        track_format_t format;
         track_t track;
 
         for (track = rip->firstTrack;  track <= rip->lastTrack;  ++track) {
-
-            if (TRACK_FORMAT_AUDIO != cdio_get_track_format(rip->cdObj, track)) {
-                cdio_warn("track %02d is not an audio track; skipping track", track);
-                continue;
-            }
 
             rip->firstSector = cdio_get_track_lsn(rip->cdObj, track);
             if (CDIO_INVALID_LSN == rip->firstSector) {
                 cdio2_abort("failed to get first sector number for track %02d", track);
             }
 
-            rip->channels = cdio2_get_track_channels(rip->cdObj, track);
+            format = cdio_get_track_format(rip->cdObj, track);
+            switch (format) {
 
-            // rip first track pregap to track 00 file
-            if (1 == track && rip->firstSector > 0) {
+                case TRACK_FORMAT_AUDIO:
+                    rip->channels = cdio2_get_track_channels(rip->cdObj, track);
 
-                lsn_t saveFirstSector = rip->firstSector;
+                    // rip first track pregap to track 00 file
+                    if (1 == track && rip->firstSector > 0) {
 
-                if (ripVerbose) {
-                    printf("progress: reading track %02d\n", 0);
-                }
+                        lsn_t saveFirstSector = rip->firstSector;
 
-                rip->lastSector = rip->firstSector - 1;
-                rip->firstSector = 0;
-                rip->currentTrack = 0;
-                cued_rip_to_file(rip);
+                        if (ripVerbose) {
+                            printf("progress: reading track %02d\n", 0);
+                        }
 
-                if (ripSilentPregap && ripExtract) {
-                    if (unlink(rip->fileNameBuffer)) {
-                        cdio2_unix_error("unlink", rip->fileNameBuffer, 1);
+                        rip->lastSector = rip->firstSector - 1;
+                        rip->firstSector = 0;
+                        rip->currentTrack = 0;
+                        cued_rip_to_file(rip);
+
+                        if (ripSilentPregap && ripExtract) {
+                            if (unlink(rip->fileNameBuffer)) {
+                                cdio2_unix_error("unlink", rip->fileNameBuffer, 1);
+                            }
+                        }
+
+                        rip->firstSector = saveFirstSector;
                     }
-                }
+                    ripfn = cued_rip_to_file;
+                    break;
 
-                rip->firstSector = saveFirstSector;
+                case TRACK_FORMAT_DATA:
+                    //ripfn = cued_rip_data_track;
+                    //break;
+
+                default:
+                    cdio_warn("track %02d is not an audio track; skipping track", track);
+                    continue;
             }
 
-            rip->lastSector = cdio_get_track_last_lsn(rip->cdObj, track);
+            rip->lastSector = cdio_get_track_last_lsn(rip->cdObj, track); // , rip->discLastTrack);
             if (CDIO_INVALID_LSN == rip->lastSector) {
                 cdio2_abort("failed to get last sector number for track %02d", track);
             } else {
@@ -805,7 +867,7 @@ void cued_rip_disc(rip_context_t *rip)
             }
 
             rip->currentTrack = track;
-            cued_rip_to_file(rip);
+            ripfn(rip);
         }
     }
 
