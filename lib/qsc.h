@@ -33,10 +33,11 @@ typedef enum _qsc_mode_t {
     QSC_MODE_MIN = 1,
 
     QSC_MODE_INDEX = 1,
+    QSC_MODE_TRACK_INFO = 1,
     QSC_MODE_MCN = 2,
     QSC_MODE_ISRC = 3,
 
-    QSC_MODE_LEAD_IN = 5,
+    QSC_MODE_MULTI_SESSION = 5,
 
     QSC_MODE_PMA_UNSKIP_TRACK = 4,
     QSC_MODE_PMA_UNSKIP_INTERVAL = 6,

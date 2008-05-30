@@ -225,8 +225,8 @@ int main(int argc, char *const argv[])
             // ALSO, they fail CRC...  most likely a coincidence
             //
 
-            case QSC_MODE_LEAD_IN:
-                printf("lead-in at sector %d\n", qsc.requested);
+            case QSC_MODE_MULTI_SESSION:
+                printf("multi-session record at sector %d\n", qsc.requested);
                 break;
 
             case QSC_MODE_UNKNOWN:
