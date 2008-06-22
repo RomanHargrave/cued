@@ -69,12 +69,16 @@ LIB_PROTO_DIR	:= lib/$(UNAME_SYSTEM)/$(UNAME_PLATFORM)/$(BITS)/$(BUILD)
 ifdef BIN
 	BIN_DIR		:= bin/$(UNAME_SYSTEM)/$(UNAME_PLATFORM)/$(BITS)/$(BUILD)/
 	BIN_PATH	:= $(BIN_DIR)$(BIN)
-else ifdef LIB
+endif
+ifdef LIB
 	LIB_DIR		:= $(LIB_PROTO_DIR)/
 	LIB_PATH	:= $(LIB_DIR)lib$(LIB).a
 endif
 vpath %.o $(OBJ_DIR)
 vpath %.a /usr/lib $(addsuffix /$(LIB_PROTO_DIR), $(LIBDIRS)) $(EXTLIBDIRS)
+ifdef GCC
+    vpath %.a $(dir $(shell gcc -print-file-name=libobjc.a))
+endif
 
 CC_FLAGS			+= $(CC_DEFINES)
 ifdef GCC
