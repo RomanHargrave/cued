@@ -77,7 +77,7 @@ endif
 vpath %.o $(OBJ_DIR)
 vpath %.a /usr/lib $(addsuffix /$(LIB_PROTO_DIR), $(LIBDIRS)) $(EXTLIBDIRS)
 ifdef GCC
-    vpath %.a $(dir $(shell gcc -print-file-name=libobjc.a))
+    vpath %.a $(dir $(shell $(CC_BIN) -print-file-name=libobjc.a))
 endif
 
 CC_FLAGS			+= $(CC_DEFINES)
