@@ -39,6 +39,7 @@ ifeq (SunOS, $(UNAME_SYSTEM))
 	CC_BIN	?= /opt/SUNWspro/bin/cc
 else ifeq (Linux, $(UNAME_SYSTEM))
 	CC_BIN	?= gcc
+	CPP_BIN ?= g++
 else
 	CC_BIN	?= cc
 endif
@@ -46,18 +47,17 @@ LD_BIN		?= $(CC_BIN)
 
 ifeq (gcc, $(notdir $(CC_BIN)))
 	GCC	  := t
-    #CC_FLAGS += -pedantic -std=gnu99
+	CC_FLAGS  += -pedantic -std=gnu99
 else ifeq (g++, $(notdir $(CC_BIN)))
 	GCC	  := t
-    #CC_FLAGS += -pedantic -std=gnu++98
 else ifeq (SUNWspro, $(findstring SUNWspro, $(CC_BIN)))
 	SUNWS := t
 endif
 
-ifdef SUNWS
-	LD_FLAGS += $(CC_FLAGS) -xildoff
-else
-	LD_FLAGS += $(CC_FLAGS)
+ifdef GCC
+    CPP_FLAGS += -pedantic -std=gnu++98
+else ifdef SUNWS
+	LD_FLAGS += -xildoff
 endif
 
 AR_BIN	 ?= ar
@@ -77,56 +77,56 @@ endif
 vpath %.o $(OBJ_DIR)
 vpath %.a /usr/lib $(addsuffix /$(LIB_PROTO_DIR), $(LIBDIRS)) $(EXTLIBDIRS)
 ifdef GCC
-    vpath %.a $(dir $(shell $(CC_BIN) -print-libgcc-file-name))
+	vpath %.a $(dir $(shell $(CC_BIN) -print-libgcc-file-name))
 endif
 
-CC_FLAGS			+= $(CC_DEFINES)
+CXX_FLAGS			+= $(CXX_DEFINES)
 ifdef GCC
-	CC_FLAGS		+= -Wall -Wstrict-aliasing=2
+	CXX_FLAGS		+= -Wall -Wstrict-aliasing=2
 	CC_DEP_FLAGS	+= -MM
 	ifeq (SunOS, $(UNAME_SYSTEM))
-		CC_DEFINES	+= -D__$(UNAME_SYSTEM)_$(subst ., _, $(shell uname -r))
+		CXX_DEFINES	+= -D__$(UNAME_SYSTEM)_$(subst ., _, $(shell uname -r))
 	endif
 else ifdef SUNWS
-	CC_FLAGS		+= -xCC -Xa -v
+	CXX_FLAGS		+= -xCC -Xa -v
 	CC_DEP_FLAGS	+= -xM1
 endif
 
 ifeq (release, $(BUILD))
-	CC_FLAGS		+= -g
+	CXX_FLAGS		+= -g
 	ifdef GCC
-		CC_FLAGS	+= -O2
+		CXX_FLAGS	+= -O2
 	else
-		CC_FLAGS	+= -O
+		CXX_FLAGS	+= -O
 	endif
-	#CC_DEFINES		 += -DNDEBUG
+	#CXX_DEFINES	 += -DNDEBUG
 else ifeq (debug, $(BUILD))
-	CC_FLAGS		+= -g
-	#CC_DEFINES		 += -DDEBUG
+	CXX_FLAGS		+= -g
+	#CXX_DEFINES	 += -DDEBUG
 endif
 
 ifeq (32, $(BITS))
 	ifdef GCC
-		CC_FLAGS	+= -m32
+		CXX_FLAGS	+= -m32
 	endif
 else ifeq (64, $(BITS))
 	ifdef GCC
-		CC_FLAGS	+= -m64
+		CXX_FLAGS	+= -m64
 		ifeq (sparc, $(UNAME_PLATFORM))
-			#CC_FLAGS += -mcpu=v9
-			CC_FLAGS += -march=v9
+			#CXX_FLAGS += -mcpu=v9
+			CXX_FLAGS += -march=v9
 		endif
 	else ifdef SUNWS
 		ifeq (sparc, $(UNAME_PLATFORM))
-			CC_FLAGS += -xarch=v9
+			CXX_FLAGS += -xarch=v9
 		else ifeq (i386, $(UNAME_PLATFORM))
-			CC_FLAGS += -xarch=amd64
+			CXX_FLAGS += -xarch=amd64
 		endif
 	endif
 endif
 
 ifdef INCLUDE
-	CC_FLAGS += $(addprefix -I, $(INCLUDE))
+	CXX_FLAGS += $(addprefix -I, $(INCLUDE))
 endif
 
 
@@ -134,11 +134,18 @@ endif
 .SUFFIXES : .c .o .m
 
 define run-cc
-	$(CC_BIN) $(CC_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
+	$(CC_BIN)  $(CC_FLAGS)	$(CXX_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
+endef
+
+define run-cpp
+	$(CPP_BIN) $(CPP_FLAGS) $(CXX_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
 endef
 
 %.o : %.c
 	$(run-cc)
+
+%.o : %.cpp
+	$(run-cpp)
 
 %.o : %.m
 	$(run-cc)
@@ -149,7 +156,7 @@ endef
 all : $(BIN_PATH) $(LIB_PATH)
 
 .dependencies depend :
-	$(CC_BIN) $(CC_FLAGS) $(CC_DEP_FLAGS) $(foreach src, $(SRC), $(or $(wildcard ${src}.c), $(wildcard ${src}.m))) >.dependencies
+	$(CC_BIN) $(CXX_FLAGS) $(CC_DEP_FLAGS) $(foreach src, $(SRC), $(or $(wildcard ${src}.c), $(wildcard ${src}.m))) >.dependencies
 
 ifneq (clean, $(findstring clean, $(MAKECMDGOALS)))
 # this directive cannot be indented, or it will be ignored!
@@ -163,7 +170,7 @@ $(BIN_PATH) :: $(OBJ_DIR) $(BIN_DIR) ;
 
 $(BIN_PATH) :: $(addsuffix .o, $(SRC)) $(addprefix lib, $(addsuffix .a, $(LIBS)))
 	$(LD_BIN) $(LD_FLAGS) -o $@ $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) \
-        $(addprefix -L, $(EXTLIBDIRS)) $(addprefix -L, $(addsuffix /$(LIB_PROTO_DIR),$(LIBDIRS))) $(addprefix -l, $(LIBS))
+		$(addprefix -L, $(EXTLIBDIRS)) $(addprefix -L, $(addsuffix /$(LIB_PROTO_DIR),$(LIBDIRS))) $(addprefix -l, $(LIBS))
 
 $(LIB_PATH) :: $(OBJ_DIR) $(LIB_DIR) ;
 
