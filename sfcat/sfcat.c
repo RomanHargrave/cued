@@ -189,10 +189,6 @@ int main(int argc, char * argv[])
     char *progname, *infilename, *outfilename;
     SNDFILE *infile, *outfile;
     int i, outfilemajor, infileminor, silent;
-
-    silent = 0;
-    progname = (char *) basename2(argv[0]);
-
     opt_param_t opts[] = {
         { "pcms8",       (void *) SF_FORMAT_PCM_S8,    set_outfileminor, OPT_NONE },
         { "pcmu8",       (void *) SF_FORMAT_PCM_U8,    set_outfileminor, OPT_NONE },
@@ -226,6 +222,9 @@ int main(int argc, char * argv[])
 
         { "silent",      &silent,                      opt_set_flag,     OPT_NONE }
     };
+
+    silent = 0;
+    progname = (char *) basename2(argv[0]);
 
     opt_register_params(opts, NELEMS(opts), 0, 0);
     switch (opt_parse_args(argc, argv)) {
