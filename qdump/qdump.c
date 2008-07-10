@@ -90,7 +90,6 @@ int main(int argc, char *const argv[])
     qSubChannelFileName = NULL;
 
     exeName = basename2(argv[0]);
-
     opt_register_params(opts, NELEMS(opts), 0, 0);
     switch (opt_parse_args(argc, argv)) {
 

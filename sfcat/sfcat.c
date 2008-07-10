@@ -224,8 +224,8 @@ int main(int argc, char * argv[])
     };
 
     silent = 0;
-    progname = (char *) basename2(argv[0]);
 
+    progname = (char *) basename2(argv[0]);
     opt_register_params(opts, NELEMS(opts), 0, 0);
     switch (opt_parse_args(argc, argv)) {
 
