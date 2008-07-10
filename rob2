@@ -1,2 +1,2 @@
 #!/bin/bash
-EXTLIBDIRS="/home/edison/local${bits}/lib" CXX_FLAGS="-Wdeclaration-after-statement -isystem ~/local${bits}/include" INSTALL_BIN_DIR=~/bin/linux/${bits} CC_DEFINES="-DDEBUG_MALLOC" make install
+EXTLIBDIRS="/home/edison/local${bits}/lib" CC_FLAGS="-Wdeclaration-after-statement -isystem ~/local${bits}/include" INSTALL_BIN_DIR=~/bin/linux/${bits} CC_DEFINES="-DDEBUG_MALLOC" make install

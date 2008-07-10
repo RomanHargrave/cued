@@ -39,7 +39,6 @@ ifeq (SunOS, $(UNAME_SYSTEM))
 	CC_BIN	?= /opt/SUNWspro/bin/cc
 else ifeq (Linux, $(UNAME_SYSTEM))
 	CC_BIN	?= gcc
-	CPP_BIN ?= g++
 else
 	CC_BIN	?= cc
 endif
@@ -47,7 +46,7 @@ LD_BIN		?= $(CC_BIN)
 
 ifeq (gcc, $(notdir $(CC_BIN)))
 	GCC	  := t
-	CC_FLAGS  += -pedantic -std=gnu99
+	C_FLAGS += -pedantic -std=gnu99
 else ifeq (g++, $(notdir $(CC_BIN)))
 	GCC	  := t
 else ifeq (SUNWspro, $(findstring SUNWspro, $(CC_BIN)))
@@ -80,75 +79,78 @@ ifdef GCC
 	vpath %.a $(dir $(shell $(CC_BIN) -print-libgcc-file-name))
 endif
 
-CXX_FLAGS			+= $(CXX_DEFINES)
+CC_FLAGS			+= $(CC_DEFINES)
 ifdef GCC
-	CXX_FLAGS		+= -Wall -Wstrict-aliasing=2
+	CC_FLAGS		+= -Wall -Wstrict-aliasing=2
 	CC_DEP_FLAGS	+= -MM
 	ifeq (SunOS, $(UNAME_SYSTEM))
-		CXX_DEFINES	+= -D__$(UNAME_SYSTEM)_$(subst ., _, $(shell uname -r))
+		CC_DEFINES	+= -D__$(UNAME_SYSTEM)_$(subst ., _, $(shell uname -r))
 	endif
 else ifdef SUNWS
-	CXX_FLAGS		+= -xCC -Xa -v
+	CC_FLAGS		+= -xCC -Xa -v
 	CC_DEP_FLAGS	+= -xM1
 endif
 
 ifeq (release, $(BUILD))
-	CXX_FLAGS		+= -g
+	CC_FLAGS		+= -g
 	ifdef GCC
-		CXX_FLAGS	+= -O2
+		CC_FLAGS	+= -O2
 	else
-		CXX_FLAGS	+= -O
+		CC_FLAGS	+= -O
 	endif
-	#CXX_DEFINES	 += -DNDEBUG
+	#CC_DEFINES	 += -DNDEBUG
 else ifeq (debug, $(BUILD))
-	CXX_FLAGS		+= -g
-	#CXX_DEFINES	 += -DDEBUG
+	CC_FLAGS		+= -g
+	#CC_DEFINES	 += -DDEBUG
 endif
 
 ifeq (32, $(BITS))
 	ifdef GCC
-		CXX_FLAGS	+= -m32
+		CC_FLAGS	+= -m32
 	endif
 else ifeq (64, $(BITS))
 	ifdef GCC
-		CXX_FLAGS	+= -m64
+		CC_FLAGS	+= -m64
 		ifeq (sparc, $(UNAME_PLATFORM))
-			#CXX_FLAGS += -mcpu=v9
-			CXX_FLAGS += -march=v9
+			#CC_FLAGS += -mcpu=v9
+			CC_FLAGS += -march=v9
 		endif
 	else ifdef SUNWS
 		ifeq (sparc, $(UNAME_PLATFORM))
-			CXX_FLAGS += -xarch=v9
+			CC_FLAGS += -xarch=v9
 		else ifeq (i386, $(UNAME_PLATFORM))
-			CXX_FLAGS += -xarch=amd64
+			CC_FLAGS += -xarch=amd64
 		endif
 	endif
 endif
 
 ifdef INCLUDE
-	CXX_FLAGS += $(addprefix -I, $(INCLUDE))
+	CC_FLAGS += $(addprefix -I, $(INCLUDE))
 endif
 
 
 .SUFFIXES :
-.SUFFIXES : .c .o .m
+.SUFFIXES : .c .o .m .M .cpp
 
 define run-cc
-	$(CC_BIN)  $(CC_FLAGS)	$(CXX_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
+	$(CC_BIN) $(C_FLAGS)   $(CC_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
 endef
 
 define run-cpp
-	$(CPP_BIN) $(CPP_FLAGS) $(CXX_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
+	$(CC_BIN) $(CPP_FLAGS) $(CC_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
 endef
 
 %.o : %.c
 	$(run-cc)
 
-%.o : %.cpp
-	$(run-cpp)
-
 %.o : %.m
 	$(run-cc)
+
+%.o : %.M
+	$(run-cpp)
+
+%.o : %.cpp
+	$(run-cpp)
 
 .PHONY : all clean depend dependclean distclean install
 
@@ -156,7 +158,7 @@ endef
 all : $(BIN_PATH) $(LIB_PATH)
 
 .dependencies depend :
-	$(CC_BIN) $(CXX_FLAGS) $(CC_DEP_FLAGS) $(foreach src, $(SRC), $(or $(wildcard ${src}.c), $(wildcard ${src}.m))) >.dependencies
+	$(CC_BIN) $(CC_FLAGS) $(CC_DEP_FLAGS) $(foreach src, $(SRC), $(or $(wildcard ${src}.c), $(wildcard ${src}.m), $(wildcard ${src}.M), $(wildcard ${src}.cpp))) >.dependencies
 
 ifneq (clean, $(findstring clean, $(MAKECMDGOALS)))
 # this directive cannot be indented, or it will be ignored!
