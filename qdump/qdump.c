@@ -83,14 +83,15 @@ int main(int argc, char *const argv[])
     int psc, notpsc, crc_fail;
     qsc_file_buffer_t qsc;
 
-    qSubChannelFileName = NULL;
-
     opt_param_t opts[] = {
         { "q", &qSubChannelFileName, opt_set_string, OPT_REQUIRED }
     };
-    opt_register_params(opts, NELEMS(opts), 0, 0);
+
+    qSubChannelFileName = NULL;
 
     exeName = basename2(argv[0]);
+
+    opt_register_params(opts, NELEMS(opts), 0, 0);
     switch (opt_parse_args(argc, argv)) {
 
         case OPT_SUCCESS:

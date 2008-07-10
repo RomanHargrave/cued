@@ -158,6 +158,32 @@ int main(int argc, char *const argv[])
     int optFlags, optSpeed, optOffsetWords;
     int optRetries, optSoundFileFormat;
 
+    opt_param_t opts[] = {
+        { "b", &optFirstRipTrack,        opt_set_nat_no,     OPT_REQUIRED },
+        { "c", &optCueFileNamePattern,   opt_set_string,     OPT_REQUIRED },
+        { "d", NULL,                     cued_set_loglevel,  OPT_REQUIRED },
+        { "e", &optLastRipTrack,         opt_set_nat_no,     OPT_REQUIRED },
+        { "f", &optSoundFileFormat,      cued_set_sf,        OPT_NONE },
+        { "n", &optFileNamePattern,      opt_set_string,     OPT_REQUIRED },
+        { "o", &optOffsetWords,          opt_set_int,        OPT_REQUIRED },
+        { "q", &optQSubChannelFileName,  opt_set_string,     OPT_REQUIRED },
+        { "r", &optRetries,              opt_set_whole_no,   OPT_REQUIRED },
+        { "s", &optSpeed,                opt_set_nat_no,     OPT_REQUIRED },
+        { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
+        { "format-help",  NULL,          cued_format_help,   OPT_NONE },
+
+        { "i", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_GET_INDICES },
+        { "p", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_USE_PARANOIA },
+        { "v", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_VERBOSE },
+        { "w", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
+        { "x", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_EXTRACT },
+        { "dap-fixup",     &optFlags, NULL, OPT_SET_FLAG, RIP_F_DAP_FIXUP },
+        { "qsc-ecc",       &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
+        { "qsc-format",    &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
+        { "read-lead-out", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_LEADOUT },
+        { "read-pre-gap",  &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
+    };
+
     // things that do not need to be freed and will be initialized on first use
     //
     rip_context_t rip;
@@ -182,31 +208,6 @@ int main(int argc, char *const argv[])
     optSoundFileFormat = SF_FORMAT_WAV;
 
     exeName = basename2(argv[0]);
-    opt_param_t opts[] = {
-        { "b", &optFirstRipTrack,        opt_set_nat_no,     OPT_REQUIRED },
-        { "c", &optCueFileNamePattern,   opt_set_string,     OPT_REQUIRED },
-        { "d", NULL,                     cued_set_loglevel,  OPT_REQUIRED },
-        { "e", &optLastRipTrack,         opt_set_nat_no,     OPT_REQUIRED },
-        { "f", &optSoundFileFormat,      cued_set_sf,        OPT_NONE },
-        { "n", &optFileNamePattern,      opt_set_string,     OPT_REQUIRED },
-        { "o", &optOffsetWords,          opt_set_int,        OPT_REQUIRED },
-        { "q", &optQSubChannelFileName,  opt_set_string,     OPT_REQUIRED },
-        { "r", &optRetries,              opt_set_whole_no,   OPT_REQUIRED },
-        { "s", &optSpeed,                opt_set_nat_no,     OPT_REQUIRED },
-        { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
-        { "format-help",  NULL,           cued_format_help,   OPT_NONE },
-
-        { "i", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_GET_INDICES },
-        { "p", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_USE_PARANOIA },
-        { "v", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_VERBOSE },
-        { "w", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
-        { "x", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_EXTRACT },
-        { "dap-fixup",     &optFlags, NULL, OPT_SET_FLAG, RIP_F_DAP_FIXUP },
-        { "qsc-ecc",       &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_ECC_QSC },
-        { "qsc-format",    &optFlags, NULL, OPT_SET_FLAG, RIP_F_USE_FORMATTED_QSC },
-        { "read-lead-out", &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_LEADOUT },
-        { "read-pre-gap",  &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
-    };
     opt_register_params(opts, NELEMS(opts), 15, 15);
     switch (opt_parse_args(argc, argv)) {
 
