@@ -165,7 +165,7 @@ struct _cc_class_object {
     struct _cc_class_object *meta;
 
     // super class
-    struct _cc_class_object *super;
+    struct _cc_class_object *supercls;
 
     // class name
     char *name;

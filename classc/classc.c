@@ -58,10 +58,10 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
             continue;
 
         // is there a super class?
-        } else if (cls->super) {
+        } else if (cls->supercls) {
 
             // chain to super classes
-            cls = cls->super;
+            cls = cls->supercls;
             methods = cls->methods;
             continue;
 
@@ -114,11 +114,11 @@ cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
 
-    if (!obj->isa->super) {
+    if (!obj->isa->supercls) {
         return cc_msg(obj, "error", by_str("cannot send message to super class of class \""), by_str(obj->isa->name), by_str("\""));
     }
 
-    return _cc_send_msg_internal(obj->isa->super, my, msg, argc, argv);
+    return _cc_send_msg_internal(obj->isa->supercls, my, msg, argc, argv);
 }
 
 
