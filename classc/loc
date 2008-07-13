@@ -1,2 +1,2 @@
 #!/bin/bash
-wc classc.h classc.c inherit.m4
+wc *.c *.h *.m4
