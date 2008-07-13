@@ -179,6 +179,7 @@ struct _cc_class_object {
 
 extern cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg);
 
+
 typedef struct _cc_vars_Root {
 
     cc_class_object *isa;
