@@ -1,2 +1,2 @@
 #!/bin/bash
-wc *akefile* */*akefile* */*c */*h */*mk | sort -n
+wc *akefile* */*akefile* */*c */*h */*mk */*m4 | sort -n
