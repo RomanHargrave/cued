@@ -18,7 +18,7 @@
 #
 
 SRC = test
-SRC_M4_HEADER = ob
+SRC_M4 = ob.h
 
 BIN = object
 

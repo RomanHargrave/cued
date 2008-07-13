@@ -161,13 +161,16 @@ endef
 %.h : %.m4
 	$(run-m4)
 
+%.c : %.m4
+	$(run-m4)
+
 .PHONY : all clean depend dependclean distclean install
 
 
 all : $(BIN_PATH) $(LIB_PATH)
 
 # double colon ought to work here, but does not
-.dependencies : $(addsuffix .h, $(SRC_M4_HEADER))
+.dependencies : $(SRC_M4)
 	$(CC_BIN) $(CC_FLAGS) $(CC_DEP_FLAGS) $(foreach src, $(SRC), $(or $(wildcard ${src}.c), $(wildcard ${src}.m), $(wildcard ${src}.M), $(wildcard ${src}.cpp))) >.dependencies
 
 depend :: .dependencies
@@ -201,8 +204,8 @@ clean :: dependclean
 	@-rm $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) 2>/dev/null
 	@-rm $(BIN_PATH) $(LIB_PATH) 2>/dev/null
 	@-rmdir -p $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) 2>/dev/null
-	@-rm $(addsuffix .h, $(SRC_M4_HEADER))
+	$(if $(SRC_M4),@-rm $(SRC_M4))
 
 distclean :: dependclean
 	@-rm -rf bin lib obj *~ 2>/dev/null
-	@-rm $(addsuffix .h, $(SRC_M4_HEADER))
+	$(if $(SRC_M4),@-rm $(SRC_M4))
