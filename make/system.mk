@@ -155,7 +155,7 @@ endef
 	$(run-cpp)
 
 define run-m4
-	$(M4_BIN) $< >$@
+	$(M4_BIN) $(addprefix -I, $(INCLUDE)) $< >$@
 endef
 
 %.h : %.m4

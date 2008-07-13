@@ -17,15 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SRC = classc
+SRC = classc root
 LIB = classc
-
-#SRC_M4_HEADER = ob
-#SRC += test
-#BIN = object
-#ob.h : inherit.m4
-
-#C_FLAGS=-pedantic
 
 include ../make/system.mk
 #include ../make/largefile.mk

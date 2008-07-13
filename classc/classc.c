@@ -24,11 +24,10 @@
 #include <stdlib.h>
 
 
-typedef struct _cc_vars_Root {
-
-    cc_class_object *isa;
-
-} cc_vars_Root;
+static inline int strcmp2(const char *a, const char *b)
+{
+    return (a == b) ? 0 : strcmp(a, b);
+}
 
 
 cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
@@ -41,9 +40,9 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 
             //printf("comparing %s to %s\n", methods->msg, msg);
 
-            // compare method name
-            if (methods->msg == msg || !strcmp(methods->msg, msg)) {
+            if (!strcmp2(methods->msg, msg)) {
 
+                // found a matching method name
                 return methods->u.fn;
             }
 
@@ -84,7 +83,7 @@ static inline cc_args_t _cc_send_msg_internal(
 {
     cc_method_fp method = _cc_lookup_method(cls, msg);
     if (!method) {
-        if ("forward" != msg && strcmp("forward", msg)) {
+        if (strcmp2("forward", msg)) {
             method = _cc_lookup_method(cls, "forward");
         }
     }
@@ -94,7 +93,7 @@ static inline cc_args_t _cc_send_msg_internal(
     }
 
     // handle method not found
-    if ("error" != msg && strcmp("error", msg)) {
+    if (strcmp2("error", msg)) {
         return cc_msg(obj, "error", by_str("could not send message \""), by_str(msg),
             by_str("\" to class \""), by_str(cls->name), by_str("\""));
     }
@@ -139,64 +138,3 @@ void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods)
         }
     }
 }
-
-
-cc_begin_meta_method(alloc, MetaRoot)
-    cc_vars_Root *obj = (cc_vars_Root *) calloc(1, my->size);
-    if (obj) {
-        obj->isa = my;
-    }
-
-    printf("root allocated %p for class %s with size %lu\n", obj, my->name, my->size);
-
-    return by_obj(obj);
-cc_end_method
-
-
-cc_begin_method(free, Root)
-    free(my);
-
-    printf("root freed %p\n", my);
-
-    return by_ptr(NULL);
-cc_end_method
-
-
-static cc_args_t errorRoot(cc_obj my, char *msg, int argc, cc_args_t *argv)
-{
-    int i;
-    fprintf(stderr, "fatal:  ");
-    for (i = 0;  i < argc;  ++i) {
-        fprintf(stderr, "%s", as_str(argv[i]));
-    }
-    fprintf(stderr, "\n");
-    abort();
-}
-
-
-cc_class_object MetaRoot = {
-    NULL,
-    NULL,
-    "MetaRoot",
-    sizeof(cc_vars_Root),
-    cc_begin_methods
-
-    cc_method("alloc", allocMetaRoot),
-    cc_method("error", errorRoot),
-
-    cc_end_methods
-};
-
-
-cc_class_object Root = {
-    &MetaRoot,
-    NULL,
-    "Root",
-    sizeof(cc_vars_Root),
-    cc_begin_methods
-
-    cc_method("free",  freeRoot),
-    cc_method("error", errorRoot),
-
-    cc_end_methods
-};

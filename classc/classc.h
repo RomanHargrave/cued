@@ -86,9 +86,9 @@ typedef union _cc_args_t {
 #define as_float(e)     (e).f
 #define as_double(e)    (e).d
 
-#define cc_msg(obj, msg, ...)       _cc_send      ( obj, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
+#define cc_msg(obj, msg, ...)   _cc_send    ( obj, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
 
-#define cc_msg_super(obj, msg, ...) _cc_send_super( obj, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
+#define cc_msg_super(msg, ...) _cc_send_super( my, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
 
 extern cc_args_t _cc_send      (cc_obj my, char *msg, int argc, cc_args_t *argv);
 extern cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv);
@@ -120,21 +120,15 @@ cc_class_object Meta##cls = { \
 typedef struct _cc_method_name cc_method_name;
 extern void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods);
 
-// cc_method_name cat##cls[] should be static, not extern, but gcc's -pedantic
-// errors on the forward declaration of a static flexible array, even though
-// -pedantic by itself should issue only warnings, not errors;  it is a known
-// gcc bug that -pedantic errors when it should not (gcc-4.1.2)
-//
-#define cc_begin_category(cls, cat) \
-extern cc_method_name cat##cls[]; \
+#define cc_category(cls, cat, ...) \
 static void cat##cls##Constructor(void) __attribute__((constructor)); \
 static void cat##cls##Constructor(void) \
 { \
+    static cc_method_name cat##cls[] = { \
+    __VA_ARGS__ \
+    cc_end_methods; \
     _cc_add_methods(&cls, cat##cls); \
-} \
-cc_method_name cat##cls[] = {
-
-#define cc_end_category cc_end_methods;
+}
 
 
 #define cc_begin_methods {
@@ -184,5 +178,11 @@ struct _cc_class_object {
 };
 
 extern cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg);
+
+typedef struct _cc_vars_Root {
+
+    cc_class_object *isa;
+
+} cc_vars_Root;
 
 #endif // CLASSC_H_INCLUDED
