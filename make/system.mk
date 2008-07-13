@@ -46,7 +46,7 @@ LD_BIN		?= $(CC_BIN)
 
 ifeq (gcc, $(notdir $(CC_BIN)))
 	GCC	  := t
-	C_FLAGS += -pedantic -std=gnu99
+	C_FLAGS += -std=gnu99 # -pedantic 
 else ifeq (g++, $(notdir $(CC_BIN)))
 	GCC	  := t
 else ifeq (SUNWspro, $(findstring SUNWspro, $(CC_BIN)))
@@ -61,6 +61,8 @@ endif
 
 AR_BIN	 ?= ar
 AR_FLAGS += rcs
+
+M4_BIN   ?= m4
 
 
 OBJ_DIR			:= obj/$(UNAME_SYSTEM)/$(UNAME_PLATFORM)/$(BITS)/$(BUILD)/
@@ -82,7 +84,7 @@ endif
 CC_FLAGS			+= $(CC_DEFINES)
 ifdef GCC
 	CC_FLAGS		+= -Wall -Wstrict-aliasing=2
-	CC_DEP_FLAGS	+= -MM
+	CC_DEP_FLAGS	+= -MM # -MG
 	ifeq (SunOS, $(UNAME_SYSTEM))
 		CC_DEFINES	+= -D__$(UNAME_SYSTEM)_$(subst ., _, $(shell uname -r))
 	endif
@@ -130,7 +132,7 @@ endif
 
 
 .SUFFIXES :
-.SUFFIXES : .c .o .m .M .cpp
+.SUFFIXES : .c .o .m .M .cpp .m4
 
 define run-cc
 	$(CC_BIN) $(C_FLAGS)   $(CC_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
@@ -151,6 +153,13 @@ endef
 
 %.o : %.cpp
 	$(run-cpp)
+
+define run-m4
+	$(M4_BIN) $< >$@
+endef
+
+%.h : %.m4
+	$(run-m4)
 
 .PHONY : all clean depend dependclean distclean install
 
@@ -179,16 +188,16 @@ $(LIB_PATH) :: $(OBJ_DIR) $(LIB_DIR) ;
 $(LIB_PATH) :: $(addsuffix .o, $(SRC))
 	$(AR_BIN) $(AR_FLAGS) $@ $(foreach obj, $?, $(if $(findstring $(OBJ_DIR), $(obj)), $(obj), $(addprefix $(OBJ_DIR), $(obj))))
 
-install : all
+install :: all
 	$(if $(BIN_PATH),cp -p $(BIN_PATH) $(INSTALL_BIN_DIR))
 
-dependclean :
+dependclean ::
 	@-rm .dependencies 2>/dev/null
 
-clean : dependclean
+clean :: dependclean
 	@-rm $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) 2>/dev/null
 	@-rm $(BIN_PATH) $(LIB_PATH) 2>/dev/null
 	@-rmdir -p $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) 2>/dev/null
 
-distclean : dependclean
+distclean :: dependclean
 	@-rm -rf bin lib obj *~ 2>/dev/null
