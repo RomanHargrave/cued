@@ -86,9 +86,9 @@ typedef union _cc_args_t {
 #define as_float(e)     (e).f
 #define as_double(e)    (e).d
 
-#define cc_msg(obj, msg, ...)   _cc_send    ( obj, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
+#define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
 
-#define cc_msg_super(msg, ...) _cc_send_super( my, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
+#define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
 
 extern cc_args_t _cc_send      (cc_obj my, char *msg, int argc, cc_args_t *argv);
 extern cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv);
