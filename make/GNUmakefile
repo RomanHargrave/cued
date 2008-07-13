@@ -21,5 +21,5 @@
 
 .PHONY : distclean
 
-distclean :
+distclean ::
 	@-rm -f *~
