@@ -22,11 +22,14 @@ DIRS= \
 	lib \
 	make \
 	qdump \
+    classc \
     sfcat
 
 include make/dir.mk
 
 cued qdump : lib
+
+lib : classc
 
 #
 # seems to work with either : or :: with or without the .PHONY directive,
