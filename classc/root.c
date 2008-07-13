@@ -28,7 +28,7 @@ cc_begin_meta_method(alloc, MetaRoot)
         obj->isa = my;
     }
 
-    printf("root allocated %p for class %s with size %lu\n", obj, my->name, my->size);
+    //printf("root allocated %p for class %s with size %lu\n", obj, my->name, my->size);
 
     return by_obj(obj);
 cc_end_method
@@ -37,7 +37,7 @@ cc_end_method
 cc_begin_method(free, Root)
     free(my);
 
-    printf("root freed %p\n", my);
+    //printf("root freed %p\n", my);
 
     return by_ptr(NULL);
 cc_end_method
