@@ -20,7 +20,5 @@
 SRC = pwsc format unix cdio2 qsc cddb2 opt dmalloc util
 LIB = cued
 
-#CC_DEFINES=-DDEBUG_MALLOC
-
 include ../make/system.mk
 #include ../make/largefile.mk
