@@ -205,3 +205,4 @@ clean :: dependclean
 
 distclean :: dependclean
 	@-rm -rf bin lib obj *~ 2>/dev/null
+	@-rm $(addsuffix .h, $(SRC_M4_HEADER))
