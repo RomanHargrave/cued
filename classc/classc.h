@@ -121,13 +121,13 @@ typedef struct _cc_method_name cc_method_name;
 extern void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods);
 
 #define cc_category(cls, cat, ...) \
-static void cat##cls##Constructor(void) __attribute__((constructor)); \
-static void cat##cls##Constructor(void) \
+static void cls##cat##Constructor(void) __attribute__((constructor)); \
+static void cls##cat##Constructor(void) \
 { \
-    static cc_method_name cat##cls[] = { \
+    static cc_method_name cls##cat[] = { \
     __VA_ARGS__ \
     cc_end_methods; \
-    _cc_add_methods(&cls, cat##cls); \
+    _cc_add_methods(&cls, cls##cat); \
 }
 
 
