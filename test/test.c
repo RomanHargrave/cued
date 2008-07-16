@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
     //cc_obj f = as_obj(cc_msg(&Foo, "alloc"));
     cc_obj f = as(o, cc_msg(&Foo, "alloc"));
 
-    //char test[5] = { 't', 'e', 's', 't', 0 };
+    char test[5] = { 't', 'e', 's', 't', 0 };
     //char *test = "blowme";
-    char *test = "blarf";
+    //char *test = "blarf";
 
     cc_msg(f, "setBar", by_int(34));
 

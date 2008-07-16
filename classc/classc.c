@@ -30,7 +30,17 @@ static inline int strcmp2(const char *a, const char *b)
 }
 
 
-cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
+typedef enum _cc_lookup_how {
+
+    cc_lookup_by_ptr = 0,
+    cc_lookup_by_strcmp = 1,
+    cc_lookup_by_both = 2
+
+} cc_lookup_how;
+
+
+static inline cc_method_fp _cc_lookup_method_internal(
+    cc_class_object *cls, char *msg, cc_lookup_how how)
 {
     cc_method_name *methods = cls->methods;
 
@@ -40,10 +50,31 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 
             //printf("comparing %s to %s\n", methods->msg, msg);
 
-            if (!strcmp2(methods->msg, msg)) {
+            switch (how) {
 
-                // found a matching method name
-                return methods->u.fn;
+                case cc_lookup_by_ptr:
+                    if (methods->msg == msg) {
+
+                        // found a matching method name
+                        return methods->u.fn;
+                    }
+                    break;
+
+                case cc_lookup_by_strcmp:
+                    if (!strcmp(methods->msg, msg)) {
+
+                        // found a matching method name
+                        return methods->u.fn;
+                    }
+                    break;
+
+                case cc_lookup_by_both:
+                    if (!strcmp2(methods->msg, msg)) {
+
+                        // found a matching method name
+                        return methods->u.fn;
+                    }
+                    break;
             }
 
             // advance to next method
@@ -71,6 +102,21 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
             return NULL;
         }
     }
+}
+
+
+cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
+{
+    // TODO:  an interesting conundrum:  if not optimizing, it may be more
+    // efficient to call _cc_lookup_method_internal with cc_lookup_by_both;
+    // for example, see gcc's -fmerge-constants option
+    //
+    cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_ptr);
+    if (!method) {
+        method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_strcmp);
+    }
+
+    return method;
 }
 
 
@@ -122,6 +168,13 @@ cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv)
 }
 
 
+// TODO:  it would be quicker to prepend rather than append the methods,
+// but is that desirable?  Are category methods more likely to be called
+// more frequently than other methods in the class?  Should the macro
+// for a category allow specifying that in keeping with the idea that the
+// programmer should be able to supply all the information they have
+// at their disposal?
+//
 void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods)
 {
     cc_method_name *methods = cls->methods;
