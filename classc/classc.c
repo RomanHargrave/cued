@@ -164,7 +164,7 @@ cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv)
         return cc_msg(obj, "error", by_str("cannot send message to super class of class \""), by_str(obj->isa->name), by_str("\""));
     }
 
-    return _cc_send_msg_internal(obj->isa->supercls, my, msg, argc, argv);
+    return _cc_send_msg_internal(obj->isa->supercls, obj, msg, argc, argv);
 }
 
 
@@ -173,7 +173,8 @@ cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv)
 // more frequently than other methods in the class?  Should the macro
 // for a category allow specifying that in keeping with the idea that the
 // programmer should be able to supply all the information they have
-// at their disposal?
+// at their disposal?  Would this be better served by turning the method
+// array into an MRU structure?
 //
 void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods)
 {
