@@ -159,12 +159,13 @@ cc_args_t _cc_send(cc_obj my, char *msg, int argc, cc_args_t *argv)
 cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
+    cc_class_object *supercls = obj->isa->supercls;
 
-    if (!obj->isa->supercls) {
+    if (!supercls) {
         return cc_msg(obj, "error", by_str("cannot send message to super class of class \""), by_str(obj->isa->name), by_str("\""));
     }
 
-    return _cc_send_msg_internal(obj->isa->supercls, obj, msg, argc, argv);
+    return _cc_send_msg_internal(supercls, obj, msg, argc, argv);
 }
 
 
