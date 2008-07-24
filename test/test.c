@@ -52,7 +52,9 @@ int main(int argc, char *argv[])
     printf("sizeof(Foo) == %lu\n", sizeof(Foo));
 
     //cc_obj f = as_obj(cc_msg(&Foo, "alloc"));
-    cc_obj f = as(o, cc_msg(&Foo, "alloc"));
+    //cc_obj f = as(o, cc_msg(&Foo, "alloc"));
+
+    cc_obj f = as(o, cc_msg(&Foo, "new"));
 
     char test[5] = { 't', 'e', 's', 't', 0 };
     //char *test = "blowme";
