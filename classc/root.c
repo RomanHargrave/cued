@@ -26,20 +26,33 @@ cc_begin_meta_method(alloc, MetaRoot)
     cc_vars_Root *obj = (cc_vars_Root *) calloc(1, my->size);
     if (obj) {
         obj->isa = my;
+        return by_obj(obj);
+    } else {
+        return cc_msg(my, "error", by_str("out of memory allocating object of class \""),
+            by_str(my->name), by_str("\""));
     }
-
-    //printf("root allocated %p for class %s with size %lu\n", obj, my->name, my->size);
-
-    return by_obj(obj);
 cc_end_method
 
 
 cc_begin_method(free, Root)
     free(my);
-
-    //printf("root freed %p\n", my);
-
     return by_ptr(NULL);
+cc_end_method
+
+
+cc_begin_method(init, Root)
+    return by_obj(my);
+cc_end_method
+
+
+cc_begin_meta_method(new, MetaRoot)
+    cc_obj obj = as_obj(cc_msg(my, "alloc"));
+    if (obj) {
+        return cc_msg(obj, "init");
+    } else {
+        return cc_msg(my, "error", by_str("alloc method did not return instance for class \""),
+            by_str(my->name), by_str("\""));
+    }
 cc_end_method
 
 
@@ -63,6 +76,7 @@ cc_class_object MetaRoot = {
     cc_begin_methods
 
     cc_method("alloc", allocMetaRoot),
+    cc_method("new",   newMetaRoot),
     cc_method("error", errorRoot),
 
     cc_end_methods
@@ -77,6 +91,7 @@ cc_class_object Root = {
     cc_begin_methods
 
     cc_method("free",  freeRoot),
+    cc_method("init",  initRoot),
     cc_method("error", errorRoot),
 
     cc_end_methods
