@@ -25,7 +25,7 @@
 
 typedef void *cc_obj;
 
-typedef union _cc_args_t {
+typedef union _cc_arg_t {
 
     cc_obj o;
     void *p;
@@ -48,25 +48,25 @@ typedef union _cc_args_t {
     float f;
     double d;
 
-} cc_args_t;
+} cc_arg_t;
 
-#define by(x, y)        (cc_args_t) { .x   = y }
-#define by_obj(p)       (cc_args_t) { .o   = p }
-#define by_ptr(x)       (cc_args_t) { .p   = x }
-#define by_str(p)       (cc_args_t) { .s   = p }
-#define by_schar(c)     (cc_args_t) { .sc  = c }
-#define by_short(n)     (cc_args_t) { .h   = n }
-#define by_int(n)       (cc_args_t) { .i   = n }
-#define by_long(n)      (cc_args_t) { .l   = n }
-#define by_longlong(n)  (cc_args_t) { .ll  = n }
-#define by_uchar(c)     (cc_args_t) { .uc  = c }
-#define by_ushort(n)    (cc_args_t) { .uh  = n }
-#define by_uint(n)      (cc_args_t) { .ui  = n }
-#define by_ulong(n)     (cc_args_t) { .ul  = n }
-#define by_ulonglong(n) (cc_args_t) { .ull = n }
-#define by_char(x)      (cc_args_t) { .c   = x }
-#define by_float(n)     (cc_args_t) { .f   = n }
-#define by_double(n)    (cc_args_t) { .d   = n }
+#define by(x, y)        (cc_arg_t) { .x   = (y) }
+#define by_obj(p)       (cc_arg_t) { .o   = (p) }
+#define by_ptr(x)       (cc_arg_t) { .p   = (x) }
+#define by_str(p)       (cc_arg_t) { .s   = (p) }
+#define by_schar(c)     (cc_arg_t) { .sc  = (c) }
+#define by_short(n)     (cc_arg_t) { .h   = (n) }
+#define by_int(n)       (cc_arg_t) { .i   = (n) }
+#define by_long(n)      (cc_arg_t) { .l   = (n) }
+#define by_longlong(n)  (cc_arg_t) { .ll  = (n) }
+#define by_uchar(c)     (cc_arg_t) { .uc  = (c) }
+#define by_ushort(n)    (cc_arg_t) { .uh  = (n) }
+#define by_uint(n)      (cc_arg_t) { .ui  = (n) }
+#define by_ulong(n)     (cc_arg_t) { .ul  = (n) }
+#define by_ulonglong(n) (cc_arg_t) { .ull = (n) }
+#define by_char(x)      (cc_arg_t) { .c   = (x) }
+#define by_float(n)     (cc_arg_t) { .f   = (n) }
+#define by_double(n)    (cc_arg_t) { .d   = (n) }
 
 #define as(t, e)        (e).t
 #define as_obj(e)       (e).o
@@ -86,12 +86,12 @@ typedef union _cc_args_t {
 #define as_float(e)     (e).f
 #define as_double(e)    (e).d
 
-#define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
+#define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((union _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(union _cc_arg_t), (union _cc_arg_t[]) { __VA_ARGS__ } )
 
-#define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((union _cc_args_t[]) { __VA_ARGS__ }) / sizeof(union _cc_args_t), (union _cc_args_t[]) { __VA_ARGS__ } )
+#define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((union _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(union _cc_arg_t), (union _cc_arg_t[]) { __VA_ARGS__ } )
 
-extern cc_args_t _cc_send      (cc_obj my, char *msg, int argc, cc_args_t *argv);
-extern cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv);
+extern cc_arg_t _cc_send      (cc_obj my, char *msg, int argc, cc_arg_t *argv);
+extern cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv);
 
 
 typedef struct _cc_class_object cc_class_object;
@@ -137,23 +137,23 @@ static void cls##cat##Constructor(void) \
 
 
 #define cc_begin_method(cls, fn_name) \
-static cc_args_t fn_name##cls(cc_vars_##cls *my, char *msg, int argc, cc_args_t *argv) \
+static cc_arg_t fn_name##cls(cc_vars_##cls *my, char *msg, int argc, cc_arg_t *argv) \
 {
 
 #define cc_begin_meta_method(cls, fn_name) \
-static cc_args_t fn_name##cls(cc_class_object *my, char *msg, int argc, cc_args_t *argv) \
+static cc_arg_t fn_name##cls(cc_class_object *my, char *msg, int argc, cc_arg_t *argv) \
 {
 
 #define cc_end_method }
 
 
-typedef cc_args_t (*cc_method_fp)(cc_obj my, char *msg, int argc, cc_args_t *argv);
+typedef cc_arg_t (*cc_method_fp)(cc_obj my, char *msg, int argc, cc_arg_t *argv);
 
 struct _cc_method_name {
 
     char *msg;
     union {
-        cc_args_t (*fn)();
+        cc_arg_t (*fn)();
         struct _cc_method_name *next;
     } u;
 

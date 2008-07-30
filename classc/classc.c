@@ -120,12 +120,12 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 }
 
 
-static inline cc_args_t _cc_send_msg_internal(
+static inline cc_arg_t _cc_send_msg_internal(
     cc_class_object *cls,
     cc_vars_Root *obj,
     char *msg,
     int argc,
-    cc_args_t *argv)
+    cc_arg_t *argv)
 {
     cc_method_fp method = _cc_lookup_method(cls, msg);
     if (!method) {
@@ -149,14 +149,14 @@ static inline cc_args_t _cc_send_msg_internal(
 }
 
 
-cc_args_t _cc_send(cc_obj my, char *msg, int argc, cc_args_t *argv)
+cc_arg_t _cc_send(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
     return _cc_send_msg_internal(obj->isa, my, msg, argc, argv);
 }
 
 
-cc_args_t _cc_send_super(cc_obj my, char *msg, int argc, cc_args_t *argv)
+cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
     cc_class_object *supercls = obj->isa->supercls;

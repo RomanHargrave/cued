@@ -56,7 +56,7 @@ cc_begin_meta_method(MetaRoot, new)
 cc_end_method
 
 
-static cc_args_t errorRoot(cc_obj my, char *msg, int argc, cc_args_t *argv)
+static cc_arg_t errorRoot(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 {
     int i;
     fprintf(stderr, "fatal:  ");

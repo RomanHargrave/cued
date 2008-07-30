@@ -47,7 +47,7 @@ cc_category(Foo, Blastme,
 
 int main(int argc, char *argv[])
 {
-    printf("sizeof(cc_args_t) == %lu\n", sizeof(cc_args_t));
+    printf("sizeof(cc_arg_t) == %lu\n", sizeof(cc_arg_t));
     printf("sizeof(cc_class_object) == %lu\n", sizeof(cc_class_object));
     printf("sizeof(Foo) == %lu\n", sizeof(Foo));
 
@@ -72,11 +72,11 @@ int main(int argc, char *argv[])
 
     //cc_msg_super(&Foo, "doh");
 
-    //cc_args_t a;
+    //cc_arg_t a;
     //int n;
 
     // warning: ISO C forbids casts to union type
-    //a = (cc_args_t) n;
+    //a = (cc_arg_t) n;
 
     // error: aggregate value used where an integer was expected
     //n = (int) a;
