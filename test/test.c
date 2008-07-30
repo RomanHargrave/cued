@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-cc_begin_method(test, Foo)
+cc_begin_method(Foo, test)
     int i;
     printf("args: ");
     for (i = 0;  i < argc;  ++i) {
@@ -20,7 +20,7 @@ cc_begin_method(test, Foo)
 cc_end_method
 
 
-cc_begin_method(setBar, Foo)
+cc_begin_method(Foo, setBar)
     my->bar = argv[0].i;
     return by_obj(my);
 cc_end_method

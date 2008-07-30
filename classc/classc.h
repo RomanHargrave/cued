@@ -136,11 +136,11 @@ static void cls##cat##Constructor(void) \
 #define cc_end_methods { NULL, { .next = NULL } } }
 
 
-#define cc_begin_method(fn_name, cls) \
+#define cc_begin_method(cls, fn_name) \
 static cc_args_t fn_name##cls(cc_vars_##cls *my, char *msg, int argc, cc_args_t *argv) \
 {
 
-#define cc_begin_meta_method(fn_name, cls) \
+#define cc_begin_meta_method(cls, fn_name) \
 static cc_args_t fn_name##cls(cc_class_object *my, char *msg, int argc, cc_args_t *argv) \
 {
 

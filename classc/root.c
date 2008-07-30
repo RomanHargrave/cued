@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 
-cc_begin_meta_method(alloc, MetaRoot)
+cc_begin_meta_method(MetaRoot, alloc)
     cc_vars_Root *obj = (cc_vars_Root *) calloc(1, my->size);
     if (obj) {
         obj->isa = my;
@@ -34,18 +34,18 @@ cc_begin_meta_method(alloc, MetaRoot)
 cc_end_method
 
 
-cc_begin_method(free, Root)
+cc_begin_method(Root, free)
     free(my);
     return by_ptr(NULL);
 cc_end_method
 
 
-cc_begin_method(init, Root)
+cc_begin_method(Root, init)
     return by_obj(my);
 cc_end_method
 
 
-cc_begin_meta_method(new, MetaRoot)
+cc_begin_meta_method(MetaRoot, new)
     cc_obj obj = as_obj(cc_msg(my, "alloc"));
     if (obj) {
         return cc_msg(obj, "init");
