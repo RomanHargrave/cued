@@ -1,0 +1,53 @@
+cc_begin_meta_method(alloc, MetaDbleList)
+    cc_vars_DbleList *obj = as_obj(cc_msg_super("alloc"));
+    if (obj) {
+        obj->head.next = obj->head.prev = &obj->head;
+    }
+    return by_obj(obj);
+cc_end_method
+
+
+cc_begin_method(insertHead, DbleList)
+    DbleListNode *node, *next;
+    int i;
+
+    for (i = 0;  i < argc;  ++i) {
+        node = malloc(sizeof(DbleListNode));
+        if (!node) {
+            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+        }
+
+        next = my->head.next;
+        my->head.next = node;
+        next->prev = node;
+
+        node->next = next;
+        node->prev = &my->head;
+        node->item = as_obj(argv[i]);
+    }
+
+    return by_obj(my);
+cc_end_method
+
+
+cc_begin_method(insertTail, DbleList)
+    DbleListNode *node, *prev;
+    int i;
+
+    for (i = 0;  i < argc;  ++i) {
+        node = malloc(sizeof(DbleListNode));
+        if (!node) {
+            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+        }
+
+        prev = my->head.prev;
+        my->head.prev = node;
+        prev->next = node;
+
+        node->prev = prev;
+        node->next = &my->head;
+        node->item = as_obj(argv[i]);
+    }
+
+    return by_obj(my);
+cc_end_method
