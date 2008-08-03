@@ -222,13 +222,18 @@ cc_begin_method(FcListCursor, prefix)
 cc_end_method
 
 cc_begin_method(FcListCursor, affix)
+    FcListNode *curr = my->curr;
     int i;
     for (i = 0;  i < argc;  ++i) {
-        if (!insertAfter(my->curr, as_obj(argv[i]))) {
+
+        // insert by order given...
+        curr = insertAfter(curr, as_obj(argv[i]));
+        if (!curr) {
             return cc_msg(my, "error", by_str("out of memory allocating list node"));
         }
-        // two purposes:  insert by order specified AND point to item after new items
-        my->curr = my->curr->next;
+
+        // ...and point to item after new item
+        my->curr = curr->next;
     }
     return by_obj(my);
 cc_end_method

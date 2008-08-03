@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
     cc_obj cursor = as_obj(cc_msg(list, "cursor"));
 
-#if 0
+#if 1
     char *item;
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\";  current is %s\n", item, as_str(cc_msg(cursor, "current")));
@@ -118,17 +118,8 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    printf("after removePrefix:\n");
-    item = as_str(cc_msg(list, "removePrefix"));
-    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
-        printf("item in list is \"%s\"\n", item);
-    }
-    
-    printf("after removeAffix:\n");
-    item = as_str(cc_msg(list, "removeAffix"));
-    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
-        printf("item in list is \"%s\"\n", item);
-    }
+    cc_msg(cursor, "first");
+    cc_msg(cursor, "remove");
 
 #if 0
     printf("after removePrefix:\n");
@@ -136,7 +127,34 @@ int main(int argc, char *argv[])
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
+#else    
+    //item = as_str(cc_msg(list, "removeAffix"));
+    printf("after remove:\n");
+    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
+        printf("item in list is \"%s\"\n", item);
+    }
+
+    cc_msg(cursor, "first");
+    cc_msg(cursor, "prefix", by_str("foo"));
+    cc_msg(cursor, "affix", by_str("bar"), by_str("baz"));
+    cc_msg(cursor, "previous");
+    printf("current is %s\n", as_str(cc_msg(cursor, "current")));
+
+    //cc_msg(cursor, "first");
+    //cc_msg(cursor, "next");
+    //cc_msg(cursor, "remove");
+
 #endif
+
+    //item = as_str(cc_msg(list, "removePrefix"));
+
+    printf("from the top:\n");
+    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
+        printf("item in list is \"%s\"\n", item);
+    }
+
+
+
     
 #endif
     return (EXIT_SUCCESS);

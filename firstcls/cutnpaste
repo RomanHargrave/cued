@@ -51,3 +51,13 @@ cc_begin_method(insertTail, DbleList)
 
     return by_obj(my);
 cc_end_method
+
+
+// broken way of affixing
+    int i;
+    for (i = 0;  i < argc;  ++i) {
+        my->curr = my->curr->next;
+        if (!insertBefore(my->curr, as_obj(argv[i]))) {
+            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+        }
+    }
