@@ -231,6 +231,13 @@ cc_begin_method(FcListCursor, affix)
     return by_obj(my);
 cc_end_method
 
+cc_begin_method(FcListCursor, copy)
+    cc_vars_FcListCursor *cursor = as_obj(cc_msg(&FcListCursor, "alloc"));
+    cursor->list = my->list;
+    cursor->curr = my->curr;
+    return by_obj(cursor);
+cc_end_method
+
 cc_begin_class_object(FcListCursor)
 cc_end_class
 
@@ -244,4 +251,5 @@ cc_begin_class(FcListCursor)
     cc_method("prefix",     prefixFcListCursor),
     cc_method("affix",      affixFcListCursor),
     cc_method("remove",     removeFcListCursor),
+    cc_method("copy",       copyFcListCursor),
 cc_end_class

@@ -153,6 +153,12 @@ int main(int argc, char *argv[])
         printf("item in list is \"%s\"\n", item);
     }
 
+    cursor = as_obj(cc_msg(cursor, "copy"));
+    printf("after copy:\n");
+    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
+        printf("item in list is \"%s\"\n", item);
+    }
+
 
 
     
