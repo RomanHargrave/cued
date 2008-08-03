@@ -20,29 +20,7 @@
 #include "classc.h"
 
 #include <stdio.h>
-
-
-cc_begin_meta_method(MetaRoot, alloc)
-    cc_vars_Root *obj = (cc_vars_Root *) calloc(1, my->size);
-    if (obj) {
-        obj->isa = my;
-        return by_obj(obj);
-    } else {
-        return cc_msg(my, "error", by_str("out of memory allocating object of class \""),
-            by_str(my->name), by_str("\""));
-    }
-cc_end_method
-
-
-cc_begin_method(Root, free)
-    free(my);
-    return by_ptr(NULL);
-cc_end_method
-
-
-cc_begin_method(Root, init)
-    return by_obj(my);
-cc_end_method
+#include <string.h>
 
 
 cc_begin_meta_method(MetaRoot, new)
@@ -53,6 +31,38 @@ cc_begin_meta_method(MetaRoot, new)
         return cc_msg(my, "error", by_str("alloc method did not return instance for class \""),
             by_str(my->name), by_str("\""));
     }
+cc_end_method
+
+
+cc_begin_meta_method(MetaRoot, alloc)
+    cc_vars_Root *obj = (cc_vars_Root *) malloc(my->size);
+    if (obj) {
+        obj->isa = my;
+        return by_obj(obj);
+    } else {
+        return cc_msg(my, "error", by_str("out of memory allocating object of class \""),
+            by_str(my->name), by_str("\""));
+    }
+cc_end_method
+
+
+cc_begin_method(Root, init)
+    memset((char *) my + sizeof(cc_vars_Root), 0x00, my->isa->size - sizeof(cc_vars_Root));
+    return by_obj(my);
+cc_end_method
+
+
+cc_begin_method(Root, free)
+    free(my);
+    return by_ptr(NULL);
+cc_end_method
+
+
+cc_begin_method(Root, copy)
+    cc_class_object *cls = my->isa;
+    cc_vars_Root *copy = as_obj(cc_msg(cls, "alloc"));
+    memcpy((char *) copy + sizeof(cc_vars_Root), (char *) my + sizeof(cc_vars_Root), cls->size - sizeof(cc_vars_Root));
+    return by_obj(copy);
 cc_end_method
 
 
@@ -93,6 +103,7 @@ cc_class_object Root = {
     cc_method("free",  freeRoot),
     cc_method("init",  initRoot),
     cc_method("error", errorRoot),
+    cc_method("copy",  copyRoot),
 
     cc_end_methods
 };

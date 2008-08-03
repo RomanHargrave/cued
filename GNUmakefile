@@ -23,6 +23,7 @@ DIRS= \
 	make \
 	qdump \
     classc \
+    firstcls \
     sfcat
 
 include make/dir.mk
