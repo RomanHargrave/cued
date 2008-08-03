@@ -61,3 +61,24 @@ cc_end_method
             return cc_msg(my, "error", by_str("out of memory allocating list node"));
         }
     }
+
+
+cc_begin_method(FcListCursor, remove)
+    FcListNode *curr = my->curr;
+    if (&my->list->head != curr) {
+        my->curr = curr->next;
+        return removeAndReturn(my->list, curr);
+    } else {
+        return by_obj(NULL);
+    }
+cc_end_method
+
+
+static inline cc_arg_t getCurrent(cc_vars_FcListCursor *my)
+{
+    if (&my->list->head != my->curr) {
+        return by_obj(my->curr->item);
+    } else {
+        return by_obj(NULL);
+    }
+}

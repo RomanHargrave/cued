@@ -169,11 +169,8 @@ cc_end_class
 
 static inline cc_arg_t getCurrent(cc_vars_FcListCursor *my)
 {
-    if (&my->list->head != my->curr) {
-        return by_obj(my->curr->item);
-    } else {
-        return by_obj(NULL);
-    }
+    // item should be NULL in the list head
+    return by_obj(my->curr->item);
 }
 
 cc_begin_method(FcListCursor, current)
@@ -202,12 +199,8 @@ cc_end_method
 
 cc_begin_method(FcListCursor, remove)
     FcListNode *curr = my->curr;
-    if (&my->list->head != curr) {
-        my->curr = curr->next;
-        return removeAndReturn(my->list, curr);
-    } else {
-        return by_obj(NULL);
-    }
+    my->curr = curr->next;
+    return removeAndReturn(my->list, curr);
 cc_end_method
 
 cc_begin_method(FcListCursor, prefix)
