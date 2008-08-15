@@ -5,7 +5,7 @@ typedef struct _FcListNode {
 
     struct _FcListNode *next;
     struct _FcListNode *prev;
-    cc_obj item;
+    cc_arg_t item;
 
 } FcListNode;
 

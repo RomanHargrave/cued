@@ -36,7 +36,7 @@ cc_begin_method(FcList, isEmpty)
 cc_end_method
 
 
-static inline FcListNode *insertBefore(FcListNode *next, cc_obj item)
+static inline FcListNode *insertBefore(FcListNode *next, cc_arg_t item)
 {
     FcListNode *node, *prev;
 
@@ -59,7 +59,7 @@ static inline FcListNode *insertBefore(FcListNode *next, cc_obj item)
 }
 
 
-static inline FcListNode *insertAfter(FcListNode *prev, cc_obj item)
+static inline FcListNode *insertAfter(FcListNode *prev, cc_arg_t item)
 {
     FcListNode *node, *next;
 
@@ -87,7 +87,7 @@ cc_begin_method(FcList, prefix)
 
     // push onto list from right to left so that order will be same as given
     for (i = argc - 1;  i >= 0;  --i) {
-        if (!insertBefore(my->head.next, as_obj(argv[i]))) {
+        if (!insertBefore(my->head.next, argv[i])) {
             return cc_msg(my, "error", by_str("out of memory allocating list node"));
         }
     }
@@ -99,7 +99,7 @@ cc_end_method
 cc_begin_method(FcList, affix)
     int i;
     for (i = 0;  i < argc;  ++i) {
-        if (!insertAfter(my->head.prev, as_obj(argv[i]))) {
+        if (!insertAfter(my->head.prev, argv[i])) {
             return cc_msg(my, "error", by_str("out of memory allocating list node"));
         }
     }
@@ -128,9 +128,9 @@ static inline void removeNode(cc_vars_FcList *my, FcListNode *node)
 
 static inline cc_arg_t removeAndReturn(cc_vars_FcList *my, FcListNode *node)
 {
-    cc_obj item = node->item;
+    cc_arg_t item = node->item;
     removeNode(my, node);
-    return by_obj(item);
+    return item;
 }
 
 
@@ -166,11 +166,10 @@ cc_begin_class(FcList)
     cc_method("cursor",         cursorFcList),
 cc_end_class
 
-
 static inline cc_arg_t getCurrent(cc_vars_FcListCursor *my)
 {
     // item should be NULL in the list head
-    return by_obj(my->curr->item);
+    return my->curr->item;
 }
 
 cc_begin_method(FcListCursor, current)
@@ -207,7 +206,7 @@ cc_begin_method(FcListCursor, prefix)
     FcListNode *curr = my->curr;
     int i;
     for (i = 0;  i < argc;  ++i) {
-        if (!insertBefore(curr, as_obj(argv[i]))) {
+        if (!insertBefore(curr, argv[i])) {
             return cc_msg(my, "error", by_str("out of memory allocating list node"));
         }
     }
@@ -220,7 +219,7 @@ cc_begin_method(FcListCursor, affix)
     for (i = 0;  i < argc;  ++i) {
 
         // insert by order given...
-        curr = insertAfter(curr, as_obj(argv[i]));
+        curr = insertAfter(curr, argv[i]);
         if (!curr) {
             return cc_msg(my, "error", by_str("out of memory allocating list node"));
         }
