@@ -103,6 +103,7 @@ typedef struct _cc_arg_t {
     } \
     _cc_tmp_rc.u.y; })
 #else
+#warning "Type checking is not implemented for this compiler"
 #define as(x, y) ((x).u.y)
 #endif
 
