@@ -95,13 +95,16 @@ typedef struct _cc_arg_t {
 #define by_float(n)     by((n), f)
 #define by_double(n)    by((n), d)
 
-//#define as(x, y) ((x).u.y)
+#if defined(__GNUC__)
 #define as(x, y) ({ \
     cc_arg_t _cc_tmp_rc = (x); \
     if (cc_type_##y != _cc_tmp_rc.t && cc_type_any != _cc_tmp_rc.t) { \
         abort(); \
     } \
     _cc_tmp_rc.u.y; })
+#else
+#define as(x, y) ((x).u.y)
+#endif
 
 #define as_obj(p)       as((p), o)
 #define as_ptr(x)       as((x), p)
@@ -138,6 +141,10 @@ typedef struct _cc_arg_t {
 #define is_char(x)      is((x), c)
 #define is_float(n)     is((n), f)
 #define is_double(n)    is((n), d)
+
+// TODO:  multiple evaluation of VA_ARGS is a problem here,
+// which begs for a gcc front-end for classc
+//
 
 #define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
 
