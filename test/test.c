@@ -9,7 +9,8 @@ cc_begin_method(Foo, test)
     int i;
     printf("args: ");
     for (i = 0;  i < argc;  ++i) {
-        printf(" %p", argv[i].p);
+        argv[i].t = cc_type_any;
+        printf(" %p", as_ptr(argv[i]));
     }
     printf("\n");
 
@@ -21,7 +22,7 @@ cc_end_method
 
 
 cc_begin_method(Foo, setBar)
-    my->bar = argv[0].i;
+    my->bar = as_int(argv[0]);
     return by_obj(my);
 cc_end_method
 
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
     //cc_obj f = as_obj(cc_msg(&Foo, "alloc"));
     //cc_obj f = as(o, cc_msg(&Foo, "alloc"));
 
-    cc_obj f = as(o, cc_msg(&Foo, "new"));
+    cc_obj f = as_obj(cc_msg(&Foo, "new"));
 
     char test[5] = { 't', 'e', 's', 't', 0 };
     //char *test = "blowme";
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 
     cc_msg(f, test, by_int(1), by_int(2), by_obj(f));
 
-    cc_msg(f, "blacker", by(i, 1));
+    cc_msg(f, "blacker", by_int(1));
 
     cc_msg(f, "free");
 
@@ -130,6 +131,7 @@ int main(int argc, char *argv[])
 #else    
     //item = as_str(cc_msg(list, "removeAffix"));
     printf("after remove:\n");
+
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
@@ -160,7 +162,11 @@ int main(int argc, char *argv[])
     }
 
 
-
+    cc_arg_t foo = by_str("foo");
+    //foo = by_int(5);
+    if (is_str(foo)) {
+        printf("is_str(foo) returns true\n");
+    }
     
 #endif
     return (EXIT_SUCCESS);
