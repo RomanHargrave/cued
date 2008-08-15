@@ -107,6 +107,11 @@ static inline cc_method_fp _cc_lookup_method_internal(
 
 cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 {
+#if 0
+    //
+    // This was a fundamentally misguided approach b/c you cannot mix
+    // optimized and non-optimized modules, among other problems
+    //
     // TODO:  an interesting conundrum:  if not optimizing, it may be more
     // efficient to call _cc_lookup_method_internal with cc_lookup_by_both;
     // for example, see gcc's -fmerge-constants option
@@ -115,6 +120,9 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
     if (!method) {
         method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_strcmp);
     }
+#endif
+
+    cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_both);
 
     return method;
 }
