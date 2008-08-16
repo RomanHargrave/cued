@@ -122,7 +122,11 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
     }
 #endif
 
+#if defined(__GNUC__) && defined(__OPTIMIZE__)
     cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_both);
+#else
+    cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_strcmp);
+#endif
 
     return method;
 }
