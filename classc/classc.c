@@ -50,23 +50,19 @@ char *cc_types[] = {
 };
 
 
+#if defined(__GNUC__) && defined(__OPTIMIZE__)
+
 static inline int strcmp2(const char *a, const char *b)
 {
     return (a == b) ? 0 : strcmp(a, b);
 }
 
-
-typedef enum _cc_lookup_how {
-
-    cc_lookup_by_ptr = 0,
-    cc_lookup_by_strcmp = 1,
-    cc_lookup_by_both = 2
-
-} cc_lookup_how;
+#else
+#define strcmp2 strcmp
+#endif
 
 
-static inline cc_method_fp _cc_lookup_method_internal(
-    cc_class_object *cls, char *msg, cc_lookup_how how)
+cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 {
     cc_method_name *methods = cls->methods;
 
@@ -76,31 +72,10 @@ static inline cc_method_fp _cc_lookup_method_internal(
 
             //printf("comparing %s to %s\n", methods->msg, msg);
 
-            switch (how) {
+            if (!strcmp2(methods->msg, msg)) {
 
-                case cc_lookup_by_ptr:
-                    if (methods->msg == msg) {
-
-                        // found a matching method name
-                        return methods->u.fn;
-                    }
-                    break;
-
-                case cc_lookup_by_strcmp:
-                    if (!strcmp(methods->msg, msg)) {
-
-                        // found a matching method name
-                        return methods->u.fn;
-                    }
-                    break;
-
-                case cc_lookup_by_both:
-                    if (!strcmp2(methods->msg, msg)) {
-
-                        // found a matching method name
-                        return methods->u.fn;
-                    }
-                    break;
+                // found a matching method name
+                return methods->u.fn;
             }
 
             // advance to next method
@@ -128,33 +103,6 @@ static inline cc_method_fp _cc_lookup_method_internal(
             return NULL;
         }
     }
-}
-
-
-cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
-{
-#if 0
-    //
-    // This was a fundamentally misguided approach b/c you cannot mix
-    // optimized and non-optimized modules, among other problems
-    //
-    // TODO:  an interesting conundrum:  if not optimizing, it may be more
-    // efficient to call _cc_lookup_method_internal with cc_lookup_by_both;
-    // for example, see gcc's -fmerge-constants option
-    //
-    cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_ptr);
-    if (!method) {
-        method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_strcmp);
-    }
-#endif
-
-#if defined(__GNUC__) && defined(__OPTIMIZE__)
-    cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_both);
-#else
-    cc_method_fp method = _cc_lookup_method_internal(cls, msg, cc_lookup_by_strcmp);
-#endif
-
-    return method;
 }
 
 
