@@ -24,6 +24,32 @@
 #include <stdlib.h>
 
 
+char *cc_types[] = {
+
+    [cc_type_any] = "any",
+
+    [cc_type_o]   = "object",
+    [cc_type_p]   = "pointer",
+    [cc_type_s]   = "string",
+
+    [cc_type_sc]  = "signed char",
+    [cc_type_h]   = "short",
+    [cc_type_i]   = "int",
+    [cc_type_l]   = "long",
+    [cc_type_ll]  = "long long",
+
+    [cc_type_uc]  = "unsigned char",
+    [cc_type_uh]  = "unsigned short",
+    [cc_type_ui]  = "unsigned int",
+    [cc_type_ul]  = "unsigned long",
+    [cc_type_ull] = "unsigned long long",
+
+    [cc_type_c]   = "char",
+    [cc_type_f]   = "float",
+    [cc_type_d]   = "double"
+};
+
+
 static inline int strcmp2(const char *a, const char *b)
 {
     return (a == b) ? 0 : strcmp(a, b);

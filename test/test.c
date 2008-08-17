@@ -167,6 +167,8 @@ int main(int argc, char *argv[])
     if (is_str(foo)) {
         printf("is_str(foo) returns true\n");
     }
+
+    as_int(foo);
     
 #endif
     return (EXIT_SUCCESS);

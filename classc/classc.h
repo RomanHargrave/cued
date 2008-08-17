@@ -21,6 +21,7 @@
 #define CLASSC_H_INCLUDED
 
 #include <stdlib.h> // size_t
+#include <stdio.h>
 
 
 typedef void *cc_obj;
@@ -76,6 +77,8 @@ typedef struct _cc_arg_t {
 
 } cc_arg_t;
 
+extern char *cc_types[];
+
 #define by(x, y) ((cc_arg_t) { .u = { .x = (y) }, .t = cc_type_##x })
 
 #define by_obj(p)       by(o,   (p))
@@ -99,6 +102,7 @@ typedef struct _cc_arg_t {
 #define as(x, y) ({ \
     cc_arg_t _cc_tmp_rc = (y); \
     if (cc_type_##x != _cc_tmp_rc.t && cc_type_any != _cc_tmp_rc.t) { \
+        fprintf(stderr, "fatal:  expected type \"%s\", but received type \"%s\" at line %d in file \"%s\"\n", cc_types[cc_type_##x], cc_types[_cc_tmp_rc.t], __LINE__, __FILE__); \
         abort(); \
     } \
     _cc_tmp_rc.u.x; })
