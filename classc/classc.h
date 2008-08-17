@@ -76,7 +76,7 @@ typedef struct _cc_arg_t {
 
 } cc_arg_t;
 
-#define by(x, y) (cc_arg_t) { .u = { .x = (y) }, .t = cc_type_##x }
+#define by(x, y) ((cc_arg_t) { .u = { .x = (y) }, .t = cc_type_##x })
 
 #define by_obj(p)       by(o,   (p))
 #define by_ptr(x)       by(p,   (x))
