@@ -38,8 +38,7 @@
 
 #define ARCHAIC_ZEROS
 
-#if 0
-//#define USE_WHOLE_PAGES
+#ifdef USE_WHOLE_PAGES
 #define dcalloc     calloc
 #define dmalloc     malloc
 #define drealloc    realloc
