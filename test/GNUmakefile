@@ -26,7 +26,7 @@ INCLUDE = ../classc ../firstcls
 LIBDIRS = ../classc ../firstcls
 LIBS = classc firstcls
 
-C_FLAGS=-pedantic
+#C_FLAGS=-pedantic
 
 include ../make/system.mk
 #include ../make/largefile.mk

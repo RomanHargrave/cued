@@ -78,32 +78,34 @@ static cc_arg_t errorRoot(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 }
 
 
+cc_construct_methods(MetaRoot, MetaRoot, 
+    cc_method("alloc", allocMetaRoot),
+    cc_method("new",   newMetaRoot),
+    cc_method("error", errorRoot),
+    )
+
 cc_class_object MetaRoot = {
     NULL,
     NULL,
     "MetaRoot",
     sizeof(cc_vars_Root),
-    cc_begin_methods
-
-    cc_method("alloc", allocMetaRoot),
-    cc_method("new",   newMetaRoot),
-    cc_method("error", errorRoot),
-
-    cc_end_methods
+    0,
+    NULL
 };
 
+
+cc_construct_methods(Root, Root,
+    cc_method("free",  freeRoot),
+    cc_method("init",  initRoot),
+    cc_method("error", errorRoot),
+    cc_method("copy",  copyRoot),
+    )
 
 cc_class_object Root = {
     &MetaRoot,
     NULL,
     "Root",
     sizeof(cc_vars_Root),
-    cc_begin_methods
-
-    cc_method("free",  freeRoot),
-    cc_method("init",  initRoot),
-    cc_method("error", errorRoot),
-    cc_method("copy",  copyRoot),
-
-    cc_end_methods
+    0,
+    NULL
 };

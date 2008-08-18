@@ -102,7 +102,8 @@ extern char *cc_types[];
 #define as(x, y) ({ \
     cc_arg_t _cc_tmp_rc = (y); \
     if (cc_type_##x != _cc_tmp_rc.t && cc_type_any != _cc_tmp_rc.t) { \
-        fprintf(stderr, "fatal:  expected type \"%s\", but received type \"%s\" at line %d in file \"%s\"\n", cc_types[cc_type_##x], cc_types[_cc_tmp_rc.t], __LINE__, __FILE__); \
+        fprintf(stderr, "fatal:  expected type \"%s\", but received type \"%s\" at line %d in file \"%s\"\n", \
+                cc_types[cc_type_##x], cc_types[_cc_tmp_rc.t], __LINE__, __FILE__); \
         abort(); \
     } \
     _cc_tmp_rc.u.x; })
@@ -147,8 +148,8 @@ extern char *cc_types[];
 #define is_float(n)     is(f,   (n))
 #define is_double(n)    is(d,   (n))
 
-// TODO:  multiple evaluation of VA_ARGS is a problem here,
-// which begs for a gcc front-end for classc
+// TODO:  multiple evaluation of VA_ARGS is likely to be a problem here,
+// which begs for a gcc front-end for classc;  can fix this with ({
 //
 
 #define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
@@ -163,42 +164,46 @@ typedef struct _cc_class_object cc_class_object;
 extern cc_class_object MetaRoot, Root;
 
 
-#define cc_begin_class(cls) \
+typedef struct _cc_method_name cc_method_name;
+extern void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods);
+
+
+#define cc_construct_methods(cls, prefix, ...) \
+static void prefix##Constructor(void) __attribute__((constructor)); \
+static void prefix##Constructor(void) \
+{ \
+    cc_method_name prefix##Methods[] = { \
+        __VA_ARGS__ \
+    }; \
+    _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
+}
+
+#define cc_class(cls, ...) \
+cc_construct_methods(cls, cls, __VA_ARGS__) \
 cc_class_object cls = { \
     &Meta##cls, \
     &cc_##cls##_isa, \
     #cls, \
     sizeof(cc_vars_##cls), \
-    {
+    0, \
+    NULL \
+    };
 
-#define cc_begin_class_object(cls) \
+#define cc_class_object(cls, ...) \
+cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
 cc_class_object Meta##cls = { \
     NULL, \
     &cc_Meta##cls##_isa, \
     "Meta" #cls, \
     sizeof(cc_vars_##cls), \
-    {
-
-#define cc_end_class cc_end_methods };
-
-
-typedef struct _cc_method_name cc_method_name;
-extern void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods);
+    0, \
+    NULL \
+    };
 
 #define cc_category(cls, cat, ...) \
-static void cls##cat##Constructor(void) __attribute__((constructor)); \
-static void cls##cat##Constructor(void) \
-{ \
-    static cc_method_name cls##cat[] = { \
-    __VA_ARGS__ \
-    cc_end_methods; \
-    _cc_add_methods(&cls, cls##cat); \
-}
+cc_construct_methods(cls, cls##cat, __VA_ARGS__)
 
-
-#define cc_begin_methods {
-#define cc_method(name, function) { name, { .fn = function } }
-#define cc_end_methods { NULL, { .next = NULL } } }
+#define cc_method(name, function) { .msg = name, .fn = function }
 
 
 #define cc_begin_method(cls, fn_name) \
@@ -217,11 +222,8 @@ typedef cc_arg_t (*cc_method_fp)(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 struct _cc_method_name {
 
     char *msg;
-    union {
-        cc_arg_t (*fn)();
-        struct _cc_method_name *next;
-    } u;
 
+    cc_arg_t (*fn)();
 };
 
 struct _cc_class_object {
@@ -238,8 +240,10 @@ struct _cc_class_object {
     // size of an instance of the class
     size_t size;
 
+    size_t numMethods;
+
     // method pointers paired with their names
-    cc_method_name methods[];
+    cc_method_name *methods;
 };
 
 extern cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg);

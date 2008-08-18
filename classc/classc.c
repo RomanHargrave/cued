@@ -64,44 +64,30 @@ static inline int strcmp2(const char *a, const char *b)
 
 cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 {
-    cc_method_name *methods = cls->methods;
+    cc_method_name *methods;
+    int i;
 
     for (;;) {
 
-        if (methods->msg) {
-
-            //printf("comparing %s to %s\n", methods->msg, msg);
-
-            if (!strcmp2(methods->msg, msg)) {
+        methods = cls->methods;
+        for (i = 0;  i < cls->numMethods;  ++i) {
+            if (!strcmp2(methods[i].msg, msg)) {
 
                 // found a matching method name
-                return methods->u.fn;
+                return methods[i].fn;
             }
-
-            // advance to next method
-            ++methods;
-            continue;
-
-        // no more methods in this table;  is it chained to another?
-        } else if (methods->u.next) {
-
-            // chain to next table
-            methods = methods->u.next;
-            continue;
+        }
 
         // is there a super class?
-        } else if (cls->supercls) {
+        if (cls->supercls) {
 
             // chain to super classes
             cls = cls->supercls;
-            methods = cls->methods;
             continue;
+        }
 
         // out of places to look for methods
-        } else {
-
-            return NULL;
-        }
+        return NULL;
     }
 }
 
@@ -155,27 +141,22 @@ cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 }
 
 
-// TODO:  it would be quicker to prepend rather than append the methods,
-// but is that desirable?  Are category methods more likely to be called
-// more frequently than other methods in the class?  Should the macro
-// for a category allow specifying that in keeping with the idea that the
-// programmer should be able to supply all the information they have
-// at their disposal?  Would this be better served by turning the method
-// array into an MRU structure?
-//
-void _cc_add_methods(cc_class_object *cls, cc_method_name *newMethods)
+void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods)
 {
-    cc_method_name *methods = cls->methods;
-    for (;;) {
-        if (methods->msg) {
-            ++methods;
-            continue;
-        } else if (methods->u.next) {
-            methods = methods->u.next;
-            continue;
-        } else {
-            methods->u.next = newMethods;
-            break;
-        }
+#if 0
+    if (!numMethods) {
+        return;
     }
+#endif
+
+    // TODO:  need a destructor??
+    cls->methods = realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
+    if (!cls->methods) {
+        fprintf(stderr, "fatal:  realloc failed in %s\n", __FUNCTION__);
+        abort();
+    }
+
+    memcpy(&cls->methods[cls->numMethods], newMethods, numMethods * sizeof(cc_method_name));
+
+    cls->numMethods += numMethods;
 }

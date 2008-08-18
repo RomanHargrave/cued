@@ -27,18 +27,16 @@ cc_begin_method(Foo, setBar)
 cc_end_method
 
 
-cc_begin_class_object(Foo)
-cc_end_class
+cc_class_object(Foo)
 
 
-cc_begin_class(Foo)
+cc_class(Foo,
     cc_method("setBar", setBarFoo),
     cc_method("test", testFoo),
     cc_method("blow", testFoo),
     cc_method("blarf", testFoo),
     cc_method("forward", testFoo),
-cc_end_class
-
+    )
 
 cc_category(Foo, Blastme,
     cc_method("blacker", testFoo),
@@ -50,7 +48,6 @@ cc_category(Foo, Blastme,
 
 int main(int argc, char *argv[])
 {
-#if 0
     printf("sizeof(cc_arg_t) == %lu\n", sizeof(cc_arg_t));
     printf("sizeof(cc_class_object) == %lu\n", sizeof(cc_class_object));
     printf("sizeof(Foo) == %lu\n", sizeof(Foo));
@@ -89,7 +86,6 @@ int main(int argc, char *argv[])
     //n = a;
 
     //n = a.i;
-#else
 
     cc_obj list = as_obj(cc_msg(&FcList, "new"));
 
@@ -169,7 +165,6 @@ int main(int argc, char *argv[])
     }
 
     as_int(foo);
-    
-#endif
+
     return (EXIT_SUCCESS);
 }

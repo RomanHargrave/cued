@@ -152,11 +152,10 @@ cc_begin_method(FcList, cursor)
 cc_end_method
 
 
-cc_begin_class_object(FcList)
-cc_end_class
+cc_class_object(FcList)
 
 
-cc_begin_class(FcList)
+cc_class(FcList,
     cc_method("init",           initFcList),
     cc_method("isEmpty",        isEmptyFcList),
     cc_method("prefix",         prefixFcList),
@@ -164,7 +163,8 @@ cc_begin_class(FcList)
     cc_method("removePrefix",   removePrefixFcList),
     cc_method("removeAffix",    removeAffixFcList),
     cc_method("cursor",         cursorFcList),
-cc_end_class
+    )
+
 
 static inline cc_arg_t getCurrent(cc_vars_FcListCursor *my)
 {
@@ -230,11 +230,10 @@ cc_begin_method(FcListCursor, affix)
     return by_obj(my);
 cc_end_method
 
-cc_begin_class_object(FcListCursor)
-cc_end_class
+cc_class_object(FcListCursor)
 
 
-cc_begin_class(FcListCursor)
+cc_class(FcListCursor,
     cc_method("current",    currentFcListCursor),
     cc_method("first",      firstFcListCursor),
     cc_method("last",       lastFcListCursor),
@@ -243,4 +242,4 @@ cc_begin_class(FcListCursor)
     cc_method("prefix",     prefixFcListCursor),
     cc_method("affix",      affixFcListCursor),
     cc_method("remove",     removeFcListCursor),
-cc_end_class
+    )

@@ -24,7 +24,8 @@ DIRS= \
 	qdump \
     classc \
     firstcls \
-    sfcat
+    sfcat \
+    test
 
 include make/dir.mk
 
