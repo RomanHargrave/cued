@@ -74,7 +74,6 @@ void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *ne
     }
 #endif
 
-    // TODO:  need a destructor??
     cls->methods = realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
     if (!cls->methods) {
         fprintf(stderr, "fatal:  realloc failed in %s\n", __FUNCTION__);
@@ -86,6 +85,13 @@ void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *ne
     cls->numMethods += numMethods;
 
     qsort(cls->methods, cls->numMethods, sizeof(cc_method_name), (int (*)(const void *, const void *)) _cc_compare_names);
+}
+
+
+void _cc_free_methods(cc_class_object *cls)
+{
+    free(cls->methods);
+    cls->methods = NULL;
 }
 
 

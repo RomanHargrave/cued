@@ -176,6 +176,7 @@ extern cc_class_object MetaRoot, Root;
 
 typedef struct _cc_method_name cc_method_name;
 extern void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods);
+extern void _cc_free_methods(cc_class_object *cls);
 
 
 #define cc_construct_methods(cls, prefix, ...) \
@@ -188,8 +189,16 @@ static void prefix##Constructor(void) \
     _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
 }
 
+#define cc_destruct_methods(cls, ...) \
+static void cls##Destructor(void) __attribute__((destructor)); \
+static void cls##Destructor(void) \
+{ \
+    _cc_free_methods(&cls); \
+}
+
 #define cc_class(cls, ...) \
 cc_construct_methods(cls, cls, __VA_ARGS__) \
+cc_destruct_methods(cls) \
 cc_class_object cls = { \
     &Meta##cls, \
     &cc_##cls##_isa, \
@@ -201,6 +210,7 @@ cc_class_object cls = { \
 
 #define cc_class_object(cls, ...) \
 cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
+cc_destruct_methods(Meta##cls) \
 cc_class_object Meta##cls = { \
     NULL, \
     &cc_Meta##cls##_isa, \

@@ -82,6 +82,7 @@ cc_construct_methods(MetaRoot, MetaRoot,
     cc_method("new",   newMetaRoot),
     cc_method("error", errorRoot),
     )
+cc_destruct_methods(MetaRoot)
 
 cc_class_object MetaRoot = {
     NULL,
@@ -99,6 +100,7 @@ cc_construct_methods(Root, Root,
     cc_method("error", errorRoot),
     cc_method("copy",  copyRoot),
     )
+cc_destruct_methods(Root)
 
 cc_class_object Root = {
     &MetaRoot,
