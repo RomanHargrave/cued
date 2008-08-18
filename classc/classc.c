@@ -62,20 +62,46 @@ static inline int strcmp2(const char *a, const char *b)
 #endif
 
 
+static int _cc_compare_names(const cc_method_name *a, const cc_method_name *b)
+{
+    return strcmp2(a->msg, b->msg);    
+}
+
+
+void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods)
+{
+#if 0
+    if (!numMethods) {
+        return;
+    }
+#endif
+
+    // TODO:  need a destructor??
+    cls->methods = realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
+    if (!cls->methods) {
+        fprintf(stderr, "fatal:  realloc failed in %s\n", __FUNCTION__);
+        abort();
+    }
+
+    memcpy(&cls->methods[cls->numMethods], newMethods, numMethods * sizeof(cc_method_name));
+
+    cls->numMethods += numMethods;
+
+    qsort(cls->methods, cls->numMethods, sizeof(cc_method_name), (int (*)(const void *, const void *)) _cc_compare_names);
+}
+
+
 cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 {
-    cc_method_name *methods;
-    int i;
+    cc_method_name key = cc_method(msg, NULL);
+    cc_method_name *match;
 
     for (;;) {
 
-        methods = cls->methods;
-        for (i = 0;  i < cls->numMethods;  ++i) {
-            if (!strcmp2(methods[i].msg, msg)) {
-
-                // found a matching method name
-                return methods[i].fn;
-            }
+        match = bsearch(&key, cls->methods, cls->numMethods, sizeof(cc_method_name),
+                        (int (*)(const void *, const void *)) _cc_compare_names);
+        if (match) {
+            return match->fn;
         }
 
         // is there a super class?
@@ -138,25 +164,4 @@ cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv)
     }
 
     return _cc_send_msg_internal(supercls, obj, msg, argc, argv);
-}
-
-
-void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods)
-{
-#if 0
-    if (!numMethods) {
-        return;
-    }
-#endif
-
-    // TODO:  need a destructor??
-    cls->methods = realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
-    if (!cls->methods) {
-        fprintf(stderr, "fatal:  realloc failed in %s\n", __FUNCTION__);
-        abort();
-    }
-
-    memcpy(&cls->methods[cls->numMethods], newMethods, numMethods * sizeof(cc_method_name));
-
-    cls->numMethods += numMethods;
 }
