@@ -99,7 +99,7 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
     for (;;) {
 
         match = bsearch(&key, cls->methods, cls->numMethods, sizeof(cc_method_name),
-                        (int (*)(const void *, const void *)) _cc_compare_names);
+                    (int (*)(const void *, const void *)) _cc_compare_names);
         if (match) {
             return match->fn;
         }
