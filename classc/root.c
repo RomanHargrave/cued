@@ -65,8 +65,8 @@ cc_begin_method(Root, copy)
 cc_end_method
 
 
-static cc_arg_t errorRoot(cc_obj my, char *msg, int argc, cc_arg_t *argv)
-{
+// this method gets used for MetaRoot too which works fine because my is not referenced
+cc_begin_method(Root, error)
     int i;
     fprintf(stderr, "fatal:  ");
     for (i = 0;  i < argc;  ++i) {
@@ -74,7 +74,7 @@ static cc_arg_t errorRoot(cc_obj my, char *msg, int argc, cc_arg_t *argv)
     }
     fprintf(stderr, "\n");
     abort();
-}
+cc_end_method
 
 
 cc_construct_methods(MetaRoot, MetaRoot, 

@@ -164,6 +164,7 @@ int main(int argc, char *argv[])
         printf("is_str(foo) returns true\n");
     }
 
+    //cc_msg(list, "son of a whore");
     //as_int(foo);
 
     return (EXIT_SUCCESS);
