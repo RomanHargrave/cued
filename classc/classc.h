@@ -148,13 +148,23 @@ extern char *cc_types[];
 #define is_float(n)     is(f,   (n))
 #define is_double(n)    is(d,   (n))
 
-// TODO:  multiple evaluation of VA_ARGS is likely to be a problem here,
-// which begs for a gcc front-end for classc;  can fix this with ({
-//
-
+#if defined(__GNUC__)
+#define cc_msg(obj, msg, ...) ({ \
+    cc_arg_t _cc_tmp_args[] = { __VA_ARGS__ }; \
+    _cc_send(obj, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
+})
+#else
 #define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
+#endif
 
+#if defined(__GNUC__)
+#define cc_msg_super(msg, ...) ({ \
+    cc_arg_t _cc_tmp_args[] = { __VA_ARGS__ }; \
+    _cc_send_super(my, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
+})
+#else
 #define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
+#endif
 
 extern cc_arg_t _cc_send      (cc_obj my, char *msg, int argc, cc_arg_t *argv);
 extern cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv);

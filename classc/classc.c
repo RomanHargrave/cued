@@ -19,9 +19,7 @@
 
 #include "classc.h"
 
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 
 char *cc_types[] = {

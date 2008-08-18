@@ -19,7 +19,6 @@
 
 #include "classc.h"
 
-#include <stdio.h>
 #include <string.h>
 
 
