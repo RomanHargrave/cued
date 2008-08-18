@@ -76,7 +76,7 @@ void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *ne
 
     cls->methods = realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
     if (!cls->methods) {
-        fprintf(stderr, "fatal:  realloc failed in %s\n", __FUNCTION__);
+        fprintf(stderr, "fatal:  out of memory adding methods for class \"%s\"\n", cls->name);
         abort();
     }
 
