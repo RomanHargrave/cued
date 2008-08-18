@@ -17,7 +17,12 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef DEBUG_MALLOC
+#ifdef malloc
+#undef malloc
+#endif
+#ifdef free
+#undef free
+#endif
 
 #include "dlist.h"
 #include <sys/types.h>
@@ -31,14 +36,15 @@
 #define CHECK_ALL_BLOCKS_HZ    1
 //#define CHECK_ALL_BLOCKS_HZ    100000
 
-#define USE_WHOLE_PAGES
 #define ARCHAIC_ZEROS
 
-
+#if 0
+//#define USE_WHOLE_PAGES
 #define dcalloc     calloc
 #define dmalloc     malloc
 #define drealloc    realloc
 #define dfree       free
+#endif
 
 
 #define HEADER_SIGNATURE_SIZE   64
@@ -206,7 +212,7 @@ void *dalloc(size_t theUserBlockSize)
 #else
 
     anAllocBlockSize = sizeof(debug_header_t) + theUserBlockSize + sizeof(debug_trailer_t);
-    if (!((aBlock = (debug_header_t *) amalloc(anAllocBlockSize))))
+    if (!((aBlock = (debug_header_t *) malloc(anAllocBlockSize))))
 
 #endif
     {
@@ -325,7 +331,7 @@ void dfree(void *theBlock)
     freeChunk((ptr_as_int_t) aHeader, aHeader->allocLength);
 #else
     memset(theBlock, FREE_VALUE, aHeader->userLength);
-    afree(aHeader);
+    free(aHeader);
 #endif
 }
 
@@ -378,6 +384,3 @@ void *drealloc(void *theBlock, size_t theNewUserBlockSize)
 
     return aNewBlock;
 }
-
-
-#endif /* DEBUG_MALLOC */

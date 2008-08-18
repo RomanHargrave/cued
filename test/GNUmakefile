@@ -23,8 +23,8 @@ SRC_M4 = ob.h
 BIN = object
 
 INCLUDE = ../classc ../firstcls
-LIBDIRS = ../classc ../firstcls
-LIBS = classc firstcls
+LIBDIRS = ../classc ../firstcls ../lib
+LIBS = classc firstcls cued
 
 #C_FLAGS=-pedantic
 
