@@ -74,7 +74,7 @@ void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *ne
     }
 #endif
 
-    cls->methods = realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
+    cls->methods = (cc_method_name *) realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
     if (!cls->methods) {
         fprintf(stderr, "fatal:  out of memory adding methods for class \"%s\"\n", cls->name);
         abort();
@@ -97,13 +97,14 @@ void _cc_free_methods(cc_class_object *cls)
 
 cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 {
-    cc_method_name key = cc_method(msg, NULL);
+    cc_method_name key;
     cc_method_name *match;
 
+    key.msg = msg;
     for (;;) {
 
-        match = bsearch(&key, cls->methods, cls->numMethods, sizeof(cc_method_name),
-                        (int (*)(const void *, const void *)) _cc_compare_names);
+        match = (cc_method_name *) bsearch(&key, cls->methods, cls->numMethods, sizeof(cc_method_name),
+                                           (int (*)(const void *, const void *)) _cc_compare_names);
         if (match) {
             return match->fn;
         }
@@ -142,6 +143,7 @@ static inline cc_arg_t _cc_send_msg_internal(
 
     // handle method not found
     if (strcmp2("error", msg)) {
+
         return cc_msg(obj, "error", by_str("could not send message \""), by_str(msg),
             by_str("\" to class \""), by_str(cls->name), by_str("\""));
     }
