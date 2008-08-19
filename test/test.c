@@ -48,18 +48,21 @@ cc_category(Foo, Blastme,
 
 int main(int argc, char *argv[])
 {
-    printf("sizeof(cc_arg_t) == %lu\n", sizeof(cc_arg_t));
-    printf("sizeof(cc_class_object) == %lu\n", sizeof(cc_class_object));
-    printf("sizeof(Foo) == %lu\n", sizeof(Foo));
-
-    //cc_obj f = as_obj(cc_msg(&Foo, "alloc"));
-    //cc_obj f = as(o, cc_msg(&Foo, "alloc"));
-
-    cc_obj f = as_obj(cc_msg(&Foo, "new"));
+    char *item;
+    cc_obj list, cursor, f;
+    cc_arg_t foo;
 
     char test[5] = { 't', 'e', 's', 't', 0 };
     //char *test = "blowme";
     //char *test = "blarf";
+
+    printf("sizeof(cc_arg_t) == %lu\n", sizeof(cc_arg_t));
+    printf("sizeof(cc_class_object) == %lu\n", sizeof(cc_class_object));
+    printf("sizeof(Foo) == %lu\n", sizeof(Foo));
+
+    //f = as_obj(cc_msg(&Foo, "alloc"));
+    //f = as(o, cc_msg(&Foo, "alloc"));
+    f = as_obj(cc_msg(&Foo, "new"));
 
     cc_msg(f, "setBar", by_int(34));
 
@@ -87,7 +90,7 @@ int main(int argc, char *argv[])
 
     //n = a.i;
 
-    cc_obj list = as_obj(cc_msg(&FcList, "new"));
+    list = as_obj(cc_msg(&FcList, "new"));
 
     if (as_int(cc_msg(list, "isEmpty"))) {
         printf("list starts out as empty\n");
@@ -101,15 +104,13 @@ int main(int argc, char *argv[])
         printf("list is no longer empty\n");
     }
 
-    cc_obj cursor = as_obj(cc_msg(list, "cursor"));
+    cursor = as_obj(cc_msg(list, "cursor"));
 
 #if 1
-    char *item;
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\";  current is %s\n", item, as_str(cc_msg(cursor, "current")));
     }
 #else
-    char *item;
     for (item = as_str(cc_msg(cursor, "last"));  item;  item = as_str(cc_msg(cursor, "previous"))) {
         printf("item in list is \"%s\";  current is %s\n", item, as_str(cc_msg(cursor, "current")));
     }
@@ -158,7 +159,7 @@ int main(int argc, char *argv[])
     }
 
 
-    cc_arg_t foo = by_str("foo");
+    foo = by_str("foo");
     //foo = by_int(5);
     if (is_str(foo)) {
         printf("is_str(foo) returns true\n");
