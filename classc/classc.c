@@ -22,7 +22,7 @@
 #include <string.h>
 
 
-char *cc_types[] = {
+char *cc_type_names[] = {
 
     [cc_type_any] = "any",
 

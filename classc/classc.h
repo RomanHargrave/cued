@@ -77,7 +77,7 @@ typedef struct _cc_arg_t {
 
 } cc_arg_t;
 
-extern char *cc_types[];
+extern char *cc_type_names[];
 
 #define by(x, y) ((cc_arg_t) { .u = { .x = (y) }, .t = cc_type_##x })
 
@@ -103,7 +103,7 @@ extern char *cc_types[];
     cc_arg_t _cc_tmp_rc = (y); \
     if (cc_type_##x != _cc_tmp_rc.t && cc_type_any != _cc_tmp_rc.t) { \
         fprintf(stderr, "fatal:  expected type \"%s\", but received type \"%s\" at line %d in file \"%s\"\n", \
-                cc_types[cc_type_##x], cc_types[_cc_tmp_rc.t], __LINE__, __FILE__); \
+                cc_type_names[cc_type_##x], cc_type_names[_cc_tmp_rc.t], __LINE__, __FILE__); \
         abort(); \
     } \
     _cc_tmp_rc.u.x; })
