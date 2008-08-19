@@ -243,7 +243,7 @@ struct _cc_method_name {
 
     char *msg;
 
-    cc_method_fp fn;
+    cc_arg_t (*fn)();
 };
 
 struct _cc_class_object {
