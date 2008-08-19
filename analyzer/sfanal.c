@@ -19,6 +19,10 @@
 #include "macros.h"
 #include "unix.h"
 
+#ifdef __cplusplus
+#define __STDC_LIMIT_MACROS
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

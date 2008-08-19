@@ -23,7 +23,29 @@
 
 
 char *cc_type_names[] = {
+#ifdef __cplusplus
+    "any",
 
+    "object",
+    "pointer",
+    "string",
+
+    "signed char",
+    "short",
+    "int",
+    "long",
+    "long long",
+
+    "unsigned char",
+    "unsigned short",
+    "unsigned int",
+    "unsigned long",
+    "unsigned long long",
+
+    "char",
+    "float",
+    "double"
+#else
     [cc_type_any] = "any",
 
     [cc_type_o]   = "object",
@@ -45,6 +67,7 @@ char *cc_type_names[] = {
     [cc_type_c]   = "char",
     [cc_type_f]   = "float",
     [cc_type_d]   = "double"
+#endif
 };
 
 
@@ -156,7 +179,7 @@ static inline cc_arg_t _cc_send_msg_internal(
 cc_arg_t _cc_send(cc_obj my, char *msg, int argc, cc_arg_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
-    return _cc_send_msg_internal(obj->isa, my, msg, argc, argv);
+    return _cc_send_msg_internal(obj->isa, obj, msg, argc, argv);
 }
 
 

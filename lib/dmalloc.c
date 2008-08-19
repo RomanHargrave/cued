@@ -45,6 +45,15 @@
 #define dfree       free
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+    void *dmalloc(size_t theBlockSize);
+    void *dcalloc(size_t theNumElems, size_t theElemSize);
+    void *drealloc(void *theBlock, size_t theNewUserBlockSize);
+    void  dfree(void *theBlock);
+}
+#endif
+
 
 #define HEADER_SIGNATURE_SIZE   64
 #define TRAILER_SIGNATURE_SIZE  64

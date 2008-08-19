@@ -40,7 +40,7 @@ static inline FcListNode *insertBefore(FcListNode *next, cc_arg_t item)
 {
     FcListNode *node, *prev;
 
-    node = malloc(sizeof(FcListNode));
+    node = (FcListNode *) malloc(sizeof(FcListNode));
     if (!node) {
         return NULL;
     }
@@ -63,7 +63,7 @@ static inline FcListNode *insertAfter(FcListNode *prev, cc_arg_t item)
 {
     FcListNode *node, *next;
 
-    node = malloc(sizeof(FcListNode));
+    node = (FcListNode *) malloc(sizeof(FcListNode));
     if (!node) {
         return NULL;
     }
@@ -145,7 +145,7 @@ cc_end_method
 
 
 cc_begin_method(FcList, cursor)
-    cc_vars_FcListCursor *cursor = as_obj(cc_msg(&FcListCursor, "alloc"));
+    cc_vars_FcListCursor *cursor = (cc_vars_FcListCursor *) as_obj(cc_msg(&FcListCursor, "alloc"));
     cursor->list = my;
     cursor->curr = &my->head;
     return by_obj(cursor);
