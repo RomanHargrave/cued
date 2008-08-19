@@ -79,6 +79,7 @@ typedef struct _cc_arg_t {
 
 extern char *cc_type_names[];
 
+// instead of designated init, could use brace groups for g++
 #define by(x, y) ((cc_arg_t) { .u = { .x = (y) }, .t = cc_type_##x })
 
 #define by_obj(p)       by(o,   (p))
@@ -223,7 +224,7 @@ cc_class_object Meta##cls = { \
 #define cc_category(cls, cat, ...) \
 cc_construct_methods(cls, cls##cat, __VA_ARGS__)
 
-#define cc_method(name, function) { .msg = name, .fn = function }
+#define cc_method(name, function) { name, function }
 
 
 #define cc_begin_method(cls, fn_name) \
