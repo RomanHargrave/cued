@@ -1,2 +1,2 @@
 #!/bin/bash
-CC_BIN=g++ EXTLIBDIRS="/home/edison/local${bits}/lib" CC_FLAGS="-isystem ~/local${bits}/include" INSTALL_BIN_DIR=~/bin/linux/${bits} CC_DEFINES="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)'" make install
+EXTLIBDIRS="/home/edison/local${bits}/lib" CC_FLAGS="-isystem ~/local${bits}/include" INSTALL_BIN_DIR=~/bin/linux/${bits} CC_DEFINES="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)'" make install
