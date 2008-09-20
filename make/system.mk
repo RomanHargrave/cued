@@ -55,7 +55,8 @@ else ifeq (SUNWspro, $(findstring SUNWspro, $(CC_BIN)))
 endif
 
 ifdef GCC
-    CPP_FLAGS += -pedantic -std=gnu++98
+	# -pedantic does not work correctly with -std=gnu++98
+    CPP_FLAGS += -std=gnu++98
 else ifdef SUNWS
 	LD_FLAGS += -xildoff
 endif
