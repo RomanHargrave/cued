@@ -186,9 +186,7 @@ $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR) :
 $(BIN_PATH) :: $(OBJ_DIR) $(BIN_DIR) ;
 
 $(BIN_PATH) :: $(addsuffix .o, $(SRC)) $(addprefix lib, $(addsuffix .a, $(LIBS)))
-	$(LD_BIN) $(LD_FLAGS) -o $@ $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) \
-		$(addprefix -L, $(EXTLIBDIRS)) $(addprefix -L, $(addsuffix /$(LIB_PROTO_DIR),$(LIBDIRS))) \
-		$(addprefix -l, $(EXTLIBS)) $(addprefix -l, $(LIBS))
+	$(LD_BIN) $(LD_FLAGS) -o $@ $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC))) $(addprefix -L, $(EXTLIBDIRS)) $(addprefix -L, $(addsuffix /$(LIB_PROTO_DIR),$(LIBDIRS))) $(addprefix -l, $(EXTLIBS)) $(addprefix -l, $(LIBS))
 
 $(LIB_PATH) :: $(OBJ_DIR) $(LIB_DIR) ;
 
