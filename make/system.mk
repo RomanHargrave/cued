@@ -46,7 +46,8 @@ LD_BIN		?= $(CC_BIN)
 
 ifeq (gcc, $(notdir $(CC_BIN)))
 	GCC	  := t
-	C_FLAGS += -std=gnu99 # -pedantic 
+	# -pedantic does not work correctly with -std=gnu99
+	C_FLAGS += -std=gnu99
 else ifeq (g++, $(notdir $(CC_BIN)))
 	GCC	  := t
 else ifeq (SUNWspro, $(findstring SUNWspro, $(CC_BIN)))
@@ -135,7 +136,7 @@ endif
 .SUFFIXES : .c .o .m .M .cpp .m4
 
 define run-cc
-	$(CC_BIN) $(C_FLAGS)   $(CC_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
+	$(CC_BIN) $(C_FLAGS) $(CC_FLAGS) -c -o $(addprefix $(OBJ_DIR), $@) $<
 endef
 
 define run-cpp
