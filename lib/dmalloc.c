@@ -17,6 +17,7 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// allow for insanities such as -D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)'
 #ifdef malloc
 #undef malloc
 #endif
@@ -24,8 +25,9 @@
 #undef free
 #endif
 
+#include "dmalloc.h"
 #include "dlist.h"
-#include <sys/types.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -38,7 +40,7 @@
 
 #define ARCHAIC_ZEROS
 
-#ifdef USE_WHOLE_PAGES
+#ifdef OVERRIDE_LIBC
 #define dcalloc     calloc
 #define dmalloc     malloc
 #define drealloc    realloc
@@ -93,21 +95,8 @@ void allocAbend(const char *theMessage)
     abort();
 }
 
+
 #ifdef USE_WHOLE_PAGES
-
-#if defined(_WIN32)
-#define SMALL_PAGE_ADDRESS_BITS         16
-#endif
-
-#if defined(__sparc)
-#define SMALL_PAGE_ADDRESS_BITS         13
-#endif
-
-#if defined(__unix__) && (defined(__i386__) || defined(__x86_64__))
-#define SMALL_PAGE_ADDRESS_BITS         12
-#endif
-
-#define SMALL_PAGE_SIZE                 (1 << SMALL_PAGE_ADDRESS_BITS)
 
 /*  This is the new version of coerceBlockSize.  The algorithm's advantage
 **  is better performance.  However, the alignment parameter must be
@@ -124,6 +113,9 @@ size_t coerceBlockSize(size_t theBlockSize, size_t theBlockAlignment)
 */
 
 #if defined(_WIN32)
+
+#define SMALL_PAGE_ADDRESS_BITS         16
+#define SMALL_PAGE_SIZE                 (1 << SMALL_PAGE_ADDRESS_BITS)
 
 #include <windows.h>
 
@@ -146,10 +138,19 @@ void freeChunk(ptr_as_int_t theChunk, size_t theSize)
         allocAbend("VirtualFree");
 }
 
-#else
+#else // Unixen
 
-#include <unistd.h>
-#include <sys/mman.h>
+#include <sys/mman.h> // mmap, munmap
+#include <limits.h> // PAGESIZE, PAGE_SIZE
+#include <unistd.h> // sysconf
+
+#ifdef PAGESIZE
+#define SMALL_PAGE_SIZE PAGESIZE
+#elif defined(PAGE_SIZE)
+#define SMALL_PAGE_SIZE PAGE_SIZE
+#else
+#define SMALL_PAGE_SIZE sysconf(_SC_PAGESIZE)
+#endif
 
 INLINE
 ptr_as_int_t allocLargeChunk(size_t theSize)
@@ -176,6 +177,60 @@ void freeChunk(ptr_as_int_t theChunk, size_t theSize)
 #endif
 
 #endif /* USE_WHOLE_PAGES */
+
+
+#if defined(OVERRIDE_LIBC) && !defined(USE_WHOLE_PAGES)
+
+#ifndef __cplusplus
+#define __USE_GNU
+#endif
+#include <dlfcn.h>
+
+typedef void *(*malloc_fn_t)(size_t);
+typedef void (*free_fn_t)(void *);
+
+static void *wrapped_malloc(size_t theUserBlockSize)
+{
+    static malloc_fn_t malloc_fn;
+
+    if (!malloc_fn) {
+        malloc_fn = (malloc_fn_t) dlsym(RTLD_NEXT, "malloc");
+    }
+
+    return malloc_fn(theUserBlockSize);
+}
+
+static void wrapped_free(void *theBlock)
+{
+    static free_fn_t free_fn;
+
+    if (!free_fn) {
+        free_fn = (free_fn_t) dlsym(RTLD_NEXT, "free");
+    }
+
+    free_fn(theBlock);
+}
+
+#elif !defined(USE_WHOLE_PAGES)
+
+#define wrapped_malloc malloc
+#define wrapped_free free
+
+#endif
+
+
+// allow for insanities such as -D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)'
+//
+
+void libc_free(void *theBlock)
+{
+    free(theBlock);
+}
+
+void *libc_malloc(size_t theBlockSize)
+{
+    return malloc(theBlockSize);
+}
 
 
 INLINE
@@ -220,7 +275,7 @@ void *dalloc(size_t theUserBlockSize)
 #else
 
     anAllocBlockSize = sizeof(debug_header_t) + theUserBlockSize + sizeof(debug_trailer_t);
-    if (!((aBlock = (debug_header_t *) malloc(anAllocBlockSize))))
+    if (!((aBlock = (debug_header_t *) wrapped_malloc(anAllocBlockSize))))
 
 #endif
     {
@@ -339,7 +394,7 @@ void dfree(void *theBlock)
     freeChunk((ptr_as_int_t) aHeader, aHeader->allocLength);
 #else
     memset(theBlock, FREE_VALUE, aHeader->userLength);
-    free(aHeader);
+    wrapped_free(aHeader);
 #endif
 }
 

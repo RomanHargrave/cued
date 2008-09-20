@@ -370,3 +370,16 @@ lsn_t cdio2_get_track_last_lsn(CdIo_t *cdObj, track_t track, track_t discLastTra
     return lastSector;
 }
 
+
+
+#if defined(_WIN32)
+#define SMALL_PAGE_ADDRESS_BITS         16
+#endif
+
+#if defined(__sparc)
+#define SMALL_PAGE_ADDRESS_BITS         13
+#endif
+
+#if defined(__unix__) && (defined(__i386__) || defined(__x86_64__))
+#define SMALL_PAGE_ADDRESS_BITS         12
+#endif

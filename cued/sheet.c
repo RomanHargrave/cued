@@ -20,6 +20,7 @@
 #include "macros.h"
 #include "unix.h"
 #include "cued.h" // CUED_VERSION
+#include "dmalloc.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
@@ -68,7 +69,7 @@ void cued_write_cuefile(
                     fprintf(rip->cueFile, "CATALOG %s\n", mcn);
                 }
             }
-            free(mcn);
+            libc_free(mcn);
         }
     }
 
@@ -81,7 +82,7 @@ void cued_write_cuefile(
         , basename2(devFileName)
         , quoted ? "\"" : ""
         );
-    free(devFileName);
+    libc_free(devFileName);
 
     firstTrackSector = cdio_get_track_lsn(rip->cdObj, 1);
     if (CDIO_INVALID_LSN == firstTrackSector) {

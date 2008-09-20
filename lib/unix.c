@@ -18,6 +18,7 @@
 
 #include "unix.h"
 #include "macros.h"
+#include "dmalloc.h"
 
 #include <stdlib.h> // strtol
 #include <sys/stat.h> // mkdir
@@ -37,7 +38,7 @@ char *noextname(const char *name)
     if (end) {
         chars = end - name;
         bytes = chars * sizeof(char);
-        newstr = (char *) malloc(bytes + sizeof(char));
+        newstr = (char *) libc_malloc(bytes + sizeof(char));
         if (newstr) {
             memcpy(newstr, name, bytes);
             newstr[chars] = 0;

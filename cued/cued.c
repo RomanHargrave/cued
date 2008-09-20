@@ -30,6 +30,7 @@
 #include "cued.h" // CUED_VERSION
 #include "opt.h"
 #include "util.h"
+#include "dmalloc.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
@@ -414,7 +415,7 @@ int main(int argc, char *const argv[])
                 if (isrc) {
                     // rip.ripData[track].isrc is already null terminated
                     strncpy(rip.ripData[track].isrc, isrc, ISRC_LEN);
-                    free(isrc);
+                    libc_free(isrc);
                 }
             }
 
@@ -428,7 +429,7 @@ int main(int argc, char *const argv[])
 
                     // (heuristic) check for DAO
                     if (mcn) {
-                        free(mcn);
+                        libc_free(mcn);
                         rip.ripData[discFirstTrack].indices[0] = CDIO_PREGAP_SECTORS;
                         rip.ripData[discFirstTrack].indices[1] = lba;
                     }

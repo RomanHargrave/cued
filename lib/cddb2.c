@@ -20,6 +20,7 @@
 #include "opt.h"
 #include "cued.h"
 #include "macros.h" // NELEMS
+#include "dmalloc.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
@@ -463,8 +464,17 @@ void cddb2_init()
 
 void cddb2_cleanup()
 {
-    free(cddbCategories);
-    cddbCategories = NULL;
+    int i;
+
+    if (cddbCategories) {
+        i = 0;
+        do {
+            libc_free(cddbCategories[i]);
+        } while (strcmp(CDDB_CATEGORY[i++], "invalid"));
+
+        free(cddbCategories);
+        cddbCategories = NULL;
+    }
 }
 
 
