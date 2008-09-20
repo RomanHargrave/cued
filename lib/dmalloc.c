@@ -193,7 +193,8 @@ static void *wrapped_malloc(size_t theUserBlockSize)
 {
     static malloc_fn_t malloc_fn;
 
-    if (!malloc_fn) {
+    if (!malloc_fn)
+    {
         malloc_fn = (malloc_fn_t) dlsym(RTLD_NEXT, "malloc");
     }
 
@@ -204,7 +205,8 @@ static void wrapped_free(void *theBlock)
 {
     static free_fn_t free_fn;
 
-    if (!free_fn) {
+    if (!free_fn)
+    {
         free_fn = (free_fn_t) dlsym(RTLD_NEXT, "free");
     }
 
@@ -213,8 +215,8 @@ static void wrapped_free(void *theBlock)
 
 #elif !defined(USE_WHOLE_PAGES)
 
-#define wrapped_malloc malloc
-#define wrapped_free free
+#define wrapped_malloc  malloc
+#define wrapped_free    free
 
 #endif
 
