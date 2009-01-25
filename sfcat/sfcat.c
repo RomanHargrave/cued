@@ -14,6 +14,9 @@
 **
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**
+** TODO:  always check return code of sf_command, sf_close, and sf_write*
+**
 */
 
 #include "opt.h"
