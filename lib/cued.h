@@ -22,7 +22,7 @@
 
 
 #define CUED_PRODUCT_NAME   "cued"
-#define CUED_VERSION        "v.b9"
+#define CUED_VERSION        "v.r1"
 
 
 #endif // CUED_H_INCLUDED
