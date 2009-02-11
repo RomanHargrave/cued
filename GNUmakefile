@@ -26,6 +26,7 @@ DIRS= \
     firstcls \
     sfcat \
     analyzer \
+    sfcmp \
     test
 
 include make/dir.mk
