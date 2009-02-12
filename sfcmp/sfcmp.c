@@ -136,7 +136,6 @@ typedef struct _sndfile_data {
     char *filename;
 
     SF_INFO sfinfo;
-    SF_EMBED_FILE_INFO embedInfo;
     SNDFILE *sndfile;
 
     char *mapStart;
@@ -284,8 +283,9 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 {
     sndfile_data *cmp;
     sf_readf_fn readfn;
-    int i;
     ssize_t s;
+    SF_EMBED_FILE_INFO embedInfo;
+    int i;
 
     cmp = (sndfile_data *) calloc(count, sizeof(sndfile_data));
     if (!cmp) {
@@ -367,12 +367,12 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
         // determine header size of container
         //
 
-        if (sf_command(cmp[i].sndfile, SFC_GET_EMBED_FILE_INFO, &cmp[i].embedInfo, sizeof(cmp[i].embedInfo))) {
+        if (sf_command(cmp[i].sndfile, SFC_GET_EMBED_FILE_INFO, &embedInfo, sizeof(embedInfo))) {
             fprintf(stderr, "fatal:  unable to get container information for %s : %s\n", cmp[i].filename, sf_strerror(NULL));
             return 5;
         }
 
-        cmp[i].mappedSize = cmp[i].embedInfo.offset + cmp[i].embedInfo.length;
+        cmp[i].mappedSize = embedInfo.offset + embedInfo.length;
         cmp[i].headerSize = cmp[i].mappedSize - cmp[i].audioDataBytes;
 
         // check for compression;  if it's compressed, mmap will not work;
