@@ -131,9 +131,6 @@ static inline char *bmh_memmem(char *spc, ssize_t slen, char *pat, ssize_t plen)
 
 #define SFCMP_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define SFDATA_FLAG_UNMAP   0x1
-#define SFDATA_FLAG_FREE    0x2
-
 typedef struct _sndfile_data {
 
     char *filename;
@@ -150,7 +147,6 @@ typedef struct _sndfile_data {
     ssize_t frameSize, trailingSilence;
 
     int fd;
-    int flags;
 
 } sndfile_data;
 
@@ -384,12 +380,14 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
         //
         if (cmp[i].headerSize < 0) {
 
+            // TODO:  why not just use mmap?
+
             if (!readfn) {
                 fprintf(stderr, "fatal:  %s is compressed and libsndfile lacks appropriate read function\n", cmp[i].filename);
                 return 6;
             }
 
-            cmp[i].mapStart = (char *) malloc(cmp[i].audioDataBytes);
+            cmp[i].mapStart = (char *) mmap(NULL, cmp[i].audioDataBytes, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
             if (!cmp[i].mapStart) {
                 fprintf(stderr, "fatal:  %s could not allocate %ld bytes for compressed file\n", cmp[i].filename, cmp[i].audioDataBytes);
                 return 7;
@@ -401,7 +399,6 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
             }
 
             cmp[i].audioDataStart = cmp[i].mapStart;
-            cmp[i].flags = SFDATA_FLAG_FREE;
             cmp[i].mappedSize = cmp[i].audioDataBytes;
             cmp[i].headerSize = 0;
 
@@ -417,7 +414,6 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
             }
 
             cmp[i].audioDataStart = cmp[i].mapStart + cmp[i].headerSize;
-            cmp[i].flags = SFDATA_FLAG_UNMAP;
         }
 
 
@@ -452,15 +448,9 @@ static int closeSndFiles(sndfile_data *files, int count)
             rc += 1;
         }
 
-        if (files[i].flags & SFDATA_FLAG_UNMAP) {
-            if (munmap(files[i].mapStart, files[i].mappedSize)) {
-                fprintf(stderr, "error:  %s could not be unmapped\n", files[i].filename);
-                rc += 2;
-            }
-        }
-
-        if (files[i].flags & SFDATA_FLAG_FREE) {
-            free(files[i].mapStart);
+        if (munmap(files[i].mapStart, files[i].mappedSize)) {
+            fprintf(stderr, "error:  %s could not be unmapped\n", files[i].filename);
+            rc += 2;
         }
     }
 
