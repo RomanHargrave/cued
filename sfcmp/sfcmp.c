@@ -402,6 +402,7 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 
             cmp[i].audioDataStart = cmp[i].mapStart;
             cmp[i].flags = SFDATA_FLAG_FREE;
+            cmp[i].mappedSize = cmp[i].audioDataBytes;
             cmp[i].headerSize = 0;
 
         } else {
