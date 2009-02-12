@@ -380,8 +380,6 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
         //
         if (cmp[i].headerSize < 0) {
 
-            // TODO:  why not just use mmap?
-
             if (!readfn) {
                 fprintf(stderr, "fatal:  %s is compressed and libsndfile lacks appropriate read function\n", cmp[i].filename);
                 return 6;
