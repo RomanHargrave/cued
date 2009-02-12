@@ -131,6 +131,8 @@ static inline char *bmh_memmem(char *spc, ssize_t slen, char *pat, ssize_t plen)
 
 #define SFCMP_MIN(a, b) ((a) < (b) ? (a) : (b))
 
+#define SFDATA_FLAG_UNMAP   0x1
+#define SFDATA_FLAG_FREE    0x2
 
 typedef struct _sndfile_data {
 
@@ -148,6 +150,7 @@ typedef struct _sndfile_data {
     ssize_t frameSize, trailingSilence;
 
     int fd;
+    int flags;
 
 } sndfile_data;
 
@@ -166,7 +169,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     if (   files[0].audioStart != files[0].audioDataStart 
         || files[1].audioStart != files[1].audioDataStart)
     {
-        printf("[0, 0] - (%lu, %lu):  ignored leading silence\n",
+        printf("[0, 0] - (%ld, %ld):  ignored leading silence\n",
             files[0].audioStart - files[0].audioDataStart,
             files[1].audioStart - files[1].audioDataStart);
     }
@@ -191,7 +194,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
             n = matchStr2(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
 
             if (m1 != sw1 || m2 != mw2) {
-                printf("[%lu, %lu] - (%lu, %lu):  did not match [%lu, %lu] bytes\n",
+                printf("[%ld, %ld] - (%ld, %ld):  did not match [%ld, %ld] bytes\n",
                     m1 - files[0].audioDataStart,
                     m2 - files[1].audioDataStart,
                     sw1 - m1,
@@ -203,7 +206,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
             if (n == countLeadingZeros(sw1, n, 1)) {
 
-                printf("[%lu, %lu] - (%lu, %lu):  %lu bytes of silence ignored\n",
+                printf("[%ld, %ld] - (%ld, %ld):  %ld bytes of silence ignored\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
@@ -215,7 +218,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
             } else {
 
-                printf("[%lu, %lu] - (%lu, %lu):  %lu bytes matched\n",
+                printf("[%ld, %ld] - (%ld, %ld):  %ld bytes matched\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
@@ -252,7 +255,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     }
 
     if (m1 != e1 || m2 != e2) {
-        printf("[%lu, %lu] - (%lu, %lu):  did not match [%lu, %lu] bytes\n",
+        printf("[%ld, %ld] - (%ld, %ld):  did not match [%ld, %ld] bytes\n",
             m1 - files[0].audioDataStart,
             m2 - files[1].audioDataStart,
             files[0].audioDataBytes - files[0].trailingSilence,
@@ -263,7 +266,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     }
 
     if (files[0].trailingSilence || files[1].trailingSilence) {
-        printf("[%lu, %lu] - (%lu, %lu):  ignored trailing silence of [%lu, %lu] bytes\n",
+        printf("[%ld, %ld] - (%ld, %ld):  ignored trailing silence of [%ld, %ld] bytes\n",
             files[0].audioDataBytes - files[0].trailingSilence,
             files[1].audioDataBytes - files[1].trailingSilence,
             files[0].audioDataBytes,
@@ -277,9 +280,14 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 }
 
 
+
+typedef sf_count_t (*sf_readf_fn)(SNDFILE *, char *, sf_count_t);
+
+
 static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 {
     sndfile_data *cmp;
+    sf_readf_fn readfn;
     int i;
     ssize_t s;
 
@@ -320,23 +328,32 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
             case SF_FORMAT_PCM_S8:
             case SF_FORMAT_PCM_U8:
                 cmp[i].frameSize = 1;
+                readfn = NULL;
                 break;
 
             case SF_FORMAT_PCM_16:
                 cmp[i].frameSize = 2;
+                readfn = (sf_readf_fn) sf_readf_short;
                 break;
 
             case SF_FORMAT_PCM_24:
                 cmp[i].frameSize = 3;
+                readfn = NULL;
                 break;
 
             case SF_FORMAT_PCM_32:
+                cmp[i].frameSize = 4;
+                readfn = (sf_readf_fn) sf_readf_int;
+                break;
+
             case SF_FORMAT_FLOAT:
                 cmp[i].frameSize = 4;
+                readfn = (sf_readf_fn) sf_readf_float;
                 break;
 
             case SF_FORMAT_DOUBLE:
                 cmp[i].frameSize = 8;
+                readfn = (sf_readf_fn) sf_readf_double;
                 break;
 
             default:
@@ -363,24 +380,44 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
         cmp[i].headerSize = cmp[i].mappedSize - cmp[i].audioDataBytes;
 
         // check for compression;  if it's compressed, mmap will not work;
-        // this isn't foolproof if the header is large relative to the size of the audio data
+        // this test isn't foolproof if the header is large relative to the size of the audio data
         //
         if (cmp[i].headerSize < 0) {
-            fprintf(stderr, "fatal:  %s is compressed\n", cmp[i].filename);
-            return 6;
+
+            if (!readfn) {
+                fprintf(stderr, "fatal:  %s is compressed and libsndfile lacks appropriate read function\n", cmp[i].filename);
+                return 6;
+            }
+
+            cmp[i].mapStart = (char *) malloc(cmp[i].audioDataBytes);
+            if (!cmp[i].mapStart) {
+                fprintf(stderr, "fatal:  %s could not allocate %ld bytes for compressed file\n", cmp[i].filename, cmp[i].audioDataBytes);
+                return 7;
+            }
+
+            if (cmp[i].sfinfo.frames != readfn(cmp[i].sndfile, cmp[i].mapStart, cmp[i].sfinfo.frames)) {
+                fprintf(stderr, "fatal:  %s could not be read : %s\n", cmp[i].filename, sf_strerror(NULL));
+                return 8;
+            }
+
+            cmp[i].audioDataStart = cmp[i].mapStart;
+            cmp[i].flags = SFDATA_FLAG_FREE;
+            cmp[i].headerSize = 0;
+
+        } else {
+
+            // memory map the audio samples
+            //
+
+            cmp[i].mapStart = (char *) mmap(NULL, cmp[i].mappedSize, PROT_READ, MAP_SHARED, cmp[i].fd, 0);
+            if (MAP_FAILED == cmp[i].mapStart) {
+                fprintf(stderr, "fatal:  %s could not be mapped\n", cmp[i].filename);
+                return 9;
+            }
+
+            cmp[i].audioDataStart = cmp[i].mapStart + cmp[i].headerSize;
+            cmp[i].flags = SFDATA_FLAG_UNMAP;
         }
-
-
-        // memory map the audio samples
-        //
-
-        cmp[i].mapStart = (char *) mmap(NULL, cmp[i].mappedSize, PROT_READ, MAP_SHARED, cmp[i].fd, 0);
-        if (MAP_FAILED == cmp[i].mapStart) {
-            fprintf(stderr, "fatal:  %s could not be mapped\n", cmp[i].filename);
-            return 7;
-        }
-
-        cmp[i].audioDataStart = cmp[i].mapStart + cmp[i].headerSize;
 
 
         // identify leading and trailing silence
@@ -414,9 +451,15 @@ static int closeSndFiles(sndfile_data *files, int count)
             rc += 1;
         }
 
-        if (munmap(files[i].mapStart, files[i].mappedSize)) {
-            fprintf(stderr, "error:  %s could not be unmapped\n", files[i].filename);
-            rc += 2;
+        if (files[i].flags & SFDATA_FLAG_UNMAP) {
+            if (munmap(files[i].mapStart, files[i].mappedSize)) {
+                fprintf(stderr, "error:  %s could not be unmapped\n", files[i].filename);
+                rc += 2;
+            }
+        }
+
+        if (files[i].flags & SFDATA_FLAG_FREE) {
+            free(files[i].mapStart);
         }
     }
 
