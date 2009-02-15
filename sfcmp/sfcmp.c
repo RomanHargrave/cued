@@ -15,6 +15,12 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//#define USE_BOYER
+
+#if !defined(USE_BOYER) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
 #include "opt.h"
 #include "macros.h"
 #include "unix.h"
@@ -63,7 +69,7 @@ static ssize_t countTrailingZeros(char *a, ssize_t bytes, ssize_t granularity)
 #if 0
 
 // working, but dead code
-static inline ssize_t matchStr(char *a, char *b, ssize_t bytes, ssize_t granularity)
+static inline ssize_t matchStrG(char *a, char *b, ssize_t bytes, ssize_t granularity)
 {
     ssize_t i;
 
@@ -79,7 +85,7 @@ static inline ssize_t matchStr(char *a, char *b, ssize_t bytes, ssize_t granular
 #endif
 
 
-static inline ssize_t matchStr2(char *a, char *b, ssize_t bytes)
+static inline ssize_t matchStr(char *a, char *b, ssize_t bytes)
 {
     ssize_t i;
 
@@ -92,44 +98,6 @@ static inline ssize_t matchStr2(char *a, char *b, ssize_t bytes)
     return i;
 }
 
-
-static inline char *bmh_memmem(char *spc, ssize_t slen, char *pat, ssize_t plen)
-{
- 	ssize_t skip[256];
-	ssize_t i, j, t;
-
-	for (i = 0;  i < 256;  ++i) {
-  		skip[i] = plen;
-    }
-
-	for (i = 0;  i < plen;  ++i) {
-
-        // careful not to use a negative index
-		skip[ (unsigned char) pat[i] ] = plen - i - 1;
-    }
-
-	for (i = j = plen - 1;  j > 0;  --i, --j) {
-
-		while (spc[i] != pat[j]) {
-
-            // careful not to use a negative index
-			t = skip[ (unsigned char) spc[i] ];
-
-			i += (plen - j > t) ? plen - j : t;
-			if (i >= slen) {
-
-				return NULL;
-            }
-
-			j = plen - 1;
-		}
-    }
-
-	return spc + i;
-}
-
-
-#define SFCMP_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 typedef struct _sndfile_data {
 
@@ -149,6 +117,8 @@ typedef struct _sndfile_data {
 
 } sndfile_data;
 
+
+#define SFCMP_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, int initThreshold, int resyncThreshold)
 {
@@ -183,19 +153,29 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
     while (sw1 < ew1) {
 
+#ifdef USE_BOYER
         mw2 = bmh_memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
+#else
+        mw2 = (char *) memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
+#endif
         if (mw2) {
 
-            n = matchStr2(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
+            if (mw2[0] != sw1[0] && ew2 - sw2 > 0 && SFCMP_MIN(threshold, e1 - sw1) > 0) {
+                printf("SPURIOUS MATCH FROM memmem");
+                exit(EXIT_FAILURE);
+            }
+
+            // mw2 is where the match starts
+            n = matchStr(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
 
             if (m1 != sw1 || m2 != mw2) {
                 printf("[%ld, %ld] - (%ld, %ld):  did not match [%ld, %ld] bytes\n",
-                    m1 - files[0].audioDataStart,
-                    m2 - files[1].audioDataStart,
+                    m1  - files[0].audioDataStart,
+                    m2  - files[1].audioDataStart,
+                    sw1 - files[0].audioDataStart,
+                    mw2 - files[1].audioDataStart,
                     sw1 - m1,
-                    mw2 - m2,
-                    (sw1 - m1) - (m1 - files[0].audioDataStart),
-                    (mw2 - m2) - (m2 - files[1].audioDataStart)
+                    mw2 - m2
                     );
             }
 
@@ -275,9 +255,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 }
 
 
-
 typedef sf_count_t (*sf_readf_fn)(SNDFILE *, char *, sf_count_t);
-
 
 static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 {
@@ -457,8 +435,8 @@ static int closeSndFiles(sndfile_data *files, int count)
 
 
 // match at least one sector (1/75th of a second)
-#define INITIAL_THRESHOLD  2352
-#define RESYNC_THRESHOLD    128
+#define INITIAL_THRESHOLD  (2352)
+#define RESYNC_THRESHOLD   (INITIAL_THRESHOLD / 4)
 
 
 // execution times for mismatch with CD-DA:
@@ -537,7 +515,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    rc = openSndFiles(&cmp, 2, &argv[1]);
+    rc = openSndFiles(&cmp, 2, &argv[optind]);
     if (rc) {
         return rc;
     }
