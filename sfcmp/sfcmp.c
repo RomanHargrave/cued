@@ -15,7 +15,7 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#define USE_BOYER
+#define USE_BOYER
 
 #if !defined(USE_BOYER) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <limits.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h> /* optind */
@@ -36,9 +37,9 @@
 #include <sndfile.h>
 
 
-static ssize_t countLeadingZeros(char *a, ssize_t bytes, ssize_t granularity)
+static intptr_t countLeadingZeros(char *a, intptr_t bytes, intptr_t granularity)
 {
-    ssize_t i;
+    intptr_t i;
 
     for (i = 0;  i < bytes;  ++i) {
         if (a[i]) {
@@ -50,9 +51,9 @@ static ssize_t countLeadingZeros(char *a, ssize_t bytes, ssize_t granularity)
 }
 
 
-static ssize_t countTrailingZeros(char *a, ssize_t bytes, ssize_t granularity)
+static intptr_t countTrailingZeros(char *a, intptr_t bytes, intptr_t granularity)
 {
-    ssize_t i, n;
+    intptr_t i, n;
 
     for (i = bytes - 1;  i >= 0;  --i) {
         if (a[i]) {
@@ -69,9 +70,9 @@ static ssize_t countTrailingZeros(char *a, ssize_t bytes, ssize_t granularity)
 #if 0
 
 // working, but dead code
-static inline ssize_t matchStrG(char *a, char *b, ssize_t bytes, ssize_t granularity)
+static inline intptr_t matchStrG(char *a, char *b, intptr_t bytes, intptr_t granularity)
 {
-    ssize_t i;
+    intptr_t i;
 
     for (i = 0;  i < bytes;  i += granularity) {
         if (memcmp(&a[i], &b[i], granularity)) {
@@ -85,9 +86,9 @@ static inline ssize_t matchStrG(char *a, char *b, ssize_t bytes, ssize_t granula
 #endif
 
 
-static inline ssize_t matchStr(char *a, char *b, ssize_t bytes)
+static inline intptr_t matchStr(char *a, char *b, intptr_t bytes)
 {
-    ssize_t i;
+    intptr_t i;
 
     for (i = 0;  i < bytes;  ++i) {
         if (a[i] != b[i]) {
@@ -99,6 +100,78 @@ static inline ssize_t matchStr(char *a, char *b, ssize_t bytes)
 }
 
 
+// this limits it to a 2^29 (about 500 million) character search
+// on 32-bit machines
+//
+#define LARGE (INTPTR_MAX / 4)
+
+static intptr_t skip[ UCHAR_MAX + 1 ];
+static intptr_t skip2;
+
+void bmh_init(const unsigned char *pattern, intptr_t patlen)
+{
+    intptr_t i, c, lastpatchar;
+
+    for (i = 0;  i <= UCHAR_MAX;  ++i) {
+        skip[i] = patlen;
+    }
+
+    // Horspool's fixed second shift
+    //
+    skip2 = patlen;
+    lastpatchar = pattern[ patlen - 1 ];
+
+    // tightened two loops into one (improvement over snippets)
+    //
+    for (i = 0;  i < patlen - 1;  ++i) {
+        c = pattern[i];
+        skip[c] = patlen - i - 1;
+        if (c == lastpatchar) {
+            skip2 = patlen - i - 1;
+        }
+    }
+
+    skip[ lastpatchar ] = LARGE;
+}
+
+char *bmh_memmem(const char *string, const intptr_t stringlen, const char *pattern, intptr_t patlen)
+{
+    char *s;
+    intptr_t i, j;
+
+    i = patlen - 1 - stringlen;
+    if (i >= 0) {
+        return NULL;
+    }
+    string += stringlen;
+    for (;;) {
+
+        // fast inner loop
+        while ( (i += skip[((unsigned char *) string)[i]]) < 0) {
+            ;
+        }
+        if (i < (LARGE - stringlen)) {
+            return NULL;
+        }
+        i -= LARGE;
+        j = patlen - 1;
+        s = (char *) string + (i - j);
+        while (--j >= 0 && s[j] == pattern[j]) {
+            ;
+        }
+
+        // rdg 10/93
+        //
+        if (j < 0) {
+            return s;
+        }
+        if ( (i += skip2) >= 0) {
+            return NULL;
+        }
+    }
+}
+
+
 typedef struct _sndfile_data {
 
     char *filename;
@@ -107,11 +180,11 @@ typedef struct _sndfile_data {
     SNDFILE *sndfile;
 
     char *mapStart;
-    ssize_t mappedSize, headerSize;
+    intptr_t mappedSize, headerSize;
 
     char *audioDataStart, *audioStart;
-    ssize_t audioDataBytes, audioBytes;
-    ssize_t frameSize, trailingSilence;
+    intptr_t audioDataBytes, audioBytes;
+    intptr_t frameSize, trailingSilence;
 
     int fd;
 
@@ -123,7 +196,7 @@ typedef struct _sndfile_data {
 static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, int initThreshold, int resyncThreshold)
 {
     char *sw1, *sw2, *ew1, *ew2, *e1, *e2, *m1, *m2, *mw2;
-    ssize_t n, threshold;
+    intptr_t n, threshold;
 
     // convert from seconds to bytes
     initWindow   *= files[0].sfinfo.samplerate * files[0].frameSize;
@@ -153,17 +226,17 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
     while (sw1 < ew1) {
 
+        // TODO:  use sw2 as the needle?
+
 #ifdef USE_BOYER
+        bmh_init((unsigned char *) sw1, SFCMP_MIN(threshold, e1 - sw1));
         mw2 = bmh_memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
 #else
         mw2 = (char *) memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
 #endif
         if (mw2) {
 
-            if (mw2[0] != sw1[0] && ew2 - sw2 > 0 && SFCMP_MIN(threshold, e1 - sw1) > 0) {
-                printf("SPURIOUS MATCH FROM memmem");
-                exit(EXIT_FAILURE);
-            }
+            // TODO:  skip n matching bytes in matchStr and sw1
 
             // mw2 is where the match starts
             n = matchStr(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
@@ -261,7 +334,7 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 {
     sndfile_data *cmp;
     sf_readf_fn readfn;
-    ssize_t s;
+    intptr_t s;
     SF_EMBED_FILE_INFO embedInfo;
     int i;
 
