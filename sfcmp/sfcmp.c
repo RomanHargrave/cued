@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <limits.h>
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -37,9 +36,9 @@
 #include <sndfile.h>
 
 
-static intptr_t countLeadingZeros(char *a, intptr_t bytes, intptr_t granularity)
+static ssize_t countLeadingZeros(char *a, ssize_t bytes, ssize_t granularity)
 {
-    intptr_t i;
+    ssize_t i;
 
     for (i = 0;  i < bytes;  ++i) {
         if (a[i]) {
@@ -51,9 +50,9 @@ static intptr_t countLeadingZeros(char *a, intptr_t bytes, intptr_t granularity)
 }
 
 
-static intptr_t countTrailingZeros(char *a, intptr_t bytes, intptr_t granularity)
+static ssize_t countTrailingZeros(char *a, ssize_t bytes, ssize_t granularity)
 {
-    intptr_t i, n;
+    ssize_t i, n;
 
     for (i = bytes - 1;  i >= 0;  --i) {
         if (a[i]) {
@@ -70,9 +69,9 @@ static intptr_t countTrailingZeros(char *a, intptr_t bytes, intptr_t granularity
 #if 0
 
 // working, but dead code
-static inline intptr_t matchStrG(char *a, char *b, intptr_t bytes, intptr_t granularity)
+static inline ssize_t matchStrG(char *a, char *b, ssize_t bytes, ssize_t granularity)
 {
-    intptr_t i;
+    ssize_t i;
 
     for (i = 0;  i < bytes;  i += granularity) {
         if (memcmp(&a[i], &b[i], granularity)) {
@@ -86,9 +85,9 @@ static inline intptr_t matchStrG(char *a, char *b, intptr_t bytes, intptr_t gran
 #endif
 
 
-static inline intptr_t matchStr(char *a, char *b, intptr_t bytes)
+static inline ssize_t matchStr(char *a, char *b, ssize_t bytes)
 {
-    intptr_t i;
+    ssize_t i;
 
     for (i = 0;  i < bytes;  ++i) {
         if (a[i] != b[i]) {
@@ -101,16 +100,16 @@ static inline intptr_t matchStr(char *a, char *b, intptr_t bytes)
 
 
 // this limits it to a 2^29 (about 500 million) character search
-// on 32-bit machines
+// on 32-bit machines and much larger on 64-bit
 //
-#define LARGE (INTPTR_MAX / 4)
+#define LARGE (LONG_MAX / 4)
 
-static intptr_t skip[ UCHAR_MAX + 1 ];
-static intptr_t skip2;
+static ssize_t skip[ UCHAR_MAX + 1 ];
+static ssize_t skip2;
 
-void bmh_init(const unsigned char *pattern, intptr_t patlen)
+void bmh_init(const unsigned char *pattern, ssize_t patlen)
 {
-    intptr_t i, c, lastpatchar;
+    ssize_t i, c, lastpatchar;
 
     for (i = 0;  i <= UCHAR_MAX;  ++i) {
         skip[i] = patlen;
@@ -134,10 +133,12 @@ void bmh_init(const unsigned char *pattern, intptr_t patlen)
     skip[ lastpatchar ] = LARGE;
 }
 
-char *bmh_memmem(const char *string, const intptr_t stringlen, const char *pattern, intptr_t patlen)
+char *bmh_memmem(const char *string, const ssize_t stringlen, const char *pattern, ssize_t patlen)
 {
     char *s;
-    intptr_t i, j;
+    ssize_t i, j;
+
+    bmh_init((unsigned char *) pattern, patlen);
 
     i = patlen - 1 - stringlen;
     if (i >= 0) {
@@ -180,11 +181,11 @@ typedef struct _sndfile_data {
     SNDFILE *sndfile;
 
     char *mapStart;
-    intptr_t mappedSize, headerSize;
+    ssize_t mappedSize, headerSize;
 
     char *audioDataStart, *audioStart;
-    intptr_t audioDataBytes, audioBytes;
-    intptr_t frameSize, trailingSilence;
+    ssize_t audioDataBytes, audioBytes;
+    ssize_t frameSize, trailingSilence;
 
     int fd;
 
@@ -196,7 +197,7 @@ typedef struct _sndfile_data {
 static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, int initThreshold, int resyncThreshold)
 {
     char *sw1, *sw2, *ew1, *ew2, *e1, *e2, *m1, *m2, *mw2;
-    intptr_t n, threshold;
+    ssize_t n, threshold;
 
     // convert from seconds to bytes
     initWindow   *= files[0].sfinfo.samplerate * files[0].frameSize;
@@ -226,17 +227,14 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
     while (sw1 < ew1) {
 
-        // TODO:  use sw2 as the needle?
-
 #ifdef USE_BOYER
-        bmh_init((unsigned char *) sw1, SFCMP_MIN(threshold, e1 - sw1));
         mw2 = bmh_memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
 #else
         mw2 = (char *) memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
 #endif
         if (mw2) {
 
-            // TODO:  skip n matching bytes in matchStr and sw1
+            // TODO:  skip n matching bytes in matchStr and sw1?
 
             // mw2 is where the match starts
             n = matchStr(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
@@ -334,7 +332,7 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 {
     sndfile_data *cmp;
     sf_readf_fn readfn;
-    intptr_t s;
+    ssize_t s;
     SF_EMBED_FILE_INFO embedInfo;
     int i;
 
