@@ -21,6 +21,10 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef __cplusplus
+#define __STDC_LIMIT_MACROS
+#endif
+
 #include "opt.h"
 #include "macros.h"
 #include "unix.h"
@@ -29,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h> /* optind */
@@ -99,10 +104,10 @@ static inline ssize_t matchStr(char *a, char *b, ssize_t bytes)
 }
 
 
-// this limits it to a 2^29 (about 500 million) character search
+// this limits it to a 2^30 (about 1 billion) character search
 // on 32-bit machines and much larger on 64-bit
 //
-#define LARGE (LONG_MAX / 4)
+#define BMH_LARGE ((ssize_t) (SIZE_MAX / 4))
 
 static ssize_t skip[ UCHAR_MAX + 1 ];
 static ssize_t skip2;
@@ -130,7 +135,7 @@ void bmh_init(const unsigned char *pattern, ssize_t patlen)
         }
     }
 
-    skip[ lastpatchar ] = LARGE;
+    skip[ lastpatchar ] = BMH_LARGE;
 }
 
 char *bmh_memmem(const char *string, const ssize_t stringlen, const char *pattern, ssize_t patlen)
@@ -151,10 +156,10 @@ char *bmh_memmem(const char *string, const ssize_t stringlen, const char *patter
         while ( (i += skip[((unsigned char *) string)[i]]) < 0) {
             ;
         }
-        if (i < (LARGE - stringlen)) {
+        if (i < (BMH_LARGE - stringlen)) {
             return NULL;
         }
-        i -= LARGE;
+        i -= BMH_LARGE;
         j = patlen - 1;
         s = (char *) string + (i - j);
         while (--j >= 0 && s[j] == pattern[j]) {
@@ -171,6 +176,83 @@ char *bmh_memmem(const char *string, const ssize_t stringlen, const char *patter
         }
     }
 }
+
+
+#if 0
+
+// N.B.  a 64KB dictionary is slower
+
+#define BMH_LARGE16 (INT_LEAST32_MAX / 2)
+
+static int_least32_t skip_int16[ UINT16_MAX + 1 ];
+static int_least32_t skip2_int16;
+
+void bmh_init16(const uint16_t *pattern, ssize_t patlen)
+{
+    ssize_t i, c, lastpatshort;
+
+    for (i = 0;  i <= UINT16_MAX;  ++i) {
+        skip_int16[i] = patlen;
+    }
+
+    // Horspool's fixed second shift
+    //
+    skip2_int16 = patlen;
+    lastpatshort = pattern[ patlen - 1 ];
+
+    // tightened two loops into one (improvement over snippets)
+    //
+    for (i = 0;  i < patlen - 1;  ++i) {
+        c = pattern[i];
+        skip_int16[c] = patlen - i - 1;
+        if (c == lastpatshort) {
+            skip2_int16 = patlen - i - 1;
+        }
+    }
+
+    skip_int16[ lastpatshort ] = BMH_LARGE16;
+}
+
+int16_t *bmh_memmem16(const int16_t *string, const ssize_t stringlen, const int16_t *pattern, ssize_t patlen)
+{
+    int16_t *s;
+    ssize_t i, j;
+
+    bmh_init16((uint16_t *) pattern, patlen);
+
+    i = patlen - 1 - stringlen;
+    if (i >= 0) {
+        return NULL;
+    }
+    string += stringlen;
+    for (;;) {
+
+        // fast inner loop
+        while ( (i += skip_int16[((uint16_t *) string)[i]]) < 0) {
+            ;
+        }
+        if (i < (BMH_LARGE16 - stringlen)) {
+            return NULL;
+        }
+        i -= BMH_LARGE16;
+        j = patlen - 1;
+        s = (int16_t *) string + (i - j);
+        while (--j >= 0 && s[j] == pattern[j]) {
+            ;
+        }
+
+        // rdg 10/93
+        //
+        if (j < 0) {
+            return s;
+        }
+        if ( (i += skip2_int16) >= 0) {
+            return NULL;
+        }
+    }
+}
+
+#endif
 
 
 typedef struct _sndfile_data {
@@ -227,14 +309,23 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
     while (sw1 < ew1) {
 
+        // TODO:  do we really want to be using SFCMP_MIN here?
+        // it means we're searching smaller than the threshold
+        //
 #ifdef USE_BOYER
         mw2 = bmh_memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
+        //mw2 = (char *) bmh_memmem16((int16_t *) sw2, (ew2 - sw2) / 2, (int16_t *) sw1, SFCMP_MIN(threshold, e1 - sw1) / 2);
 #else
         mw2 = (char *) memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
 #endif
         if (mw2) {
 
             // TODO:  skip n matching bytes in matchStr and sw1?
+            //
+            // TODO:  should use matchStrG?  need to assert alignment here, or in bmh_memmem?
+            // alignment would be frameSize/channels because we need to watch out for channel/
+            // phase shifting
+            //
 
             // mw2 is where the match starts
             n = matchStr(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
@@ -250,6 +341,10 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
                     );
             }
 
+            // TODO:  this is problematic b/c it should be of granularity 4 (for 16-bit stereo wave)
+            // would need to assert granularity above...  esp. in case where we are searching
+            // smaller than the threshold
+            //
             if (n == countLeadingZeros(sw1, n, 1)) {
 
                 printf("[%ld, %ld] - (%ld, %ld):  %ld bytes of silence ignored\n",
