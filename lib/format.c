@@ -275,7 +275,7 @@ int format_apply_pattern(
 
                     case 'V':
                         if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), CUED_VERSION)) {
-                            cdio2_abort("%s version exceeds %ld characters (internal error)", CUED_PRODUCT_NAME, sizeof(nstr) - 1);
+                            cdio2_abort("%s version exceeds %lu characters (internal error)", CUED_PRODUCT_NAME, sizeof(nstr) - 1);
                             goto error;
                         }
                         field = nstr;
@@ -310,7 +310,7 @@ int format_apply_pattern(
                                 n = cddb_disc_get_year(cddbObj);
                                 if (n) {
                                     if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d", n)) {
-                                        cdio2_abort("cddb year exceeds %ld digits (year=%d)", sizeof(nstr) - 1, n);
+                                        cdio2_abort("cddb year exceeds %lu digits (year=%d)", sizeof(nstr) - 1, n);
                                         goto error;
                                     }
                                     field = nstr;
@@ -338,7 +338,7 @@ int format_apply_pattern(
                             case 'K':
                                 n = cddb_disc_get_category(cddbObj);
                                 if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%d", n)) {
-                                    cdio2_abort("cddb category exceeds %ld digits (category=%d)", sizeof(nstr) - 1, n);
+                                    cdio2_abort("cddb category exceeds %lu digits (category=%d)", sizeof(nstr) - 1, n);
                                     goto error;
                                 }
                                 field = nstr;
@@ -347,7 +347,7 @@ int format_apply_pattern(
                             case 'F':
                                 n = cddb_disc_get_discid(cddbObj);
                                 if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "%x", n)) {
-                                    cdio2_abort("cddb disc id exceeds %ld characters (id=%x)", sizeof(nstr) - 1, n);
+                                    cdio2_abort("cddb disc id exceeds %lu characters (id=%x)", sizeof(nstr) - 1, n);
                                     goto error;
                                 }
                                 field = nstr;
