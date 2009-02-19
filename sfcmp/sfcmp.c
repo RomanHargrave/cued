@@ -607,14 +607,12 @@ static int closeSndFiles(sndfile_data *files, int count)
 
 // execution times for mismatch with CD-DA:
 //
-//      window  1 ==  0m28.788s
-//      window  3 ==  0m58.146s
-//      window  5 ==  1m40.410s
-//      window  7 ==  2m29.845s
-//      window  9 ==  3m42.397s
-//      window 11 ==  5m11.618s
-//      window 13 ==  8m51.871s
-//      window 15 == 14m29.715s
+//      window  5 ==  0m 9.133s
+//      window  7 ==  0m20.570s
+//      window  9 ==  0m37.694s
+//      window 11 ==  1m19.469s
+//      window 13 ==  3m24.561s
+//      window 15 ==  7m36.506s
 //
 // L2 cache = 512 KB per core
 // L3 cache =   2 MB total
