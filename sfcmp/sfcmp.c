@@ -309,22 +309,23 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
     while (sw1 < ew1) {
 
-        // TODO:  do we really want to be using SFCMP_MIN here?
-        // it means we're searching smaller than the threshold
+        // using SFCMP_MIN implies potentially matching smaller than
+        // the threshold;  on the other hand, a more intensive search
+        // may be in order at the end of the track
         //
 #ifdef USE_BOYER
         mw2 = bmh_memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
-        //mw2 = (char *) bmh_memmem16((int16_t *) sw2, (ew2 - sw2) / 2, (int16_t *) sw1, SFCMP_MIN(threshold, e1 - sw1) / 2);
 #else
         mw2 = (char *) memmem(sw2, ew2 - sw2, sw1, SFCMP_MIN(threshold, e1 - sw1));
 #endif
         if (mw2) {
 
-            // TODO:  skip n matching bytes in matchStr and sw1?
+            // TODO:  should this use matchStrG?  alignment would need to be
+            // asserted here or in bmh_memmem?  alignment would be
+            // frameSize/channels in order to watch out for channel/phase
+            // shifting;  would this be an unnecessary complication?
             //
-            // TODO:  should use matchStrG?  need to assert alignment here, or in bmh_memmem?
-            // alignment would be frameSize/channels because we need to watch out for channel/
-            // phase shifting
+            // optimize by skipping n matching bytes in matchStr and sw1?
             //
 
             // mw2 is where the match starts
@@ -341,18 +342,25 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
                     );
             }
 
-            // TODO:  this is problematic b/c it should be of granularity 4 (for 16-bit stereo wave)
-            // would need to assert granularity above...  esp. in case where we are searching
-            // smaller than the threshold
+            // TODO:  this is problematic b/c matching silence should be
+            // of granularity 4 (for 16-bit stereo wave);  granularity
+            // would need to be asserted above, especially in the case
+            // where we are looking for a match smaller than the threshold
+            // (at the end of the track);  also, this does not discern
+            // silence in the latter portion of the match
             //
             if (n == countLeadingZeros(sw1, n, 1)) {
 
-                printf("[%ld, %ld] - (%ld, %ld):  %ld bytes of silence ignored\n",
+                printf("[%ld, %ld] - (%ld, %ld):  %ld bytes of zeros matched\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
                     mw2 - files[1].audioDataStart + n,
                     n);
+
+                // because leading silence was trimmed, not setting threshold
+                // here doesn't accomplish anything
+                //
 
                 //// don't match silence because it could get us out of sync?
                 //goto next;
