@@ -1,0 +1,8 @@
+            if (mw2[0] != sw1[0] && ew2 - sw2 > 0 && SFCMP_MIN(threshold, e1 - sw1) > 0) {
+                printf("SPURIOUS MATCH FROM memmem");
+                exit(EXIT_FAILURE);
+            }
+
+            printf("mw2-sw2 is %ld, slen is %ld, plen is %ld, n is %ld\n", mw2-sw2, ew2-sw2, SFCMP_MIN(threshold, e1 - sw1), n);
+            printf("matchstr2 called with length %ld\n", SFCMP_MIN(e2 - mw2, e1 - sw1));
+            exit(EXIT_FAILURE);
