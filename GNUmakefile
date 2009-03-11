@@ -22,18 +22,13 @@ DIRS= \
 	lib \
 	make \
 	qdump \
-    classc \
-    firstcls \
     sfcat \
     analyzer \
-    sfcmp \
-    test
+    sfcmp
 
 include make/dir.mk
 
-cued qdump : lib
-
-lib : classc
+cued qdump sfcat analyzer sfcmp : lib
 
 #
 # seems to work with either : or :: with or without the .PHONY directive,
