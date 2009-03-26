@@ -47,7 +47,7 @@ union _sfdata {
 
 static void usage(char *progname)
 {
-    fprintf(stderr, "\nUsage : %s <infile>\n", progname);
+    fprintf(stderr, "\nUsage : %s <infile> [infile2] [infile3...]\n", progname);
     exit(EXIT_FAILURE);
 }
 
@@ -56,16 +56,20 @@ static int guard1;
 static int amplitudeData[ UINT16_MAX + 1 ];
 static int guard2;
 static int *amplitudes = &amplitudeData[ -INT16_MIN ];
-
 static int samples;
 
 static void readSndfile(SNDFILE *infile, int channels)
 {
     int frames, readcount, i;
 
+    memset(amplitudeData, 0x00, sizeof(amplitudeData));
+    samples = 0;
+
     readcount = frames = SHORT_BUFFER_LEN / channels;
 
     while (readcount > 0) {
+
+        // TODO:  check return code?
         readcount = sf_readf_short(infile, sfdata.h, frames);
         for (i = 0;  i < readcount;  ++i) {
             ++(amplitudes[ sfdata.h[i] ]);
@@ -75,70 +79,78 @@ static void readSndfile(SNDFILE *infile, int channels)
 }
 
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
     SF_INFO sfinfo;
     char *progname, *infilename;
     SNDFILE *infile;
     int infileminor;
-    //int min, max;
-    int i, c;
+    int i, j, c;
     double factor;
 
     progname = (char *) basename2(argv[0]);
-    if (2 != argc) {
+    if (argc < 2) {
         usage(progname);
     }
-    infilename = argv[1];
+    
+    for (i = 1;  i < argc;  ++i) {
 
-    memset(&sfinfo, 0x00, sizeof(sfinfo));
-    infile = sf_open(infilename, SFM_READ, &sfinfo);
-    if (!infile) {
-        fprintf(stderr, "fatal:  not able to open input file %s : %s\n", infilename, sf_strerror(NULL));
-        return 2;
-    }
+        infilename = argv[i];
 
-    infileminor = sfinfo.format & SF_FORMAT_SUBMASK;
-    if (SF_FORMAT_PCM_16 != infileminor) {
-        fprintf(stderr, "fatal:  file is not 16-bit PCM\n");
-        return 3;
-    }
-
-    readSndfile(infile, sfinfo.channels);
-    if (guard1 || guard2) {
-        fprintf(stderr, "fatal:  out of bounds writing data array\n");
-        return 4;
-    }
-    sf_close(infile);
-
-#if 0
-    for (min = INT16_MIN;  min <= INT16_MAX;  ++min) {
-        if (amplitudes[min]) {
-            printf("%d samples had minimum sample value of %d (%.4f%%)\n", amplitudes[min], min, amplitudes[min] * 100.0 / samples);
-            break;
+        memset(&sfinfo, 0x00, sizeof(sfinfo));
+        infile = sf_open(infilename, SFM_READ, &sfinfo);
+        if (!infile) {
+            fprintf(stderr, "fatal:  not able to open input file %s : %s\n", infilename, sf_strerror(NULL));
+            return 2;
         }
-    }
 
-    for (max = INT16_MAX;  max >= INT16_MIN;  --max) {
-        if (amplitudes[max]) {
-            printf("%d samples had maximum sample value of %d (%.4f%%)\n", amplitudes[max], max, amplitudes[max] * 100.0 / samples);
-            break;
+        infileminor = sfinfo.format & SF_FORMAT_SUBMASK;
+        if (SF_FORMAT_PCM_16 != infileminor) {
+            fprintf(stderr, "fatal:  file %s is not 16-bit PCM\n", infilename);
+            return 3;
         }
-    }
-#endif
 
-    c = 0;
+        readSndfile(infile, sfinfo.channels);
+        if (guard1 || guard2) {
+            fprintf(stderr, "fatal:  out of bounds writing data array while processing %s\n", infilename);
+            return 4;
+        }
+        if (sf_close(infile)) {
+            fprintf(stderr, "fatal:  could not close %s : %s\n", infilename, sf_strerror(NULL));
+            return 5;
+        }
 
-    // 50 looked good;  100 is no different;  MACHINA
-    for (i = INT16_MAX - 2500;  i <= INT16_MAX;  ++i) {
-        c += amplitudes[i];
-    }
+    #if 0
+        int min, max;
 
-    factor = c * 100.0 / samples;
+        for (min = INT16_MIN;  min <= INT16_MAX;  ++min) {
+            if (amplitudes[min]) {
+                printf("%d samples had minimum sample value of %d (%.4f%%)\n", amplitudes[min], min, amplitudes[min] * 100.0 / samples);
+                break;
+            }
+        }
 
-    // .050 looked good;  .025 is winnowing the chaff
-    if (factor > .0125) {
-        printf("(factor=%.4f%%) %s is brickwall mastered\n", factor, infilename);
+        for (max = INT16_MAX;  max >= INT16_MIN;  --max) {
+            if (amplitudes[max]) {
+                printf("%d samples had maximum sample value of %d (%.4f%%)\n", amplitudes[max], max, amplitudes[max] * 100.0 / samples);
+                break;
+            }
+        }
+    #endif
+
+        c = 0;
+
+        // 50 looked good;  100 is no different;  MACHINA
+        for (j = INT16_MAX - 2500;  j <= INT16_MAX;  ++j) {
+            c += amplitudes[j];
+        }
+
+        factor = c * 100.0 / samples;
+
+        // .050 looked good;  .025 is winnowing the chaff
+        if (factor > .0125) {
+            printf("(factor=%.4f%%) %s is brickwall mastered\n", factor, infilename);
+        }
     }
 
     return 0;
