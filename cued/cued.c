@@ -45,6 +45,7 @@
 
 #include <stdlib.h> // EXIT_FAILURE
 #include <unistd.h> // unlink
+#include <limits.h> // PATH_MAX
 
 
 #define CUED_DEFAULT_RETRIES 20
