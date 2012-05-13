@@ -262,11 +262,11 @@ mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 }
 
 
-static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf)
+static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf, retry)
 {
     mmc_read_cd_fn readfn;
     uint8_t *mbuf, *dbuf;
-    int blockSize, subchannel, retry, i;
+    int blockSize, subchannel, i;
     driver_return_code_t drc;
     qsc_file_buffer_t qsc;
 
@@ -318,7 +318,6 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
         }
     }
 
-    retry = rip->retries;
     do {
 
         if (readfn) {
@@ -430,7 +429,7 @@ static long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t fi
         cdio2_abort("failed to get rip context in paranoid read");
     }
 
-    drc = cued_read_audio(rip, firstSector, sectors, (audio_buffer_t *) pb);
+    drc = cued_read_audio(rip, firstSector, sectors, (audio_buffer_t *) pb, 0);
     if (DRIVER_OP_SUCCESS == drc) {
         rc = sectors;
     } else {
@@ -563,7 +562,7 @@ void cued_rip_to_file(rip_context_t *rip)
                     continue;
                 }
             } else {
-                if (DRIVER_OP_SUCCESS == cued_read_audio(rip, currSector, 1, NULL)) {
+                if (DRIVER_OP_SUCCESS == cued_read_audio(rip, currSector, 1, NULL, rip->retries)) {
                     pbuf = rip->mmcBuf16;
                 } else {
                     continue;
