@@ -262,7 +262,7 @@ mmc_read_cd_leadout ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 }
 
 
-static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf, retry)
+static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSector, long sectors, audio_buffer_t *pbuf, int retry)
 {
     mmc_read_cd_fn readfn;
     uint8_t *mbuf, *dbuf;
