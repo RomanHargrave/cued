@@ -7,3 +7,6 @@ delete .cvsignore files
 ob.h and firstcls.h will need delete rules in makefile
 
 need m4 rules in makefiles for classc
+
+use version number from config.h and remove from cued.h
+    have cued.h include config.h?
