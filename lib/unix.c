@@ -29,7 +29,8 @@
 
 char *noextname(const char *name)
 {
-    char *end, *newstr;
+    const char *end;
+    char *newstr;
     int chars, bytes;
 
     // whacky, but follows mbcs pattern
