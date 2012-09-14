@@ -1,0 +1,9 @@
+need .h files as part of sources for cued and lib?
+
+need cdio libs as well as paranoia libs in cued/Makefile.am?
+
+delete .cvsignore files
+
+ob.h and firstcls.h will need delete rules in makefile
+
+need m4 rules in makefiles for classc

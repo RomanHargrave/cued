@@ -20,10 +20,14 @@
 #include "unix.h"
 #include "cued.h"
 #include "util.h"
+#include "config.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
 #include <cdio/mmc.h> // CDIO_MMC_READ_TYPE_ANY
+#ifdef HAVE_CDIO_MMC_LL_CMDS_H
+#include <cdio/mmc_ll_cmds.h>
+#endif
 #include "cdio2.h"
 #include "rip.h"
 #include "format.h"
