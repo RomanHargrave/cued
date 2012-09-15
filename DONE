@@ -1,0 +1,24 @@
+AM_CFLAGS = -I$(top_srcdir)/lib 
+cued_LDADD = $(LIBCDIO_LIBS) $(LIBCDIOPARANOIA_LIBS) $(LIBSNDFILE_LIBS) $(LIBCDDB_LIBS) $(top_builddir)/lib/libcued.a $(AM_LDFLAGS)
+
+    should we be using @AM_CFLAGS@ or $(AM_CFLAGS) in Makefile.am?
+        @AM_CFLAGS@ substitituion is at automake time
+        $(AM_CFLAGS) happens when running Makefile
+            using the latter gives a recursion problem in Makefile
+
+    AM_CFLAGS or AM_CPPFLAGS?
+        AM_CPPFLAGS
+
+AC_LANG_C seems superfluous now with AC_PROG_CC which seems to test the compiler anyway
+
+is AC_INIT_AUTOMAKE called correctly?
+
+add foreign option to AC_INIT_AUTOMAKE so autoreconf --force --install will work?
+
+automake takes a -Wall flag
+
+topbuilddir vs topsrcdir?
+    matters for VPATH
+
+need cdio libs as well as paranoia libs in cued/Makefile.am?
+    not technically, but is more explicit

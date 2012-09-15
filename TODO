@@ -1,36 +1,37 @@
-run ifnames */*c */*h | fgrep -v INCLUDED
-
-add foreign option to AC_INIT_AUTOMAKE so autoreconf --force --install will work?
-
-is AC_INIT_AUTOMAKE called correctly?
-
-do I need AC_LANG([C]) ?
-
-AC_LANG_C
+should have a src sub-directory
+    config.h should be generated here
 
 AC_ARG_ENABLE for --enable
+    can set up debug malloc stuff with this
+
+    run ifnames */*c */*h | fgrep -v INCLUDED
 
 AC_ARG_WITH for --with
 
 PACKAGE_BUGREPORT:  does code have hydrologiccycle@gmail.com in it?
 
-add header files to _SOURCES and check make dist
-
-automake takes a -Wall flag
-
-do I need dist_noinst_SCRIPTS = autogen.sh?
-
-should have a src sub-directory
-
-need m4 rules in makefiles for classc
-
 use version number from config.h and remove from cued.h
     have cued.h include config.h?
 
-AC_PROG_LEX AC_PROG_YACC are options as well
+make dist
+    need .h files as part of _SOURCES for cued and lib?
 
-need .h files as part of sources for cued and lib?
+    do I need dist_noinst_SCRIPTS = autogen.sh?
 
-need cdio libs as well as paranoia libs in cued/Makefile.am?
+is the compiler gcc?
+    -Wall -Wstrict-aliasing=2 and -Wformat=2
+    -Wextra?
+    -Wformat-security
+    -Wstrict-aliasing=3 ?
 
-ob.h and firstcls.h will need delete rules in makefile
+    g++
+
+    gnu89/98/etc.
+
+classc
+    need m4 rules in makefiles
+        can include foo.am during automake?
+
+    AC_PROG_LEX AC_PROG_YACC are options as well
+
+    ob.h and firstcls.h will need delete rules in makefile
