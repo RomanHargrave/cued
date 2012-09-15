@@ -44,6 +44,7 @@ AC_CHECK_FUNCS([localtime_r memmove memset mkdir munmap strchr strdup strerror s
 # --> set and change these variables instead of CXXFLAGS or LDFLAGS (for user only)
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
+AC_SUBST([AM_CPPFLAGS])
 
 AC_CONFIG_FILES([Makefile
                  lib/Makefile
