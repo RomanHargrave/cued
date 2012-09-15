@@ -4,7 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT([cued], [1.2.0], [hydrologiccycle@gmail.com])
 #AC_CONFIG_AUX_DIR([admin])
-AM_INIT_AUTOMAKE([@PACKAGE_NAME@], [@PACKAGE_VERSION@])
+AM_INIT_AUTOMAKE([foreign -Wall])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 
@@ -20,7 +20,6 @@ PKG_CHECK_MODULES([LIBSNDFILE], [sndfile >= 1.0.17])
 PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h cdio/mmc_ll_cmds.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
