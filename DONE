@@ -22,3 +22,8 @@ topbuilddir vs topsrcdir?
 
 need cdio libs as well as paranoia libs in cued/Makefile.am?
     not technically, but is more explicit
+
+should have a src sub-directory
+    config.h should be generated here
+
+lib directory should be under lib, not src

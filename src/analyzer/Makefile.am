@@ -1,0 +1,6 @@
+bin_PROGRAMS = sfanal
+sfanal_SOURCES = sfanal.c
+
+AM_CPPFLAGS = $(LIBCUED_CPPFLAGS) @AM_CPPFLAGS@
+sfanal_LDADD = $(LIBSNDFILE_LIBS) $(LIBCUED_LIBS)
+

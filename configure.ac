@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT([cued], [1.2.0], [hydrologiccycle@gmail.com])
 #AC_CONFIG_AUX_DIR([admin])
 AM_INIT_AUTOMAKE([foreign -Wall])
-AC_CONFIG_SRCDIR([config.h.in])
+AC_CONFIG_SRCDIR([src/Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
@@ -46,16 +46,26 @@ AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([AM_CPPFLAGS])
 
+# this is ugly, just use AM_CPPFLAGS instead of per-program CPPFLAGS
+#AM_PROG_CC_C_O
+
+LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
+LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
+AC_SUBST([LIBCUED_LIBS])
+AC_SUBST([LIBCUED_CPPFLAGS])
+
 AC_CONFIG_FILES([Makefile
                  lib/Makefile
-                 cued/Makefile
-                 qdump/Makefile
-                 sfcat/Makefile
-                 analyzer/Makefile
-                 sfcmp/Makefile])
+                 lib/cued/Makefile
+                 src/Makefile
+                 src/cued/Makefile
+                 src/qdump/Makefile
+                 src/sfcat/Makefile
+                 src/analyzer/Makefile
+                 src/sfcmp/Makefile])
 
-#                 classc/GNUmakefile
-#                 firstcls/GNUmakefile
-#                 test/GNUmakefile])
+#                 src/classc/GNUmakefile
+#                 src/firstcls/GNUmakefile
+#                 src/test/GNUmakefile])
 
 AC_OUTPUT
