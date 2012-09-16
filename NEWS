@@ -1,0 +1,4 @@
+version 1.2.0
+    added autotools
+    removed EAC bias from offset option
+    cleaned up some printf specifiers that should have used %s

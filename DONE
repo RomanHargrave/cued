@@ -54,3 +54,6 @@ make dist
                 a Makefile.am just for that dir?  or can use path syntax in parent dir?
 
                 yes, can use EXTRA_DIST at any level
+
+    LICENSE and COPYING missing
+        COPYING missing b/c of foreign flag

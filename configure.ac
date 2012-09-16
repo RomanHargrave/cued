@@ -4,7 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT([cued], [1.2.0], [hydrologiccycle@gmail.com])
 #AC_CONFIG_AUX_DIR([admin])
-AM_INIT_AUTOMAKE([foreign -Wall])
+AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_SRCDIR([src/Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 

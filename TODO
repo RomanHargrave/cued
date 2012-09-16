@@ -1,7 +1,3 @@
-make dist
-    LICENSE and COPYING missing
-        COPYING missing b/c of foreign flag
-
 can remove std=gnu98 from files that produce warnings?
     can specify standard std before that flag??
         gnu89?
