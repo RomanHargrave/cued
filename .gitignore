@@ -13,3 +13,10 @@ missing
 Makefile.in
 Makefile
 .deps
+*.o
+lib/cued/libcued.a
+src/analyzer/sfanal
+src/cued/cued
+src/qdump/qdump
+src/sfcat/sfcat
+src/sfcmp/sfcmp
