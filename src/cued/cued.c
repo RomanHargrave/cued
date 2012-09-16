@@ -65,7 +65,7 @@ static void usage(const char *exeName)
                 "\t-f              extract to flac (requires -x and -n)\n"
                 "\t-i              get ALL indices\n"
                 "\t-n format       name tag and wave files (see --format-help)\n"
-                "\t-o samples      offset correction (EAC-30)\n"
+                "\t-o samples      offset correction\n"
                 "\t-p              enable paranoia\n"
                 "\t-q format       output Q sub-channel (mutually exclusive with -p)\n"
                 "\t-r retries      defaults to %d\n"
@@ -231,8 +231,9 @@ int main(int argc, char *const argv[])
             break;
     }
 
+    // convert no. samples to no. words
     if (optOffsetWords) {
-        optOffsetWords = (optOffsetWords - 30) * 2;
+        optOffsetWords *= 2;
     }
 
     // there should be at least one argument after the options
