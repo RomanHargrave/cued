@@ -40,11 +40,11 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([localtime_r memmove memset mkdir munmap strchr strdup strerror strrchr strtol])
 
-# distribute additional compiler and linker flags among Makefiles
-# --> set and change these variables instead of CXXFLAGS or LDFLAGS (for user only)
+
+# use AM_CFLAGS in Makefile.am rather than CFLAGS, which is reserved for user
 AC_SUBST([AM_CFLAGS])
-AC_SUBST([AM_LDFLAGS])
-AC_SUBST([AM_CPPFLAGS])
+
+AM_CONDITIONAL([GCC], [test "$GCC" = yes])
 
 if test "$GCC" = yes; then
     AM_CFLAGS="-Wall -Wstrict-aliasing=3 -Wformat=2 ${AM_CFLAGS}"
@@ -56,13 +56,14 @@ if test "$GCC" = yes; then
 fi
 
 
-# this is ugly, just use AM_CPPFLAGS instead of per-program CPPFLAGS
-#AM_PROG_CC_C_O
+#AM_PROG_CC_C_O is ugly so use AM_CPPFLAGS instead of per-program CPPFLAGS
+AC_SUBST([AM_CPPFLAGS])
 
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
 LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
 AC_SUBST([LIBCUED_LIBS])
 AC_SUBST([LIBCUED_CPPFLAGS])
+
 
 AC_CONFIG_FILES([Makefile
                  lib/Makefile
