@@ -1,0 +1,6 @@
+warning: ‘crc_table’ is static but used in inline function ‘crc_ccitt’ which is not static [enabled by default]
+    can remove std=gnu98 from files that produce warnings?
+        can specify standard std before that flag??
+            gnu89?
+
+        would need per-compilation warning flags--ugh

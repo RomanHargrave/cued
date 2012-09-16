@@ -4,4 +4,4 @@
 #autoheader
 #automake -a --foreign -Wall
 #autoreconf --install --symlink --force -Wall -vv
-autoreconf --install --symlink --force -Wall -v
+autoreconf --install --force -Wall -v
