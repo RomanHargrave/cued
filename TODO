@@ -2,10 +2,9 @@ make dist
     LICENSE and COPYING missing
         COPYING missing b/c of foreign flag
 
-    make directory is missing
-        might want flac*
-            how do I include extra files in subdir?
-                a Makefile.am just for that dir?  or can use path syntax in parent dir?
+can remove std=gnu98 from files that produce warnings?
+    can specify standard std before that flag??
+        gnu89?
 
 use version number from config.h and remove from cued.h
     have cued.h include config.h?

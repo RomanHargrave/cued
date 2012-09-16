@@ -48,3 +48,9 @@ make dist
     do I need dist_noinst_SCRIPTS = autogen.sh and rebuild.sh?
         did not copy
 
+    make directory is missing
+        might want flac*
+            how do I include extra files in subdir?
+                a Makefile.am just for that dir?  or can use path syntax in parent dir?
+
+                yes, can use EXTRA_DIST at any level
