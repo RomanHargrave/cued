@@ -40,3 +40,11 @@ is the compiler gcc?
     g++
 
     gnu89/98/etc.
+
+make dist
+    need .h files as part of _SOURCES for cued and lib?
+        yes
+
+    do I need dist_noinst_SCRIPTS = autogen.sh and rebuild.sh?
+        did not copy
+

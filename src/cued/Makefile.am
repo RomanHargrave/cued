@@ -1,5 +1,6 @@
 bin_PROGRAMS = cued
-cued_SOURCES = rip.c cued.c sheet.c
+cued_SOURCES = rip.c sheet.c cued.c \
+               rip.h sheet.h
 
 AM_CPPFLAGS = $(LIBCUED_CPPFLAGS) @AM_CPPFLAGS@
 cued_LDADD = $(LIBCDIO_LIBS) $(LIBCDIOPARANOIA_LIBS) $(LIBSNDFILE_LIBS) $(LIBCDDB_LIBS) $(LIBCUED_LIBS)
