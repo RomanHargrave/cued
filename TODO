@@ -5,25 +5,13 @@ AC_ARG_ENABLE for --enable
 
 AC_ARG_WITH for --with
 
-PACKAGE_BUGREPORT:  does code have hydrologiccycle@gmail.com in it?
-
 use version number from config.h and remove from cued.h
     have cued.h include config.h?
 
 make dist
     need .h files as part of _SOURCES for cued and lib?
 
-    do I need dist_noinst_SCRIPTS = autogen.sh?
-
-is the compiler gcc?
-    -Wall -Wstrict-aliasing=2 and -Wformat=2
-    -Wextra?
-    -Wformat-security
-    -Wstrict-aliasing=3 ?
-
-    g++
-
-    gnu89/98/etc.
+    do I need dist_noinst_SCRIPTS = autogen.sh and rebuild.sh?
 
 classc
     need m4 rules in makefiles

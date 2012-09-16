@@ -611,7 +611,7 @@ void format_make_tag_files(
                 rc = format_apply_pattern(cdObj, cddbObj, trackObj, tag->pattern, "\n", track, resultBuffer, bufferSize, 0);
                 if (!rc) {
                     if ('\n' != resultBuffer[0]) {
-                        fprintf(tagFile, resultBuffer);
+                        fprintf(tagFile, "%s", resultBuffer);
                     }
                 } else {
                     cdio_error("could not create tag for track %02d from pattern \"%s\"", track, tag->pattern);

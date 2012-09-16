@@ -46,6 +46,16 @@ AC_SUBST([AM_CFLAGS])
 AC_SUBST([AM_LDFLAGS])
 AC_SUBST([AM_CPPFLAGS])
 
+if test "$GCC" = yes; then
+    AM_CFLAGS="-Wall -Wstrict-aliasing=3 -Wformat=2 ${AM_CFLAGS}"
+    if test x"$CC" = x"g++"; then
+        AM_CFLAGS="-std=gnu++98 ${AM_CFLAGS}"
+    else
+        AM_CFLAGS="-std=gnu99 ${AM_CFLAGS}"
+    fi
+fi
+
+
 # this is ugly, just use AM_CPPFLAGS instead of per-program CPPFLAGS
 #AM_PROG_CC_C_O
 

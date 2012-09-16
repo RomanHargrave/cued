@@ -98,7 +98,7 @@ void cdio2_logv(cdio_log_level_t level, const char *format, va_list args)
     // N.B. GNU libc documentation indicates it always NULL terminates
     vsnprintf(msgbuf, sizeof(msgbuf), format, args);
 
-    cdio_log(level, msgbuf);
+    cdio_log(level, "%s", msgbuf);
 }
 
 

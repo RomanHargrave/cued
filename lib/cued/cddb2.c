@@ -65,7 +65,7 @@ static void cddb2_log_handler(cddb_log_level_t oldLevel, const char *message)
             break;
     }
 
-    cdio_log(newLevel, message);
+    cdio_log(newLevel, "%s", message);
 }
 
 void cddb2_set_log_handler()

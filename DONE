@@ -27,3 +27,16 @@ should have a src sub-directory
     config.h should be generated here
 
 lib directory should be under lib, not src
+
+PACKAGE_BUGREPORT:  does code have hydrologiccycle@gmail.com in it?
+    no
+
+is the compiler gcc?
+    -Wall -Wstrict-aliasing=2 and -Wformat=2
+    -Wformat-security
+    -Wstrict-aliasing=3 ?
+    -Wextra?  no.
+
+    g++
+
+    gnu89/98/etc.
