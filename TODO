@@ -1,9 +1,3 @@
-use version number from config.h and remove from cued.h
-    have cued.h include config.h?
-
-    already have a conflict in rip.c which includes both cued.h and config.h
-        (for mmc_ll*h)
-
 more conversions %z vs. %l ?
     does this show up on 32-bit system?
 

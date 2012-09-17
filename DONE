@@ -57,3 +57,9 @@ make dist
 
     LICENSE and COPYING missing
         COPYING missing b/c of foreign flag
+
+use version number from config.h and remove from cued.h
+    have cued.h include config.h?
+
+    already have a conflict in rip.c which includes both cued.h and config.h
+        (for mmc_ll*h)
