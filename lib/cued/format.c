@@ -17,8 +17,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "config.h" // PACKAGE_VERSION
 #include "unix.h"
-#include "cued.h"
+#include "cued.h" // CUED_PRODUCT_NAME
 #include "dlist.h"
 #include "macros.h"
 
@@ -274,8 +275,9 @@ int format_apply_pattern(
                         break;
 
                     case 'V':
-                        if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), CUED_VERSION)) {
-                            cdio2_abort("%s version exceeds %lu characters (internal error)", CUED_PRODUCT_NAME, sizeof(nstr) - 1);
+                        if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "v" PACKAGE_VERSION)) {
+                            cdio2_abort("%s version (v%s) exceeds %lu characters (internal error)",
+                                        CUED_PRODUCT_NAME, PACKAGE_VERSION, sizeof(nstr) - 1);
                             goto error;
                         }
                         field = nstr;

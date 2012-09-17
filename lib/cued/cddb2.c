@@ -17,8 +17,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "config.h" // PACKAGE_VERSION
 #include "opt.h"
-#include "cued.h"
+#include "cued.h" // CUED_PRODUCT_NAME
 #include "macros.h" // NELEMS
 #include "dmalloc.h"
 
@@ -177,7 +178,7 @@ static cddb_conn_t *cddb2_create_connection_object()
         cddb_cache_set_dir(dbObj, cacheDir);
     }
 
-    cddb_set_client(dbObj, CUED_PRODUCT_NAME, CUED_VERSION);
+    cddb_set_client(dbObj, CUED_PRODUCT_NAME, PACKAGE_VERSION);
 
     return dbObj;
 

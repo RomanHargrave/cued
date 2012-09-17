@@ -17,10 +17,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include "config.h" // HAVE_CDIO_MMC_LL_CMDS_H
 #include "unix.h"
-#include "cued.h"
 #include "util.h"
-#include "config.h"
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>

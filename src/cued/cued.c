@@ -27,7 +27,7 @@
 
 #include "unix.h"
 #include "macros.h"
-#include "cued.h" // CUED_VERSION
+#include "cued.h" // CUED_PRODUCT_NAME
 #include "opt.h"
 #include "util.h"
 #include "dmalloc.h"
