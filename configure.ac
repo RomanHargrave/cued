@@ -59,6 +59,22 @@ fi
 #AM_PROG_CC_C_O is ugly so use AM_CPPFLAGS instead of per-program CPPFLAGS
 AC_SUBST([AM_CPPFLAGS])
 
+AC_ARG_ENABLE([dmalloc_libc], AS_HELP_STRING([--enable-dmalloc-libc],
+    [debug malloc that overrides libc (default disabled)]))
+
+if test "$enable_dmalloc_libc" = yes; then
+    AC_SEARCH_LIBS([dlsym], [dl dld], [],
+        [AC_MSG_ERROR([failed to find dlsym() function needed by --enable-dmalloc-libc])])
+    AM_CPPFLAGS="-DOVERRIDE_LIBC ${AM_CPPFLAGS}"
+fi
+
+AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
+    [debug malloc that does not override libc (default disabled)]))
+if test "$enable_dmalloc_naive" = yes; then
+    AM_CPPFLAGS="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)' ${AM_CPPFLAGS}"
+fi
+
+
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
 LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
 AC_SUBST([LIBCUED_LIBS])

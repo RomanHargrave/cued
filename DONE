@@ -63,3 +63,6 @@ use version number from config.h and remove from cued.h
 
     already have a conflict in rip.c which includes both cued.h and config.h
         (for mmc_ll*h)
+
+AC_ARG_ENABLE for --enable
+    can set up debug malloc stuff with this
