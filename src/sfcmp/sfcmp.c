@@ -290,7 +290,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     if (   files[0].audioStart != files[0].audioDataStart 
         || files[1].audioStart != files[1].audioDataStart)
     {
-        printf("[0, 0] - (%ld, %ld):  ignored leading silence\n",
+        printf("[0, 0] - (%zd, %zd):  ignored leading silence\n",
             files[0].audioStart - files[0].audioDataStart,
             files[1].audioStart - files[1].audioDataStart);
     }
@@ -332,7 +332,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
             n = matchStr(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
 
             if (m1 != sw1 || m2 != mw2) {
-                printf("[%ld, %ld] - (%ld, %ld):  did not match [%ld, %ld] bytes\n",
+                printf("[%zd, %zd] - (%zd, %zd):  did not match [%zd, %zd] bytes\n",
                     m1  - files[0].audioDataStart,
                     m2  - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart,
@@ -351,7 +351,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
             //
             if (n == countLeadingZeros(sw1, n, 1)) {
 
-                printf("[%ld, %ld] - (%ld, %ld):  %ld bytes of zeros matched\n",
+                printf("[%zd, %zd] - (%zd, %zd):  %zd bytes of zeros matched\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
@@ -367,7 +367,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
             } else {
 
-                printf("[%ld, %ld] - (%ld, %ld):  %ld bytes matched\n",
+                printf("[%zd, %zd] - (%zd, %zd):  %zd bytes matched\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
@@ -404,7 +404,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     }
 
     if (m1 != e1 || m2 != e2) {
-        printf("[%ld, %ld] - (%ld, %ld):  did not match [%ld, %ld] bytes\n",
+        printf("[%zd, %zd] - (%zd, %zd):  did not match [%zd, %zd] bytes\n",
             m1 - files[0].audioDataStart,
             m2 - files[1].audioDataStart,
             files[0].audioDataBytes - files[0].trailingSilence,
@@ -415,7 +415,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     }
 
     if (files[0].trailingSilence || files[1].trailingSilence) {
-        printf("[%ld, %ld] - (%ld, %ld):  ignored trailing silence of [%ld, %ld] bytes\n",
+        printf("[%zd, %zd] - (%zd, %zd):  ignored trailing silence of [%zd, %zd] bytes\n",
             files[0].audioDataBytes - files[0].trailingSilence,
             files[1].audioDataBytes - files[1].trailingSilence,
             files[0].audioDataBytes,
@@ -539,7 +539,7 @@ static int openSndFiles(sndfile_data *files[], int count, char *filenames[])
 
             cmp[i].mapStart = (char *) mmap(NULL, cmp[i].audioDataBytes, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
             if (!cmp[i].mapStart) {
-                fprintf(stderr, "fatal:  %s could not allocate %ld bytes for compressed file\n", cmp[i].filename, cmp[i].audioDataBytes);
+                fprintf(stderr, "fatal:  %s could not allocate %zd bytes for compressed file\n", cmp[i].filename, cmp[i].audioDataBytes);
                 return 7;
             }
 
