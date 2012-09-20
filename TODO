@@ -1,6 +1,3 @@
-more conversions %z vs. %l ?
-    does this show up on 32-bit system?
-
 run ifnames */*c */*h | fgrep -v INCLUDED
 
 classc
