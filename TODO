@@ -7,3 +7,6 @@ classc
     AC_PROG_LEX AC_PROG_YACC are options as well
 
     ob.h and firstcls.h will need delete rules in makefile
+
+find a way to test compiler flags (sfcmp: -Wno-unused-but-set-var)
+    read macro list for autoconf and automake to learn possibilities

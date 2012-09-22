@@ -1,0 +1,2 @@
+
+#AM_CONDITIONAL([ENABLE_DMALLOC_LIBC], [test "x$enable_dmalloc_libc" != "xyes"])
