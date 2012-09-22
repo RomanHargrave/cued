@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.68])
 AC_INIT([cued], [1.2.0], [hydrologiccycle@gmail.com])
 #AC_CONFIG_AUX_DIR([admin])
 AM_INIT_AUTOMAKE([-Wall])
@@ -23,7 +23,7 @@ PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h cdio/mmc_ll_cmds.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
+#AC_CHECK_HEADER_STDBOOL # requires 2.6.9
 AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
