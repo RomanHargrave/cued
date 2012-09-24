@@ -357,12 +357,12 @@ static void copy_metadata(SNDFILE *outfile, SNDFILE *infile)
 {
     SF_INSTRUMENT inst;
     const char *str;
-    int i, err = 0;
+    int i; // , err = 0;
 
     for (i = SF_STR_FIRST;  i <= SF_STR_LAST;  ++i) {
         str = sf_get_string(infile, i);
         if (str) {
-            err = sf_set_string(outfile, i, str);
+            /* err = */ (void) sf_set_string(outfile, i, str);
         }
     }
 
