@@ -1,2 +1,0 @@
-#!/bin/bash
-EXTLIBDIRS="/home/edison/local${bits}/lib" CC_FLAGS="-isystem ~/local${bits}/include" INSTALL_BIN_DIR=~/bin/linux/${bits} EXTLIBS="dl" CC_DEFINES="-DOVERRIDE_LIBC" make install
