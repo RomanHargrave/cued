@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
+AC_PREREQ([2.63])
 AC_INIT([cued], [1.2.0], [hydrologiccycle@gmail.com])
 #AC_CONFIG_AUX_DIR([admin])
 AM_INIT_AUTOMAKE([-Wall])
@@ -12,6 +12,16 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
+
+# if test -z "$PKG_CONFIG"; then
+#   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+# fi
+AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
+if test "$PKG_CONFIG" = no; then
+    AC_MSG_ERROR([You must install pkg-config so that required libraries can be found.
+                  On Solaris, install this with the command "pkg install gettext".
+                ])
+fi
 
 # Checks for libraries.
 PKG_CHECK_MODULES([LIBCDIO], [libcdio >= 0.81])
@@ -61,7 +71,6 @@ AC_SUBST([AM_CPPFLAGS])
 
 AC_ARG_ENABLE([dmalloc_libc], AS_HELP_STRING([--enable-dmalloc-libc],
     [debug malloc that overrides libc (default disabled)]))
-
 if test "$enable_dmalloc_libc" = yes; then
     AC_SEARCH_LIBS([dlsym], [dl dld], [],
         [AC_MSG_ERROR([failed to find dlsym() function needed by --enable-dmalloc-libc])])

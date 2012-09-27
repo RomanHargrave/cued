@@ -1,2 +1,7 @@
+#AC_CANONICAL_TARGET
+#AC_CHECK_TARGET_TOOL([PKG_CONFIG], [pkg-config], [no])
+
+#AC_PATH_PROG([PKG_CONFIG], [pkg-config])
+#echo PKG_CONFIG is ${PKG_CONFIG}
 
 #AM_CONDITIONAL([ENABLE_DMALLOC_LIBC], [test "x$enable_dmalloc_libc" != "xyes"])
