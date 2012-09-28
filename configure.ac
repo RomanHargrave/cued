@@ -13,17 +13,12 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-# if test -z "$PKG_CONFIG"; then
-#   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-# fi
+# Checks for libraries.
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
 if test "$PKG_CONFIG" = no; then
     AC_MSG_ERROR([You must install pkg-config so that required libraries can be found.
-                  On Solaris, install this with the command "pkg install gettext".
-                ])
+                  On Solaris, install this with the command "pkg install gettext".])
 fi
-
-# Checks for libraries.
 PKG_CHECK_MODULES([LIBCDIO], [libcdio >= 0.81])
 PKG_CHECK_MODULES([LIBCDIOPARANOIA], [libcdio_paranoia >= 0.81])
 PKG_CHECK_MODULES([LIBSNDFILE], [sndfile >= 1.0.17])
@@ -70,18 +65,16 @@ fi
 AC_SUBST([AM_CPPFLAGS])
 
 AC_ARG_ENABLE([dmalloc_libc], AS_HELP_STRING([--enable-dmalloc-libc],
-    [debug malloc that overrides libc (default disabled)]))
-if test "$enable_dmalloc_libc" = yes; then
+    [debug malloc that overrides libc (default disabled)]), [
     AC_SEARCH_LIBS([dlsym], [dl dld], [],
         [AC_MSG_ERROR([failed to find dlsym() function needed by --enable-dmalloc-libc])])
     AM_CPPFLAGS="-DOVERRIDE_LIBC ${AM_CPPFLAGS}"
-fi
+])
 
 AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
-    [debug malloc that does not override libc (default disabled)]))
-if test "$enable_dmalloc_naive" = yes; then
+    [debug malloc that does not override libc (default disabled)]), [
     AM_CPPFLAGS="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)' ${AM_CPPFLAGS}"
-fi
+])
 
 
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'

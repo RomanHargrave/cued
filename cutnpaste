@@ -1,3 +1,7 @@
+# if test -z "$PKG_CONFIG"; then
+#   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+# fi
+
 #AC_CANONICAL_TARGET
 #AC_CHECK_TARGET_TOOL([PKG_CONFIG], [pkg-config], [no])
 
@@ -5,3 +9,5 @@
 #echo PKG_CONFIG is ${PKG_CONFIG}
 
 #AM_CONDITIONAL([ENABLE_DMALLOC_LIBC], [test "x$enable_dmalloc_libc" != "xyes"])
+AS_IF([test "$enable_dmalloc_libc" = yes], [
+if test "$enable_dmalloc_naive" = yes; then
