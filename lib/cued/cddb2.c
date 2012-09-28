@@ -350,9 +350,6 @@ cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj, int verbose)
 {
     cddb_conn_t *dbObj = NULL;
     cddb_disc_t *discObj = NULL;
-#ifdef HAVE_ASSIGNABLE_STDOUT
-    FILE *save;
-#endif
     int matches = 0;
 
     if (TSTF(CDDB2_FLAG_DISABLE_CDDB, flags)) {
@@ -384,7 +381,7 @@ cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj, int verbose)
                 do {
 
 #ifdef HAVE_ASSIGNABLE_STDOUT
-                    save = stdout;
+                    FILE *save = stdout;
                     stdout = stderr;
 #endif
                         printf("\n\nSpecify option --cddb-match=%d to use the following CDDB match:\n\n", matches);
