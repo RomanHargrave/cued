@@ -46,6 +46,14 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([localtime_r memmove memset mkdir munmap strchr strdup strerror strrchr strtol])
 
 
+AC_MSG_CHECKING([for assignable stdout])
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([#include <stdio.h>], [stdout = stderr;])],
+    [AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_ASSIGNABLE_STDOUT, [], [Define this if stdout can be assigned])],
+    [AC_MSG_RESULT(no)])
+
+
 # use AM_CFLAGS in Makefile.am rather than CFLAGS, which is reserved for user
 AC_SUBST([AM_CFLAGS])
 
