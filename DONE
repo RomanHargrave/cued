@@ -70,3 +70,5 @@ AC_ARG_ENABLE for --enable
 more conversions %z vs. %l ?
     does this show up on 32-bit system?
         yes
+
+use m4sh test/if macros

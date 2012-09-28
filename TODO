@@ -1,6 +1,6 @@
 run ifnames */*c */*h | fgrep -v INCLUDED
 
-use m4sh test/if macros
+include standard header macros?
 
 classc
     need m4 rules in makefiles
