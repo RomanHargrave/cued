@@ -1,6 +1,7 @@
 run ifnames */*c */*h | fgrep -v INCLUDED
 
 include standard header macros?
+    is there such a thing?
 
 classc
     need m4 rules in makefiles
@@ -12,3 +13,5 @@ classc
 
 find a way to test compiler flags (sfcmp: -Wno-unused-but-set-var)
     read macro list for autoconf and automake to learn possibilities
+
+    see configure.ac in libcdio
