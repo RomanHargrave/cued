@@ -1,3 +1,5 @@
+test compiler flags
+
 run ifnames */*c */*h | fgrep -v INCLUDED
 
 include standard header macros?

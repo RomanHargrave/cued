@@ -13,6 +13,7 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
+
 # Checks for libraries.
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
 if test "$PKG_CONFIG" = no; then
@@ -24,11 +25,12 @@ PKG_CHECK_MODULES([LIBCDIOPARANOIA], [libcdio_paranoia >= 0.81])
 PKG_CHECK_MODULES([LIBSNDFILE], [sndfile >= 1.0.17])
 PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 
+
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h cdio/mmc_ll_cmds.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-#AC_CHECK_HEADER_STDBOOL # requires 2.6.9
+#AC_CHECK_HEADER_STDBOOL # requires 2.6.9 which FreeBSD 9.0 lacks
 AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
@@ -46,6 +48,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([localtime_r memmove memset mkdir munmap strchr strdup strerror strrchr strtol])
 
 
+# Check for non-standard C runtime behavior.
 AC_MSG_CHECKING([for assignable stdout])
 AC_COMPILE_IFELSE(
     [AC_LANG_PROGRAM([#include <stdio.h>], [stdout = stderr;])],
@@ -53,6 +56,8 @@ AC_COMPILE_IFELSE(
         AC_DEFINE(HAVE_ASSIGNABLE_STDOUT, [], [Define this if stdout can be assigned])],
     [AC_MSG_RESULT(no)])
 
+
+# Check for GCC and set dialect and warnings flags.
 
 # use AM_CFLAGS in Makefile.am rather than CFLAGS, which is reserved for user
 AC_SUBST([AM_CFLAGS])
@@ -68,6 +73,8 @@ if test "$GCC" = yes; then
     fi
 fi
 
+
+# Checks for options to configure.
 
 #AM_PROG_CC_C_O is ugly so use AM_CPPFLAGS instead of per-program CPPFLAGS
 AC_SUBST([AM_CPPFLAGS])
@@ -85,6 +92,8 @@ AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
 ])
 
 
+# Static library shared by various binaries.
+
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
 LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
 AC_SUBST([LIBCUED_LIBS])
@@ -101,8 +110,8 @@ AC_CONFIG_FILES([Makefile
                  src/analyzer/Makefile
                  src/sfcmp/Makefile])
 
-#                 src/classc/GNUmakefile
-#                 src/firstcls/GNUmakefile
-#                 src/test/GNUmakefile])
+#                 src/classc/Makefile
+#                 src/firstcls/Makefile
+#                 src/test/Makefile])
 
 AC_OUTPUT
