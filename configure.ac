@@ -27,7 +27,15 @@ PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h cdio/mmc_ll_cmds.h])
+AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h])
+
+# MacPorts installs headers in /opt/local
+SAVE_CPPFLAGS=${CPPFLAGS}
+CPPFLAGS="${LIBCDIO_CFLAGS} ${CPPFLAGS}"
+AC_CHECK_HEADERS([cdio/mmc_ll_cmds.h])
+CPPFLAGS=${SAVE_CPPFLAGS}
+unset SAVE_CPPFLAGS
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL # requires 2.6.9 which FreeBSD 9.0 lacks
