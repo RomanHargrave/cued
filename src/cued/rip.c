@@ -17,7 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAVE_CONFIG_H
 #include "config.h" // HAVE_CDIO_MMC_LL_CMDS_H
+#define __CDIO_CONFIG_H__ // avoid conflicts with libcdio
+#endif
 #include "unix.h"
 #include "util.h"
 

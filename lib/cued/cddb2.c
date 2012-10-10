@@ -17,7 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAVE_CONFIG_H
 #include "config.h" // PACKAGE_VERSION
+#define __CDIO_CONFIG_H__ // avoid conflicts with libcdio
+#endif
 #include "opt.h"
 #include "cued.h" // CUED_PRODUCT_NAME
 #include "macros.h" // NELEMS
