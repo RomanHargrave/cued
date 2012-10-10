@@ -13,6 +13,9 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
+# needed for MacOS
+AM_PROG_AR
+
 
 # Checks for libraries.
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
