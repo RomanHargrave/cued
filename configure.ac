@@ -14,7 +14,7 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # needed for MacOS
-AM_PROG_AR
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 
 # Checks for libraries.
