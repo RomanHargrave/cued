@@ -1,3 +1,19 @@
+create cued_config.h instead of config.h
+    also, prefix with CUED_ ?
+        The transformation is done inside include/cdio/Makefile.am. For GNU/Linux,
+        the relevant portion expands in Makefile to:
+
+              @/bin/sed -r -e 's/^(#[ \t]*define) /\1 CDIO_/'
+        $(top_builddir)/config.h >>cdio_config.h
+
+add autogen.sh and maybe rebuild.sh to dist
+        dist_noinst_SCRIPTS = autogen.sh
+
+        how is this different from EXTRA_DIST?
+
+        something_libincludedir = $(libdir)/something-1.0/include
+        nodist_something_libinclude_HEADERS = config.h
+
 test compiler flags
 
 run ifnames */*c */*h | fgrep -v INCLUDED
