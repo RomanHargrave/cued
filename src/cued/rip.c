@@ -18,7 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // HAVE_CDIO_MMC_LL_CMDS_H
+#include "cued_config.h" // CUED_HAVE_CDIO_MMC_LL_CMDS_H
 #endif
 #include "unix.h"
 #include "util.h"
@@ -26,7 +26,7 @@
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
 #include <cdio/mmc.h> // CDIO_MMC_READ_TYPE_ANY
-#ifdef HAVE_CDIO_MMC_LL_CMDS_H
+#ifdef CUED_HAVE_CDIO_MMC_LL_CMDS_H
 #include <cdio/mmc_ll_cmds.h>
 #endif
 #include "cdio2.h"
