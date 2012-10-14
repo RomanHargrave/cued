@@ -18,8 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // PACKAGE_VERSION
-#define __CDIO_CONFIG_H__ // avoid conflicts with libcdio
+#include "cued_config.h" // CUED_PACKAGE_VERSION
 #endif
 #include "opt.h"
 #include "cued.h" // CUED_PRODUCT_NAME
@@ -181,7 +180,7 @@ static cddb_conn_t *cddb2_create_connection_object()
         cddb_cache_set_dir(dbObj, cacheDir);
     }
 
-    cddb_set_client(dbObj, CUED_PRODUCT_NAME, PACKAGE_VERSION);
+    cddb_set_client(dbObj, CUED_PRODUCT_NAME, CUED_PACKAGE_VERSION);
 
     return dbObj;
 

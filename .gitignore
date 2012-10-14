@@ -22,3 +22,4 @@ src/qdump/qdump
 src/sfcat/sfcat
 src/sfcmp/sfcmp
 INSTALL
+cued_config.h

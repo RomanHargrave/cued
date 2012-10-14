@@ -17,6 +17,25 @@ AC_PROG_RANLIB
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 
+# Check for sed flags -- borrowed from libcdio
+AC_PROG_SED
+AC_MSG_CHECKING([Checking what sed uses for extended regular expressions])
+SED_EXTENDED_RE_FLAG='-r'
+result=$(echo 'define' | $ac_path_SED -r -e 's/^define/foo/' 2>/dev/null)
+if [[ $? -ne 0 ]] ; then
+    result=$(echo 'define' | $ac_path_SED -r -E 's/^define/foo/' 2>/dev/null)
+    if [[ $? -ne 0 ]] ; then
+        SED_EXTENDED_RE_FLAG='-E'
+    else
+        AC_MSG_WARN([Don't have SED that understand extended RE's. Some minor compilation issues may fail.])
+        SED_EXTENDED_RE_FLAG=''
+    fi
+fi
+unset result
+AC_MSG_RESULT($SED_EXTENDED_RE_FLAG)
+AC_SUBST(SED_EXTENDED_RE_FLAG)
+
+
 # Checks for libraries.
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
 if test "$PKG_CONFIG" = no; then

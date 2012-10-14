@@ -18,8 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // PACKAGE_VERSION
-#define __CDIO_CONFIG_H__ // avoid conflicts with libcdio
+#include "cued_config.h" // CUED_PACKAGE_VERSION
 #endif
 #include "unix.h"
 #include "cued.h" // CUED_PRODUCT_NAME
@@ -278,9 +277,9 @@ int format_apply_pattern(
                         break;
 
                     case 'V':
-                        if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "v" PACKAGE_VERSION)) {
+                        if (ssizeof(nstr) <= snprintf(nstr, sizeof(nstr), "v" CUED_PACKAGE_VERSION)) {
                             cdio2_abort("%s version (v%s) exceeds %zu characters (internal error)",
-                                        CUED_PRODUCT_NAME, PACKAGE_VERSION, sizeof(nstr) - 1);
+                                        CUED_PRODUCT_NAME, CUED_PACKAGE_VERSION, sizeof(nstr) - 1);
                             goto error;
                         }
                         field = nstr;
