@@ -58,6 +58,12 @@ AC_CHECK_HEADERS([cdio/mmc_ll_cmds.h])
 CPPFLAGS=${SAVE_CPPFLAGS}
 unset SAVE_CPPFLAGS
 
+SAVE_LDFLAGS=${LDFLAGS}
+LDFLAGS="${LIBCDIO_LIBS} ${LDFLAGS}"
+AC_CHECK_FUNC([cdtext_init], 
+    [AC_DEFINE(HAVE_CDTEXT_INIT, [], [Define this if libcdio has the 'cdtext_init' function])])
+LDFLAGS=${SAVE_LDFLAGS}
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL # requires 2.6.9 which FreeBSD 9.0 lacks
