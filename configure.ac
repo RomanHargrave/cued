@@ -63,6 +63,7 @@ LDFLAGS="${LIBCDIO_LIBS} ${LDFLAGS}"
 AC_CHECK_FUNC([cdtext_init], 
     [AC_DEFINE(HAVE_CDTEXT_INIT, [], [Define this if libcdio has the 'cdtext_init' function])])
 LDFLAGS=${SAVE_LDFLAGS}
+unset SAVE_LDFLAGS
 
 
 # Checks for typedefs, structures, and compiler characteristics.
