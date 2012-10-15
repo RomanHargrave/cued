@@ -382,13 +382,13 @@ cddb_disc_t *cddb2_get_disc(CdIo_t *cdObj, int verbose)
                 matches = 1;
                 do {
 
-#ifdef HAVE_ASSIGNABLE_STDOUT
+#ifdef CUED_HAVE_ASSIGNABLE_STDOUT
                     FILE *save = stdout;
                     stdout = stderr;
 #endif
                         printf("\n\nSpecify option --cddb-match=%d to use the following CDDB match:\n\n", matches);
                         cddb_disc_print(discObj);
-#ifdef HAVE_ASSIGNABLE_STDOUT
+#ifdef CUED_HAVE_ASSIGNABLE_STDOUT
                     stdout = save;
 #endif
                     ++matches;
