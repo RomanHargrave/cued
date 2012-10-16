@@ -18,7 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_PACKAGE_VERSION
+#include "cued_config.h"
 #endif
 #include "unix.h"
 #include "cued.h" // CUED_PRODUCT_NAME

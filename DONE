@@ -72,3 +72,11 @@ more conversions %z vs. %l ?
         yes
 
 use m4sh test/if macros
+
+create cued_config.h instead of config.h
+    also, prefix with CUED_ ?
+        The transformation is done inside include/cdio/Makefile.am. For GNU/Linux,
+        the relevant portion expands in Makefile to:
+
+              @/bin/sed -r -e 's/^(#[ \t]*define) /\1 CDIO_/'
+        $(top_builddir)/config.h >>cdio_config.h
