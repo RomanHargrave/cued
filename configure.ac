@@ -8,6 +8,7 @@ AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_SRCDIR([src/Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_MAKE_SET
@@ -16,8 +17,7 @@ AC_PROG_RANLIB
 # MacOS needs this.
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
-
-# Check for sed flags (borrowed from libcdio).
+# Check for sed and how to run (borrowed from libcdio).
 AC_PROG_SED
 AC_MSG_CHECKING([Checking what sed uses for extended regular expressions])
 SED_EXTENDED_RE_FLAG='-r'
@@ -48,9 +48,6 @@ PKG_CHECK_MODULES([LIBSNDFILE], [sndfile >= 1.0.17])
 PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 
 
-# Checks for header files.
-AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h])
-
 # Check for newer libcdio MMC header organization.
 # MacPorts installs headers in /opt/local so CPPFLAGS magic is needed.
 SAVE_CPPFLAGS=${CPPFLAGS}
@@ -59,25 +56,6 @@ AC_CHECK_HEADERS([cdio/mmc_ll_cmds.h])
 CPPFLAGS=${SAVE_CPPFLAGS}
 unset SAVE_CPPFLAGS
 
-
-# Checks for typedefs, structures, and compiler characteristics.
-#AC_CHECK_HEADER_STDBOOL # requires 2.6.9 which FreeBSD 9.0 lacks
-AC_C_INLINE
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_MODE_T
-AC_TYPE_SIZE_T
-AC_TYPE_SSIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT8_T
-
-
-# Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_MMAP
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([localtime_r memmove memset mkdir munmap strchr strdup strerror strrchr strtol])
 
 # Check for newer libcdio cdtext interface.
 SAVE_LDFLAGS=${LDFLAGS}
@@ -99,7 +77,7 @@ AC_COMPILE_IFELSE(
 
 # Check for GCC and set dialect and warnings flags.
 
-# use AM_CFLAGS in Makefile.am rather than CFLAGS, which is reserved for user
+# Use AM_CFLAGS in Makefile.am rather than CFLAGS, which is reserved for user.
 AC_SUBST([AM_CFLAGS])
 
 AM_CONDITIONAL([GCC], [test "$GCC" = yes])
