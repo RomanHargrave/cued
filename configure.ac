@@ -60,8 +60,8 @@ unset SAVE_CPPFLAGS
 
 SAVE_LDFLAGS=${LDFLAGS}
 LDFLAGS="${LIBCDIO_LIBS} ${LDFLAGS}"
-AC_CHECK_FUNC([cdtext_init], 
-    [AC_DEFINE(HAVE_CDTEXT_INIT, [], [Define this if libcdio has the 'cdtext_init' function])])
+AC_CHECK_FUNC([cdtext_lang2str],
+    [AC_DEFINE(HAVE_CDTEXT_V2, [], [Define this if libcdio has the 'cdtext_lang2str' function])])
 LDFLAGS=${SAVE_LDFLAGS}
 unset SAVE_LDFLAGS
 

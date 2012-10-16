@@ -49,6 +49,19 @@
     }
 
 
+#ifdef CUED_HAVE_CDTEXT_V2
+
+#define CDTEXT_PERFORMER    CDTEXT_FIELD_PERFORMER
+#define CDTEXT_GENRE        CDTEXT_FIELD_GENRE
+#define CDTEXT_COMPOSER     CDTEXT_FIELD_COMPOSER
+#define CDTEXT_ARRANGER     CDTEXT_FIELD_ARRANGER
+#define CDTEXT_SONGWRITER   CDTEXT_FIELD_SONGWRITER
+#define CDTEXT_TITLE        CDTEXT_FIELD_TITLE
+#define CDTEXT_INVALID      CDTEXT_FIELD_INVALID 
+
+#endif // CUED_HAVE_CDTEXT_V2
+
+
 int format_apply_pattern(
     CdIo_t *cdObj, cddb_disc_t *cddbObj, cddb_track_t *trackObj,
     const char *pattern, const char *extension,
@@ -63,6 +76,9 @@ int format_apply_pattern(
     int patternIndex = 0;
     int patternChar;
     int n;
+#ifdef CUED_HAVE_CDTEXT_V2
+    track_t cdtextTrack;
+#endif
 
     // expanded from 9 for %S
     char nstr[ TIME_RFC_3339_LEN + 1 ];
@@ -222,13 +238,18 @@ int format_apply_pattern(
                             case 'n':
                             case 's':
                             case 'x':
-                                cdtext = cdio_get_cdtext(cdObj, 0);
+                                cdtextTrack = 0;
                                 break;
 
                             default:
-                                cdtext = cdio_get_cdtext(cdObj, track);
+                                cdtextTrack = track;
                                 break;
                         }
+#ifdef CUED_HAVE_CDTEXT_V2
+                        cdtext = cdio_get_cdtext(cdObj);
+#else
+                        cdtext = cdio_get_cdtext(cdObj, cdtextTrack);
+#endif
                         if (cdtext) {
                             cdtext_field_t key;
                             switch (patternChar) {
@@ -262,7 +283,11 @@ int format_apply_pattern(
                                     goto error;
                                     break;
                             }
+#ifdef CUED_HAVE_CDTEXT_V2
+                            field = cdtext_get_const(cdtext, key, cdtextTrack);
+#else
                             field = cdtext_get_const(key, cdtext);
+#endif
                         } else {
                             field = NULL;
                         }

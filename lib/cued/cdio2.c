@@ -17,6 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_CDTEXT_V2
+#endif
+
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
 #include "cdio2.h"
@@ -118,16 +122,26 @@ void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const cha
 {
     int i, quoted;
     cdtext_t *cdtext;
+    const char *field;
 
+#ifdef CUED_HAVE_CDTEXT_V2
+    cdtext = cdio_get_cdtext(cdObj);
+#else
     cdtext = cdio_get_cdtext(cdObj, track);
+#endif
+
     if (cdtext) {
         for (i = MIN_CDTEXT_FIELD;  i < MAX_CDTEXT_FIELDS;  ++i) {
-
+#ifdef CUED_HAVE_CDTEXT_V2
+            field = cdtext_get_const(cdtext, i, track);
+#else
+            field = cdtext_get_const(i, cdtext);
+#endif
             // checking for cdtext->field[i][0] is for Nero, which sometime has zero length
-            if (cdtext->field[i] && cdtext->field[i][0]) {
-                quoted = strchr(cdtext->field[i], ' ') ? 1 : 0;
+            if (field && field[0]) {
+                quoted = strchr(field, ' ') ? 1 : 0;
                 fprintf(cueFile, "%s%s %s%s%s\n", prefix, cdtext_field2str((cdtext_field_t) i),
-                    quoted ? "\"" : "", cdtext->field[i], quoted ? "\"" : "");
+                    quoted ? "\"" : "", field, quoted ? "\"" : "");
             }
         }
 
