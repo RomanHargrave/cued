@@ -13,11 +13,11 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-# needed for MacOS
+# MacOS needs this.
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 
-# Check for sed flags -- borrowed from libcdio
+# Check for sed flags (borrowed from libcdio).
 AC_PROG_SED
 AC_MSG_CHECKING([Checking what sed uses for extended regular expressions])
 SED_EXTENDED_RE_FLAG='-r'
@@ -51,19 +51,13 @@ PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h limits.h stdint.h stdlib.h string.h unistd.h])
 
-# MacPorts installs headers in /opt/local
+# Check for newer libcdio MMC header organization.
+# MacPorts installs headers in /opt/local so CPPFLAGS magic is needed.
 SAVE_CPPFLAGS=${CPPFLAGS}
 CPPFLAGS="${LIBCDIO_CFLAGS} ${CPPFLAGS}"
 AC_CHECK_HEADERS([cdio/mmc_ll_cmds.h])
 CPPFLAGS=${SAVE_CPPFLAGS}
 unset SAVE_CPPFLAGS
-
-SAVE_LDFLAGS=${LDFLAGS}
-LDFLAGS="${LIBCDIO_LIBS} ${LDFLAGS}"
-AC_CHECK_FUNC([cdtext_lang2str],
-    [AC_DEFINE(HAVE_CDTEXT_V2, [], [Define this if libcdio has the 'cdtext_lang2str' function])])
-LDFLAGS=${SAVE_LDFLAGS}
-unset SAVE_LDFLAGS
 
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -78,11 +72,20 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
+
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([localtime_r memmove memset mkdir munmap strchr strdup strerror strrchr strtol])
+
+# Check for newer libcdio cdtext interface.
+SAVE_LDFLAGS=${LDFLAGS}
+LDFLAGS="${LIBCDIO_LIBS} ${LDFLAGS}"
+AC_CHECK_FUNC([cdtext_lang2str],
+    [AC_DEFINE(HAVE_CDTEXT_V2, [], [Define this if libcdio has the 'cdtext_lang2str' function])])
+LDFLAGS=${SAVE_LDFLAGS}
+unset SAVE_LDFLAGS
 
 
 # Check for non-standard C runtime behavior.
