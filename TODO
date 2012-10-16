@@ -6,7 +6,7 @@ add autogen.sh and maybe rebuild.sh to dist
         something_libincludedir = $(libdir)/something-1.0/include
         nodist_something_libinclude_HEADERS = config.h
 
-run ifnames */*c */*h | fgrep -v INCLUDED
+ifnames */*/*c */*/*h | fgrep -v INCLUDED
 
 include standard header macros?
     is there such a thing?
