@@ -76,9 +76,7 @@ int format_apply_pattern(
     int patternIndex = 0;
     int patternChar;
     int n;
-#ifdef CUED_HAVE_CDTEXT_V2
     track_t cdtextTrack;
-#endif
 
     // expanded from 9 for %S
     char nstr[ TIME_RFC_3339_LEN + 1 ];
