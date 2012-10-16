@@ -1,5 +1,3 @@
-ifnames */*/*c */*/*h | fgrep -v INCLUDED
-
 classc
     need m4 rules in makefiles
         can include foo.am during automake?
@@ -7,6 +5,8 @@ classc
     AC_PROG_LEX AC_PROG_YACC are options as well
 
     ob.h and firstcls.h will need delete rules in makefile
+
+ifnames */*/*c */*/*h | fgrep -v INCLUDED
 
 find a way to test compiler flags (sfcmp: -Wno-unused-but-set-var)
     read macro list for autoconf and automake to learn possibilities
