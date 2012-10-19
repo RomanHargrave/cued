@@ -1,3 +1,5 @@
+Debian packaging
+
 classc
     need m4 rules in makefiles
         can include foo.am during automake?
