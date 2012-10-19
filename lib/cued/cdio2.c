@@ -126,6 +126,11 @@ void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const cha
 
 #ifdef CUED_HAVE_CDTEXT_V2
     cdtext = cdio_get_cdtext(cdObj);
+
+    // set to the first cd-text block AND make sure we're using the new library (side effect)
+    if (cdtext) {
+        (void) cdtext_select_language(cdtext, CDTEXT_LANGUAGE_UNKNOWN);
+    }
 #else
     cdtext = cdio_get_cdtext(cdObj, track);
 #endif
