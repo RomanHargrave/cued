@@ -2,4 +2,4 @@
 ./autogen.sh
 ./configure
 make clean
-make
+make -j4

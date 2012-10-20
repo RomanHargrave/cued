@@ -1,3 +1,6 @@
+out of directory build
+    cannot find cued_config.h
+
 AM_CFLAGS = -I$(top_srcdir)/lib 
 cued_LDADD = $(LIBCDIO_LIBS) $(LIBCDIOPARANOIA_LIBS) $(LIBSNDFILE_LIBS) $(LIBCDDB_LIBS) $(top_builddir)/lib/libcued.a $(AM_LDFLAGS)
 
