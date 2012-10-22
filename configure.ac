@@ -35,6 +35,12 @@ unset result
 AC_MSG_RESULT($SED_EXTENDED_RE_FLAG)
 AC_SUBST(SED_EXTENDED_RE_FLAG)
 
+# Need m4 for classc.
+AC_PATH_PROG([M4], [m4], [no])
+if test "$M4" = no; then
+    AC_MSG_ERROR([Classc language needs GNU m4 installed.])
+fi
+
 
 # Checks for libraries.
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
@@ -126,10 +132,9 @@ AC_CONFIG_FILES([Makefile
                  src/qdump/Makefile
                  src/sfcat/Makefile
                  src/analyzer/Makefile
-                 src/sfcmp/Makefile])
-
-#                 src/classc/Makefile
-#                 src/firstcls/Makefile
+                 src/sfcmp/Makefile
+                 lib/classc/Makefile
+                 lib/firstcls/Makefile])
 #                 src/test/Makefile])
 
 AC_OUTPUT

@@ -1,3 +1,6 @@
+#M4_INCLUDE = $(AM_CPPFLAGS)
+#firstcls.h : $(top_builddir)/lib/classc/inherit.m4
+
 # if test -z "$PKG_CONFIG"; then
 #   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 # fi

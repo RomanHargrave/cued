@@ -1,1 +1,1 @@
-SUBDIRS = cued
+SUBDIRS = cued classc firstcls

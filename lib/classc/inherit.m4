@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 comment(        define standard guards for header files         )
 dnl
-define(`basename', `patsubst(__file__, `\.m4', `')')dnl
+define(`basename', `patsubst(__file__, `\(.*/\)*\(.*\)\.m4$', `\2')')dnl
 define(`upcase', `translit(`$*', `a-z', `A-Z')')dnl
 define(`htoken', `upcase(basename)')dnl
 define(`guard_h', ``#'ifndef' `htoken()'_H_INCLUDED

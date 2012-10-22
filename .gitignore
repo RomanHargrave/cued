@@ -21,5 +21,8 @@ src/cued/cued
 src/qdump/qdump
 src/sfcat/sfcat
 src/sfcmp/sfcmp
+lib/classc/libclassc.a
+lib/firstcls/libfirstcls.a
+lib/firstcls/firstcls.h
 INSTALL
 cued_config.h
