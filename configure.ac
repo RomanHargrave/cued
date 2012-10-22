@@ -134,7 +134,7 @@ AC_CONFIG_FILES([Makefile
                  src/analyzer/Makefile
                  src/sfcmp/Makefile
                  lib/classc/Makefile
-                 lib/firstcls/Makefile])
-#                 src/test/Makefile])
+                 lib/firstcls/Makefile
+                 src/test/Makefile])
 
 AC_OUTPUT

@@ -1,4 +1,4 @@
 SUFFIXES = .m4
 
 .m4.h:
-	$(M4) $(AM_CPPFLAGS) $< >$@
+	$(M4) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $< >$@

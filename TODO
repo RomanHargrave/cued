@@ -1,12 +1,6 @@
+cued needs --version option
+
 Debian packaging
-
-classc
-    need m4 rules in makefiles
-        can include foo.am during automake?
-
-    AC_PROG_LEX AC_PROG_YACC are options as well
-
-    ob.h and firstcls.h will need delete rules in makefile
 
 ifnames */*/*c */*/*h | fgrep -v INCLUDED
 
