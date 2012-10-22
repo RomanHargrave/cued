@@ -1,5 +1,5 @@
 noinst_LIBRARIES = libfirstcls.a
-libfirstcls_a_SOURCES = firstcls.h list.c
+libfirstcls_a_SOURCES = list.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/lib/classc @AM_CPPFLAGS@
 
