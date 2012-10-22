@@ -9,5 +9,5 @@ cued_config.h: $(top_builddir)/config.h
 	@SED@ @SED_EXTENDED_RE_FLAG@ -e 's/^([ \t]*#[ \t]*define[ \t]+)/\1CUED_/' $(top_builddir)/config.h >>cued_config.h
 	echo '#endif /* #ifndef CUED_CONFIG_H */' >>cued_config.h
 
-BUILT_SOURCES=cued_config.h
-CLEANFILES=$(BUILT_SOURCES)
+BUILT_SOURCES = cued_config.h
+CLEANFILES = $(BUILT_SOURCES)

@@ -5,5 +5,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/lib/classc -I$(top_builddir)/lib/firstcls @AM_CPPF
 object_LDADD = $(top_builddir)/lib/classc/libclassc.a $(top_builddir)/lib/firstcls/libfirstcls.a
 
 BUILT_SOURCES = ob.h
-CLEANFILES=$(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES)
+EXTRA_DIST = ob.m4 crap.m4
 include $(top_srcdir)/lib/firstcls/m4.mk
