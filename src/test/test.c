@@ -56,9 +56,9 @@ int main(int argc, char *argv[])
     //char *test = "blowme";
     //char *test = "blarf";
 
-    printf("sizeof(cc_arg_t) == %lu\n", sizeof(cc_arg_t));
-    printf("sizeof(cc_class_object) == %lu\n", sizeof(cc_class_object));
-    printf("sizeof(Foo) == %lu\n", sizeof(Foo));
+    printf("sizeof(cc_arg_t) == %zu\n", sizeof(cc_arg_t));
+    printf("sizeof(cc_class_object) == %zu\n", sizeof(cc_class_object));
+    printf("sizeof(Foo) == %zu\n", sizeof(Foo));
 
     //f = as_obj(cc_msg(&Foo, "alloc"));
     //f = as(o, cc_msg(&Foo, "alloc"));

@@ -21,6 +21,8 @@ src/cued/cued
 src/qdump/qdump
 src/sfcat/sfcat
 src/sfcmp/sfcmp
+src/test/object
+src/test/ob.h
 lib/classc/libclassc.a
 lib/firstcls/libfirstcls.a
 lib/firstcls/firstcls.h
