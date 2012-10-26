@@ -112,7 +112,7 @@ AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
 AC_ARG_ENABLE([classc], AS_HELP_STRING([--enable-classc],
     [object-oriented extension to the C programming language (default disabled)]))
 AM_CONDITIONAL([CLASSC], test "x$enable_classc" = "xyes")
-AM_COND_IF([CLASSC], [
+AS_IF([test "x$enable_classc" = "xyes"], [
 
     # Need m4 for classc.
     AC_PATH_PROG([M4], [m4], [no])
