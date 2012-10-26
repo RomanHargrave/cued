@@ -1,4 +1,6 @@
 classc
+    apple does not have -g flag for m4
+
     need m4 rules in makefiles
         can include foo.am during automake?
 

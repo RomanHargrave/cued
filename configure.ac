@@ -119,7 +119,16 @@ AS_IF([test "x$enable_classc" = "xyes"], [
     if test "$M4" = no; then
         AC_MSG_ERROR([Classc needs GNU m4 installed.])
     fi
-    AM_M4FLAGS="-g"
+
+    AC_MSG_CHECKING([for m4 that accepts -g flag])
+    result=$(echo foo | $M4 -g 2>/dev/null)
+    if [[ $? -eq 0 ]] ; then
+        AM_M4FLAGS='-g'
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_RESULT([no])
+    fi
+    unset result
     AC_SUBST([AM_M4FLAGS])
 ])
 
