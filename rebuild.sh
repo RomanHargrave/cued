@@ -1,5 +1,5 @@
 #!/bin/sh
 ./autogen.sh
-./configure
+./configure --enable-classc
 make clean
 make -j6
