@@ -21,9 +21,9 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_SED
 AC_MSG_CHECKING([Checking what sed uses for extended regular expressions])
 SED_EXTENDED_RE_FLAG='-r'
-result=$(echo 'define' | $ac_path_SED -r -e 's/^define/foo/' 2>/dev/null)
+result=$(echo 'define' | $SED -r -e 's/^define/foo/' 2>/dev/null)
 if [[ $? -ne 0 ]] ; then
-    result=$(echo 'define' | $ac_path_SED -E -e 's/^define/foo/' 2>/dev/null)
+    result=$(echo 'define' | $SED -E -e 's/^define/foo/' 2>/dev/null)
     if [[ $? -eq 0 ]] ; then
         SED_EXTENDED_RE_FLAG='-E'
     else
