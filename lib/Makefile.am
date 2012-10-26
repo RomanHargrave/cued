@@ -1,1 +1,4 @@
-SUBDIRS = cued classc firstcls
+SUBDIRS = cued
+if CLASSC
+    SUBDIRS += classc firstcls
+endif

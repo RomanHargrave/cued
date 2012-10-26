@@ -1,3 +1,9 @@
+make class compilation conditional
+    note that always have to make makefiles for classc b/c conditional around SUBDIRS doesn't work correctly in case of make maintainer-clean
+
+handle variants of m4
+    use -g flag?
+
 classc
     need m4 rules in makefiles
         can include foo.am during automake?

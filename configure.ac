@@ -35,12 +35,6 @@ unset result
 AC_MSG_RESULT($SED_EXTENDED_RE_FLAG)
 AC_SUBST(SED_EXTENDED_RE_FLAG)
 
-# Need m4 for classc.
-AC_PATH_PROG([M4], [m4], [no])
-if test "$M4" = no; then
-    AC_MSG_ERROR([Classc language needs GNU m4 installed.])
-fi
-
 
 # Checks for libraries.
 AC_CHECK_PROG([PKG_CONFIG], [pkg-config], [yes], [no])
@@ -113,6 +107,20 @@ AC_ARG_ENABLE([dmalloc_libc], AS_HELP_STRING([--enable-dmalloc-libc],
 AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
     [debug malloc that does not override libc (default disabled)]), [
     AM_CPPFLAGS="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)' ${AM_CPPFLAGS}"
+])
+
+AC_ARG_ENABLE([classc], AS_HELP_STRING([--enable-classc],
+    [object-oriented extension to the C programming language (default disabled)]))
+AM_CONDITIONAL([CLASSC], test "x$enable_classc" = "xyes")
+AM_COND_IF([CLASSC], [
+
+    # Need m4 for classc.
+    AC_PATH_PROG([M4], [m4], [no])
+    if test "$M4" = no; then
+        AC_MSG_ERROR([Classc needs GNU m4 installed.])
+    fi
+    AM_M4FLAGS="-g"
+    AC_SUBST([AM_M4FLAGS])
 ])
 
 

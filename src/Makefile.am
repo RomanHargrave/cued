@@ -4,5 +4,8 @@ SUBDIRS = cued \
           qdump \
           sfcat \
           analyzer \
-          sfcmp \
-          test
+          sfcmp
+
+if CLASSC
+    SUBDIRS += test
+endif
