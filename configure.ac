@@ -23,8 +23,8 @@ AC_MSG_CHECKING([Checking what sed uses for extended regular expressions])
 SED_EXTENDED_RE_FLAG='-r'
 result=$(echo 'define' | $ac_path_SED -r -e 's/^define/foo/' 2>/dev/null)
 if [[ $? -ne 0 ]] ; then
-    result=$(echo 'define' | $ac_path_SED -r -E 's/^define/foo/' 2>/dev/null)
-    if [[ $? -ne 0 ]] ; then
+    result=$(echo 'define' | $ac_path_SED -E -e 's/^define/foo/' 2>/dev/null)
+    if [[ $? -eq 0 ]] ; then
         SED_EXTENDED_RE_FLAG='-E'
     else
         AC_MSG_WARN([Don't have SED that understand extended RE's. Some minor compilation issues may fail.])
