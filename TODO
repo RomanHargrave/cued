@@ -1,3 +1,8 @@
+make class compilation conditional
+
+handle variants of m4
+    use -g flag?
+
 cued needs --version option
 
 Debian packaging
