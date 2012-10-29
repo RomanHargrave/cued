@@ -1,3 +1,5 @@
+AM_PROG_CC_C_O is ugly so use AM_CPPFLAGS instead of per-program CPPFLAGS
+
 AM_CONDITIONAL([PARANOIA], test "x$with_paranoia" = "xyes")
 
 #firstcls.h : $(top_builddir)/lib/classc/inherit.m4

@@ -137,8 +137,8 @@ fi
 
 
 # Checks for options to configure.
+#
 
-#AM_PROG_CC_C_O is ugly so use AM_CPPFLAGS instead of per-program CPPFLAGS
 AC_SUBST([AM_CPPFLAGS])
 
 AC_ARG_ENABLE([dmalloc_libc], AS_HELP_STRING([--enable-dmalloc-libc],
@@ -159,13 +159,14 @@ AS_IF([test "x$enable_dmalloc_naive" = "xyes"], [
 
 
 # Static library shared by various binaries.
-
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
 LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
 AC_SUBST([LIBCUED_LIBS])
 AC_SUBST([LIBCUED_CPPFLAGS])
 
 
+# Always generate classc Makefiles because AM_CONDITIONAL in SUBDIRS
+# is ignored during make maintainer-clean
 AC_CONFIG_FILES([Makefile
                  lib/Makefile
                  lib/cued/Makefile
