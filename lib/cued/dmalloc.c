@@ -17,6 +17,10 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_OVERLOAD_LIBC
+#endif
+
 // allow for insanities such as -D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)'
 #ifdef malloc
 #undef malloc
@@ -40,7 +44,7 @@
 
 #define ARCHAIC_ZEROS
 
-#ifdef OVERRIDE_LIBC
+#ifdef CUED_OVERLOAD_LIBC
 #define dcalloc     calloc
 #define dmalloc     malloc
 #define drealloc    realloc
@@ -179,7 +183,7 @@ void freeChunk(ptr_as_int_t theChunk, size_t theSize)
 #endif /* USE_WHOLE_PAGES */
 
 
-#if defined(OVERRIDE_LIBC) && !defined(USE_WHOLE_PAGES)
+#if defined(CUED_OVERLOAD_LIBC) && !defined(USE_WHOLE_PAGES)
 
 #ifndef __cplusplus
 #define __USE_GNU

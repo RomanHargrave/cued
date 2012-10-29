@@ -20,12 +20,19 @@
 #ifndef RIP_H_INCLUDED
 #define RIP_H_INCLUDED
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_PARANOIA
+#endif
+
 #include "cddb2.h" // cddb_disc_t
 #include "qsc.h" // MCN_LEN, ISRC_LEN
 #include "pwsc.h"
 #include "macros.h"
 
+#ifdef CUED_HAVE_PARANOIA
 #include <cdio/paranoia.h>
+#endif
+
 #include <stdio.h>
 
 
@@ -96,10 +103,15 @@ typedef struct _rip_context_t {
     int offsetWords;
     const char *qSubChannelFileName;
 
+#ifdef CUED_HAVE_PARANOIA
+
     // paranoia parameters
     //
     cdrom_drive_t *paranoiaCtlObj;
     cdrom_paranoia_t *paranoiaRipObj;
+
+#endif // CUED_HAVE_PARANOIA
+
     int retries;
 
     // buffer for naming files
@@ -136,11 +148,15 @@ typedef struct _rip_context_t {
     };
     long allocatedSectors;
 
+#ifdef CUED_HAVE_PARANOIA
+
     //
     // cued_read_paranoid parameters
     //
 
     long (*save_read_paranoid)(cdrom_drive_t *, void *, lsn_t, long);
+
+#endif // CUED_HAVE_PARANOIA
 
     //
     // rip data

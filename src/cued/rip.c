@@ -18,7 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_CDIO_MMC_LL_CMDS_H
+#include "cued_config.h" // CUED_HAVE_CDIO_MMC_LL_CMDS_H, CUED_HAVE_PARANOIA
 #endif
 #include "unix.h"
 #include "util.h"
@@ -36,6 +36,10 @@
 #include <stdlib.h> // free
 #include <unistd.h> // unlink
 #include <sndfile.h>
+
+#ifndef CD_FRAMEWORDS
+#define CD_FRAMEWORDS (CDIO_CD_FRAMESIZE_RAW / 2)
+#endif
 
 
 
@@ -423,6 +427,8 @@ static driver_return_code_t cued_read_audio(rip_context_t *rip, lsn_t firstSecto
 }
 
 
+#ifdef CUED_HAVE_PARANOIA
+
 static long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t firstSector, long sectors)
 {
     rip_context_t *rip;
@@ -443,6 +449,8 @@ static long cued_read_paranoid(cdrom_drive_t *paranoiaCtlObj, void *pb, lsn_t fi
 
     return rc;
 }
+
+#endif // CUED_HAVE_PARANOIA
 
 
 static const char *cued_fmt_to_ext(int soundFileFormat)
@@ -471,7 +479,7 @@ void cued_rip_to_file(rip_context_t *rip)
     SF_INFO sfinfo;
     PIT(SNDFILE, sfObj);
     PIT(int16_t, pbuf);
-    lsn_t currSector, prc, offsetSectors;
+    lsn_t currSector, offsetSectors;
     int wordsToWrite, wordsWritten, i;
 
     int offsetWords = rip->offsetWords;
@@ -496,8 +504,10 @@ void cued_rip_to_file(rip_context_t *rip)
 
     currSector = rip->firstSector;
 
+#ifdef CUED_HAVE_PARANOIA
+
     if (ripUseParanoia) {
-        lsn_t seekSector;
+        lsn_t seekSector, prc;
 
         if (currSector < 0 && !ripReadPregap) {
             seekSector = 0;
@@ -516,6 +526,8 @@ void cued_rip_to_file(rip_context_t *rip)
             }
         }
     }
+
+#endif // CUED_HAVE_PARANOIA
 
     if (ripExtract) {
 
@@ -560,12 +572,18 @@ void cued_rip_to_file(rip_context_t *rip)
             // TODO:  need to update track indices on skip of sector (continue)
 
             if (ripUseParanoia) {
+
+#ifdef CUED_HAVE_PARANOIA
+
                 pbuf = cdio_paranoia_read_limited(rip->paranoiaRipObj, cdio2_paranoia_callback, rip->retries);
                 cdio2_paranoia_msg(rip->paranoiaCtlObj, "read of audio sector");
                 if (!pbuf) {
                     cdio_error("paranoia did not return data; skipping extraction of audio sector %d in track %02d", currSector, track);
                     continue;
                 }
+
+#endif // CUED_HAVE_PARANOIA
+
             } else {
                 if (DRIVER_OP_SUCCESS == cued_read_audio(rip, currSector, 1, NULL, rip->retries)) {
                     pbuf = rip->mmcBuf16;
@@ -629,6 +647,8 @@ static void cued_rip_prologue(rip_context_t *rip)
     rip->mmcBuf = NULL;
     rip->allocatedSectors = 0;
 
+#ifdef CUED_HAVE_PARANOIA
+
     if (ripUseParanoia) {
         char *msg = 0;
         int rc;
@@ -670,6 +690,8 @@ static void cued_rip_prologue(rip_context_t *rip)
         }
     }
 
+#endif // CUED_HAVE_PARANOIA
+
     if (rip->qSubChannelFileName) {
         if (!strcmp("-", rip->qSubChannelFileName)) {
             rip->qSubChannelFile = stdout;
@@ -700,11 +722,15 @@ static void cued_rip_epilogue(rip_context_t *rip)
 {
     free(rip->mmcBuf);
 
+#ifdef CUED_HAVE_PARANOIA
+
     if (ripUseParanoia) {
         rip->paranoiaCtlObj->read_audio = rip->save_read_paranoid;
         cdio_paranoia_free(rip->paranoiaRipObj);
         cdio_cddap_close_no_free_cdio(rip->paranoiaCtlObj);
     }
+
+#endif // CUED_HAVE_PARANOIA
 
     if (rip->qSubChannelFileName && rip->qSubChannelFile != stdout) {
         fclose(rip->qSubChannelFile);

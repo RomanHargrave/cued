@@ -25,6 +25,9 @@
 //      etc.
 //
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_PARANOIA
+#endif
 #include "unix.h"
 #include "macros.h"
 #include "cued.h" // CUED_PRODUCT_NAME
@@ -66,7 +69,9 @@ static void usage(const char *exeName)
                 "\t-i              get ALL indices\n"
                 "\t-n format       name tag and wave files (see --format-help)\n"
                 "\t-o samples      offset correction\n"
+#ifdef CUED_HAVE_PARANOIA
                 "\t-p              enable paranoia\n"
+#endif
                 "\t-q format       output Q sub-channel (mutually exclusive with -p)\n"
                 "\t-r retries      defaults to %d\n"
                 "\t-s speed        set CD-ROM drive speed\n"
@@ -175,7 +180,9 @@ int main(int argc, char *const argv[])
         { "format-help",  NULL,          cued_format_help,   OPT_NONE },
 
         { "i", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_GET_INDICES },
+#ifdef CUED_HAVE_PARANOIA
         { "p", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_USE_PARANOIA },
+#endif
         { "v", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_VERBOSE },
         { "w", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_RIP_TO_ONE_FILE },
         { "x", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_EXTRACT },

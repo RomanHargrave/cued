@@ -18,7 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_CDTEXT_V2
+#include "cued_config.h" // CUED_HAVE_CDTEXT_V2, CUED_HAVE_PARANOIA
 #endif
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
@@ -155,6 +155,16 @@ void cdio2_fprint_cd_text(FILE *cueFile, CdIo_t *cdObj, track_t track, const cha
 }
 
 
+void cdio2_driver_error(driver_return_code_t ec, const char *when)
+{
+    if (DRIVER_OP_SUCCESS != ec) {
+        cdio_error("received following error during %s: %s", when, cdio_driver_errmsg(ec));
+    }
+}
+
+
+#ifdef CUED_HAVE_PARANOIA
+
 void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, const char *when)
 {
     char *msg;
@@ -167,14 +177,6 @@ void cdio2_paranoia_msg(cdrom_drive_t *paranoiaCtlObj, const char *when)
     msg = cdio_cddap_errors(paranoiaCtlObj);
     if (msg) {
         cdio_error("paranoia returned the following errors during %s:\n%s", when, msg);
-    }
-}
-
-
-void cdio2_driver_error(driver_return_code_t ec, const char *when)
-{
-    if (DRIVER_OP_SUCCESS != ec) {
-        cdio_error("received following error during %s: %s", when, cdio_driver_errmsg(ec));
     }
 }
 
@@ -203,6 +205,8 @@ void cdio2_paranoia_callback(long int frame, paranoia_cb_mode_t prc)
 
     cdio_log(level, "paranoia reports \"%s\" at sector \"%d\" (frame=\"%ld\")",  paranoia_cb_mode2str[prc], (int) (frame / CD_FRAMEWORDS), frame);
 }
+
+#endif // CUED_HAVE_PARANOIA
 
 
 int cdio2_get_track_channels(CdIo_t *cdObj, track_t track)
