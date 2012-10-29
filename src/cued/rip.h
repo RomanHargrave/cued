@@ -30,8 +30,12 @@
 #include "macros.h"
 
 #ifdef CUED_HAVE_PARANOIA
+#ifdef CUED_HAVE_CDIO_PARANOIA_PARANOIA_H
+#include <cdio/paranoia/paranoia.h>
+#else
 #include <cdio/paranoia.h>
-#endif
+#endif // CUED_HAVE_CDIO_PARANOIA_PARANOIA_H
+#endif // CUED_HAVE_PARANOIA
 
 #include <stdio.h>
 

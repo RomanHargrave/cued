@@ -77,22 +77,25 @@ PKG_CHECK_MODULES([LIBCDIO], [libcdio >= 0.81])
 PKG_CHECK_MODULES([LIBSNDFILE], [sndfile >= 1.0.17])
 PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
 
-AC_ARG_WITH([paranoia], AS_HELP_STRING([--without-paranoia],
-    [paranoia (-p) support (default with)]))
-AS_IF([test "x$with_paranoia" != "xno"], [
-    PKG_CHECK_MODULES([LIBCDIOPARANOIA], [libcdio_paranoia >= 0.81], [
-        AC_DEFINE([HAVE_PARANOIA], [], [Define this if paranoia is installed])
-    ], [
-        AC_MSG_WARN([Paranoia was not found; building without it.])
-    ])
-])
-
-
-# Check for newer libcdio MMC header organization.
 # MacPorts installs headers in /opt/local so CPPFLAGS magic is needed.
+# Bracket package header checks with save and restore of CPPFLAGS.
 SAVE_CPPFLAGS=${CPPFLAGS}
 CPPFLAGS="${LIBCDIO_CFLAGS} ${CPPFLAGS}"
-AC_CHECK_HEADERS([cdio/mmc_ll_cmds.h])
+
+    AC_ARG_WITH([paranoia], AS_HELP_STRING([--without-paranoia],
+        [paranoia (-p) support (default with)]))
+    AS_IF([test "x$with_paranoia" != "xno"], [
+        PKG_CHECK_MODULES([LIBCDIOPARANOIA], [libcdio_paranoia >= 0.81], [
+            AC_DEFINE([HAVE_PARANOIA], [], [Define this if paranoia is installed])
+            AC_CHECK_HEADERS([cdio/paranoia/paranoia.h])
+        ], [
+            AC_MSG_WARN([Paranoia was not found; building without it.])
+        ])
+    ])
+
+    # Check for newer libcdio MMC header organization.
+    AC_CHECK_HEADERS([cdio/mmc_ll_cmds.h])
+
 CPPFLAGS=${SAVE_CPPFLAGS}
 unset SAVE_CPPFLAGS
 
