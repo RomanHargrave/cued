@@ -84,6 +84,7 @@ static void usage(const char *exeName)
                 "\t--qsc-format    read Q sub-channel using formatted method (requires -i)\n"
                 "\t--read-lead-out read disc lead-out for missing samples, if necessary\n"
                 "\t--read-pre-gap  read disc pre-gap for missing samples, if necessary\n"
+                "\t--version       display version\n"
                 "\t--format-help   display format help\n"
                 "\n"
                 , exeName
@@ -123,6 +124,16 @@ static void cued_set_sf(void *context, char *optarg, const char *optionName)
 }
 
 
+static void cued_version_help(void *context, char *optarg, const char *optionName)
+{
+    const char *exeName = *((const char **) context);
+
+    printf("%s (%s) %s\n", exeName, CUED_PRODUCT_NAME, CUED_PACKAGE_VERSION);
+
+    exit(EXIT_SUCCESS);
+}
+
+
 static void cued_format_help(void *context, char *optarg, const char *optionName)
 {
     fprintf(stderr,
@@ -158,7 +169,10 @@ static void cued_format_help(void *context, char *optarg, const char *optionName
 
 int main(int argc, char *const argv[])
 {
-    // things that need default values
+    // context for some options
+    PIT(const char, exeName);
+
+    // options that need default values
     //
     const char *optCueFileNamePattern, *optFileNamePattern, *optQSubChannelFileName;
     int optFirstRipTrack, optLastRipTrack;
@@ -178,6 +192,7 @@ int main(int argc, char *const argv[])
         { "s", &optSpeed,                opt_set_nat_no,     OPT_REQUIRED },
         { "t", NULL,                     format_set_tag,     OPT_REQUIRED },
         { "format-help",  NULL,          cued_format_help,   OPT_NONE },
+        { "version",      &exeName,      cued_version_help,  OPT_NONE },
 
         { "i", &optFlags, NULL,          OPT_SET_FLAG, RIP_F_GET_INDICES },
 #ifdef CUED_HAVE_PARANOIA
@@ -193,11 +208,10 @@ int main(int argc, char *const argv[])
         { "read-pre-gap",  &optFlags, NULL, OPT_SET_FLAG, RIP_F_READ_PREGAP },
     };
 
-    // things that do not need to be freed and will be initialized on first use
+    // these do not need to be freed and will be initialized on first use
     //
     rip_context_t rip;
     PIT(const char, devName);
-    PIT(const char, exeName);
     int i;
     track_t tracks, discFirstTrack, discLastTrack;
     char fileNameBuffer[PATH_MAX];
