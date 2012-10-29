@@ -152,7 +152,7 @@ AS_IF([test "x$enable_dmalloc_libc" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
-    [debug malloc that does not override libc (default disabled)]))
+    [debug malloc that does not overload libc (default disabled)]))
 AS_IF([test "x$enable_dmalloc_naive" = "xyes"], [
     AM_CPPFLAGS="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)' ${AM_CPPFLAGS}"
 ])
