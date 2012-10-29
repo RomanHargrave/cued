@@ -22,7 +22,7 @@
 #include <string.h>
 
 
-char *cc_type_names[] = {
+const char *cc_type_names[] = {
 #ifdef __cplusplus
     "any",
 
@@ -118,7 +118,7 @@ void _cc_free_methods(cc_class_object *cls)
 }
 
 
-cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
+cc_method_fp _cc_lookup_method(cc_class_object *cls, const char *msg)
 {
     cc_method_name key;
     cc_method_name *match;
@@ -149,7 +149,7 @@ cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg)
 static inline cc_arg_t _cc_send_msg_internal(
     cc_class_object *cls,
     cc_vars_Root *obj,
-    char *msg,
+    const char *msg,
     int argc,
     cc_arg_t *argv)
 {
@@ -176,14 +176,14 @@ static inline cc_arg_t _cc_send_msg_internal(
 }
 
 
-cc_arg_t _cc_send(cc_obj my, char *msg, int argc, cc_arg_t *argv)
+cc_arg_t _cc_send(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
     return _cc_send_msg_internal(obj->isa, obj, msg, argc, argv);
 }
 
 
-cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv)
+cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
 {
     cc_vars_Root *obj = (cc_vars_Root *) my;
     cc_class_object *supercls = obj->isa->supercls;

@@ -1,5 +1,3 @@
-cued needs --version option
-
 Debian packaging
 
 ifnames */*/*c */*/*h | fgrep -v INCLUDED

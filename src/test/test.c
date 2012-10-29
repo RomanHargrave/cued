@@ -48,7 +48,7 @@ cc_category(Foo, Blastme,
 
 int main(int argc, char *argv[])
 {
-    char *item;
+    const char *item;
     cc_obj list, cursor, f;
     cc_arg_t foo;
 

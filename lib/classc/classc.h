@@ -53,7 +53,7 @@ typedef struct _cc_arg_t {
     union {
         cc_obj o;
         void *p;
-        char *s;
+        const char *s;
 
         signed char sc;
         short int h;
@@ -77,7 +77,7 @@ typedef struct _cc_arg_t {
 
 } cc_arg_t;
 
-extern char *cc_type_names[];
+extern const char *cc_type_names[];
 
 #ifdef __cplusplus
 #define by(x, y) ({ cc_arg_t _cc_tmp_arg;  _cc_tmp_arg.u.x = (y);  _cc_tmp_arg.t = cc_type_##x;  _cc_tmp_arg; })
@@ -170,8 +170,8 @@ extern char *cc_type_names[];
 #define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
 #endif
 
-extern cc_arg_t _cc_send      (cc_obj my, char *msg, int argc, cc_arg_t *argv);
-extern cc_arg_t _cc_send_super(cc_obj my, char *msg, int argc, cc_arg_t *argv);
+extern cc_arg_t _cc_send      (cc_obj my, const char *msg, int argc, cc_arg_t *argv);
+extern cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
 
 
 typedef struct _cc_class_object cc_class_object;
@@ -231,21 +231,21 @@ cc_construct_methods(cls, cls##cat, __VA_ARGS__)
 
 
 #define cc_begin_method(cls, fn_name) \
-static cc_arg_t fn_name##cls(cc_vars_##cls *my, char *msg, int argc, cc_arg_t *argv) \
+static cc_arg_t fn_name##cls(cc_vars_##cls *my, const char *msg, int argc, cc_arg_t *argv) \
 {
 
 #define cc_begin_meta_method(cls, fn_name) \
-static cc_arg_t fn_name##cls(cc_class_object *my, char *msg, int argc, cc_arg_t *argv) \
+static cc_arg_t fn_name##cls(cc_class_object *my, const char *msg, int argc, cc_arg_t *argv) \
 {
 
 #define cc_end_method }
 
 
-typedef cc_arg_t (*cc_method_fp)(cc_obj my, char *msg, int argc, cc_arg_t *argv);
+typedef cc_arg_t (*cc_method_fp)(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
 
 struct _cc_method_name {
 
-    char *msg;
+    const char *msg;
 
     cc_method_fp fn;
 };
@@ -259,7 +259,7 @@ struct _cc_class_object {
     struct _cc_class_object *supercls;
 
     // class name
-    char *name;
+    const char *name;
 
     // size of an instance of the class
     size_t size;
@@ -270,7 +270,7 @@ struct _cc_class_object {
     cc_method_name *methods;
 };
 
-extern cc_method_fp _cc_lookup_method(cc_class_object *cls, char *msg);
+extern cc_method_fp _cc_lookup_method(cc_class_object *cls, const char *msg);
 
 
 typedef struct _cc_vars_Root {
