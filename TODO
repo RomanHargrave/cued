@@ -1,3 +1,5 @@
+libcdio version in --version
+
 Debian packaging
 
 ifnames */*/*c */*/*h | fgrep -v INCLUDED
