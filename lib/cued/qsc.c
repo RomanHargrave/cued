@@ -17,9 +17,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "qsc.h"
-
 #include <cdio/cdio.h> // cdio_msf_to_lba, __CDIO_H__
+
+#include "qsc.h"
 
 
 #undef DEBUG_CRC
