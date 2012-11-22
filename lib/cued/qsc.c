@@ -19,6 +19,8 @@
 
 #include "qsc.h"
 
+#include <cdio/cdio.h> // cdio_msf_to_lba, __CDIO_H__
+
 
 #undef DEBUG_CRC
 
@@ -305,52 +307,7 @@ int bcd_to_int(uint8_t bcd, int *native)
 }
 
 
-inline
-int int_to_bcd(int native, uint8_t *bcd)
-{
-    if (native > 99) {
-        return -1;
-    }
-
-    *bcd = ((native / 10) << 4) | (native % 10);
-
-    return 0;
-}
-
-
-int qsc_lba_to_msf(lba_t lba, msf_t *msf)
-{
-    int min, sec, frm;
-
-    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
-    if (lba < 0) {
-        lba += 450000;
-    }
-
-    min  = lba / QSC_FPM;
-    lba %= QSC_FPM;
-    sec  = lba / QSC_FPS;
-    frm  = lba % QSC_FPS;
-  
-    if (int_to_bcd(min, &msf->m)) {
-        return -1;
-    }
-
-    (void) int_to_bcd(sec, &msf->s);
-    (void) int_to_bcd(frm, &msf->f);
-
-    return 0;
-}
-
-
-int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf)
-{
-    lba_t lba = QSC_LSN_TO_LBA(lsn);
-
-    return qsc_lba_to_msf(lba, msf);
-}
-
-
+static
 int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
 {
     int min, sec, frm;
@@ -363,26 +320,7 @@ int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
         return -1;
     }
 
-    *lba = min * QSC_FPM + sec * QSC_FPS + frm;
-
-    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
-    if (min >= 90) {
-        *lba -= 450000;
-    }
-
-    return 0;
-}
-
-
-int qsc_msf_to_lsn(msf_t *msf, lsn_t *lsn)
-{
-    lba_t lba;
-
-    if (qsc_msf_to_lba(msf, &lba)) {
-        return -1;
-    }
-
-    *lsn = QSC_LBA_TO_LSN(lba);
+    *lba = cdio_msf_to_lba(msf);
 
     return 0;
 }
@@ -414,9 +352,7 @@ int qsc_msf_to_ascii(msf_t *msf_in, char *ascii)
 
 int qsc_lba_to_ascii(lba_t lba, char *ascii)
 {
-    msf_t msf;
-
-    return (qsc_lba_to_msf(lba, &msf) || qsc_msf_to_ascii(&msf, ascii)) ? -1 : 0;
+    return qsc_lsn_to_ascii(cdio_lba_to_lsn(lba), ascii);
 }
 
 
@@ -424,22 +360,9 @@ int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
 {
     msf_t msf;
 
-    return (qsc_lsn_to_msf(lsn, &msf) || qsc_msf_to_ascii(&msf, ascii)) ? -1 : 0;
-}
+    cdio_lsn_to_msf(lsn, &msf);
 
-
-int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii)
-{
-    // intentionally call qsc_lba_to_ascii with an lsn
-    return qsc_lba_to_ascii(lsn, ascii);
-}
-
-
-int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii)
-{
-    lsn_t lsn = QSC_LBA_TO_LSN(lba);
-
-    return qsc_lsn_to_ascii_for_cue(lsn, ascii);
+    return qsc_msf_to_ascii(&msf, ascii);
 }
 
 

@@ -81,13 +81,10 @@ mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   {
     unsigned int j = 0;
     driver_return_code_t i_ret = DRIVER_OP_SUCCESS;
-    lba_t i_lba = QSC_LSN_TO_LBA(i_lsn);
     const uint8_t i_cdb = mmc_get_cmd_len(cdb.field[0]);
     msf_t start_msf, end_msf;
 
-    if (qsc_lba_to_msf(i_lba, &end_msf)) {
-      return DRIVER_OP_BAD_PARAMETER;
-    }
+    cdio_lsn_to_msf(i_lsn, &end_msf);
         
     while (i_blocks > 0) {
       const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
@@ -95,9 +92,7 @@ mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
       void *p_buf2 = ((char *)p_buf ) + (j * i_blocksize);
 
       start_msf = end_msf;
-      if (qsc_lba_to_msf(i_lba + j + i_blocks2, &end_msf)) {
-        return DRIVER_OP_BAD_PARAMETER;
-      }
+      cdio_lsn_to_msf(i_lsn + j + i_blocks2, &end_msf);
       
       cdb.field[3] = cdio_from_bcd8(start_msf.m);
       cdb.field[4] = cdio_from_bcd8(start_msf.s);

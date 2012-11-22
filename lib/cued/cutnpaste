@@ -1,3 +1,64 @@
+inline
+int int_to_bcd(int native, uint8_t *bcd)
+{
+    if (native > 99) {
+        return -1;
+    }
+
+    *bcd = ((native / 10) << 4) | (native % 10);
+
+    return 0;
+}
+
+
+int qsc_lba_to_msf(lba_t lba, msf_t *msf)
+{
+    int min, sec, frm;
+
+    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
+    if (lba < 0) {
+        lba += 450000;
+    }
+
+    min  = lba / QSC_FPM;
+    lba %= QSC_FPM;
+    sec  = lba / QSC_FPS;
+    frm  = lba % QSC_FPS;
+  
+    if (int_to_bcd(min, &msf->m)) {
+        return -1;
+    }
+
+    (void) int_to_bcd(sec, &msf->s);
+    (void) int_to_bcd(frm, &msf->f);
+
+    return 0;
+}
+
+
+int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
+{
+    int min, sec, frm;
+
+    if (   bcd_to_int(msf->m, &min)
+        || bcd_to_int(msf->s, &sec)
+        || bcd_to_int(msf->f, &frm)
+       )
+    {
+        return -1;
+    }
+
+    *lba = min * QSC_FPM + sec * QSC_FPS + frm;
+
+    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
+    if (min >= 90) {
+        *lba -= 450000;
+    }
+
+    return 0;
+}
+
+
 static int reallocOpts(opt_param_t *opts[], int *optAlloc, int numOpts, int newOpts, int optHint)
 {
     opt_param_t *rcAlloc;
