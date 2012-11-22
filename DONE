@@ -1,3 +1,7 @@
+remove dependence on libcdio in qsc.c (again)
+    remove lba from qsc.c if possible
+        qsc_get_index will use lsn instead
+
 cued needs --version option
 
 classc

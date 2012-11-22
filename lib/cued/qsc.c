@@ -17,8 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <cdio/cdio.h> // cdio_msf_to_lba, __CDIO_H__
-
 #include "qsc.h"
 
 
@@ -307,8 +305,20 @@ int bcd_to_int(uint8_t bcd, int *native)
 }
 
 
-static
-int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
+inline
+int int_to_bcd(int native, uint8_t *bcd)
+{
+    if (native > 99) {
+        return -1;
+    }
+
+    *bcd = ((native / 10) << 4) | (native % 10);
+
+    return 0;
+}
+
+
+int qsc_msf_to_lsn(msf_t *msf, lsn_t *lsn)
 {
     int min, sec, frm;
 
@@ -320,7 +330,39 @@ int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
         return -1;
     }
 
-    *lba = cdio_msf_to_lba(msf);
+    *lsn = min * QSC_FPM + sec * QSC_FPS + frm - 150;
+
+    // from mmc mmc3r10g page 282
+    if (min >= 90) {
+        *lsn -= 450000;
+    }
+
+    return 0;
+}
+
+
+int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf)
+{
+    int min, sec, frm;
+
+    // from mmc mmc3r10g page 282
+    if (lsn < -150) {
+        lsn += 450000;
+    }
+
+    lsn += 150;
+
+    min  = lsn / QSC_FPM;
+    lsn %= QSC_FPM;
+    sec  = lsn / QSC_FPS;
+    frm  = lsn % QSC_FPS;
+  
+    if (int_to_bcd(min, &msf->m)) {
+        return -1;
+    }
+
+    (void) int_to_bcd(sec, &msf->s);
+    (void) int_to_bcd(frm, &msf->f);
 
     return 0;
 }
@@ -350,28 +392,11 @@ int qsc_msf_to_ascii(msf_t *msf_in, char *ascii)
 }
 
 
-int qsc_lba_to_ascii(lba_t lba, char *ascii)
-{
-    return qsc_lsn_to_ascii(cdio_lba_to_lsn(lba), ascii);
-}
-
-
-int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii)
-{
-    // subtract the 2 second pre-gap for track 1
-    lba -= QSC_FPG;
-
-    return qsc_lba_to_ascii(lba, ascii);
-}
-
-
 int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
 {
     msf_t msf;
 
-    cdio_lsn_to_msf(lsn, &msf);
-
-    return qsc_msf_to_ascii(&msf, ascii);
+    return (qsc_lsn_to_msf(lsn, &msf) || qsc_msf_to_ascii(&msf, ascii)) ? -1 : 0;
 }
 
 
@@ -381,8 +406,8 @@ int qsc_get_index(qsc_buffer_t *p, qsc_index_t *index)
 
     if (   bcd_to_int(     qsc->mode_1.track,    &index->track)
         || bcd_to_int(     qsc->mode_1.index,    &index->index)
-        || qsc_msf_to_lba(&qsc->mode_1.relative, &index->relativeLba)
-        || qsc_msf_to_lba(&qsc->mode_1.absolute, &index->absoluteLba))
+        || qsc_msf_to_lsn(&qsc->mode_1.relative, &index->relativeLsn)
+        || qsc_msf_to_lsn(&qsc->mode_1.absolute, &index->absoluteLsn))
     {
         return -1;
     }

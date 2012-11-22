@@ -134,6 +134,7 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
 {
     int flags;
     qsc_index_t index;
+    lba_t newLba;
     lba_t *currLba;
     char *isrc;
 
@@ -152,9 +153,11 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
                 // set this for ISRC case
                 rip->trackHint = index.track;
 
+                // it is more convenient to work with a zero-based index
+                newLba = index.absoluteLsn + CDIO_PREGAP_SECTORS;
                 currLba = &rip->ripData[index.track].indices[index.index];
-                if (!*currLba || index.absoluteLba < *currLba) {
-                    *currLba = index.absoluteLba;
+                if (!*currLba || newLba < *currLba) {
+                    *currLba = newLba;
 
                     // do not do this for every record;  hence, inside the if statement
                     flags = 0;

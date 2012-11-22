@@ -167,8 +167,8 @@ int main(int argc, char *const argv[])
 
                 if (   qsc_get_index(&qsc.buf, &index)
                     || qsc_lsn_to_ascii(qsc.requested, requestedMsf)
-                    || qsc_lba_to_ascii(index.relativeLba, relativeMsf)
-                    || qsc_lba_to_ascii(index.absoluteLba, absoluteMsf)
+                    || qsc_lsn_to_ascii(index.relativeLsn, relativeMsf)
+                    || qsc_lsn_to_ascii(index.absoluteLsn, absoluteMsf)
                    )
                 {
                     fprintf(stderr, "index at sector %d has out of range members\n", qsc.requested);
@@ -181,9 +181,9 @@ int main(int argc, char *const argv[])
                     , index.track
                     , index.index
                     , relativeMsf
-                    , QSC_LBA_TO_LSN(index.relativeLba)
+                    , index.relativeLsn
                     , absoluteMsf
-                    , QSC_LBA_TO_LSN(index.absoluteLba)
+                    , index.absoluteLsn
                     , requestedMsf
                     , qsc.requested
                     );

@@ -34,6 +34,15 @@
 #include <stdlib.h> // atoll
 
 
+static int cued_lba_to_ascii_for_cue(lba_t lba, char *ascii)
+{
+    // subtract the 2-second lead-in pre-gap for track 1
+    lba -= CDIO_PREGAP_SECTORS;
+
+    return qsc_lsn_to_ascii(cdio_lba_to_lsn(lba), ascii);
+}
+
+
 void cued_write_cuefile(
     rip_context_t *rip,
     const char *devName,
@@ -179,7 +188,7 @@ void cued_write_cuefile(
                 if (1 == track && !index && ripSilentPregap) {
 
                     // pregap for first track was silent; track 0 was deleted; use PREGAP directive in cuesheet
-                    if (!qsc_lba_to_ascii_for_cue(firstTrackLba, msfStr)) {
+                    if (!cued_lba_to_ascii_for_cue(firstTrackLba, msfStr)) {
                         fprintf(rip->cueFile, "    PREGAP %s\n", msfStr);
                     } else {
                         cdio2_abort("failed to convert pre-gap for track %02d", track);
@@ -191,7 +200,7 @@ void cued_write_cuefile(
                         useLba -= firstTrackLba;
                     }
 
-                    if (!qsc_lba_to_ascii_for_cue(useLba, msfStr)) {
+                    if (!cued_lba_to_ascii_for_cue(useLba, msfStr)) {
                         fprintf(rip->cueFile, "    INDEX %02d %s\n", index, msfStr);
                     } else {
                         cdio2_abort("failed to convert index %02d for track %02d", index, track);
@@ -204,7 +213,7 @@ void cued_write_cuefile(
             if (ripSilentPregap) {
                 useLba -= firstTrackLba;
                 if (1 == track) {
-                    if (!qsc_lba_to_ascii_for_cue(firstTrackLba, msfStr)) {
+                    if (!cued_lba_to_ascii_for_cue(firstTrackLba, msfStr)) {
                         fprintf(rip->cueFile, "    PREGAP %s\n", msfStr);
                     } else {
                         cdio2_abort("failed to convert pre-gap for track %02d", track);
@@ -212,7 +221,7 @@ void cued_write_cuefile(
                 }
             }
 
-            if (!qsc_lba_to_ascii_for_cue(useLba, msfStr)) {
+            if (!cued_lba_to_ascii_for_cue(useLba, msfStr)) {
                 fprintf(rip->cueFile, "    INDEX %02d %s\n", 1, msfStr);
             } else {
                 cdio2_abort("failed to convert index for track %02d", track);

@@ -1,9 +1,5 @@
 move read_cd_msf into cdio2
 
-remove dependence on libcdio in qsc.c (again)
-    remove lba from qsc.c if possible
-        qsc_get_index will use lsn instead
-
 libcdio version in --version
 
 Debian packaging
