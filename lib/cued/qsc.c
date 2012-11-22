@@ -356,6 +356,15 @@ int qsc_lba_to_ascii(lba_t lba, char *ascii)
 }
 
 
+int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii)
+{
+    // subtract the 2 second pre-gap for track 1
+    lba -= QSC_FPG;
+
+    return qsc_lba_to_ascii(lba, ascii);
+}
+
+
 int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
 {
     msf_t msf;

@@ -90,8 +90,9 @@ extern int qsc_get_isrc_year(char *isrc);
 
 extern int qsc_msf_to_ascii(msf_t *msf_in, char *ascii);
 
-extern int qsc_lba_to_ascii(lba_t lba, char *ascii);
-extern int qsc_lsn_to_ascii(lsn_t lsn, char *ascii);
+extern int qsc_lba_to_ascii_for_cue(lba_t lba, char *ascii);
+extern int qsc_lba_to_ascii        (lba_t lba, char *ascii);
+extern int qsc_lsn_to_ascii        (lsn_t lsn, char *ascii);
 
 extern crc16_t qsc_crc_data(uint8_t *data, ssize_t len);
 
