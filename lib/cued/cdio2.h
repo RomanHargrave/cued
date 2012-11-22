@@ -74,5 +74,13 @@ void cdio2_set_2_digits_nt(char *digits, int n)
     digits[2] = 0;
 }
 
+extern driver_return_code_t
+mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                  int read_sector_type, bool b_digital_audio_play,
+                  bool b_sync, uint8_t header_codes, bool b_user_data,
+                  bool b_edc_ecc, uint8_t c2_error_information,
+                  uint8_t subchannel_selection, uint16_t i_blocksize,
+                  uint32_t i_blocks );
+
 
 #endif // CDIO2_H_INCLUDED

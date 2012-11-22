@@ -23,6 +23,11 @@
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
+#include <cdio/util.h> // cdio_from_bcd8
+#include <cdio/mmc.h>
+#ifdef CUED_HAVE_CDIO_MMC_LL_CMDS_H
+#include <cdio/mmc_ll_cmds.h>
+#endif
 #include "cdio2.h"
 
 #include <string.h> // strlen, strerror, strchr
@@ -279,4 +284,77 @@ void cdio2_get_length(char *length, lsn_t sectors)
         length[1] = ':';
         cdio2_set_2_digits_nt(&length[2], seconds);
     }
+}
+
+
+/* Maximum blocks to retrieve. Would be nice to customize this based on
+   drive capabilities.
+*/
+#define MAX_CD_READ_BLOCKS 16
+#define CD_READ_TIMEOUT_MS mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2)
+
+
+/*! issue an MMC READ CD MSF command.
+*/
+driver_return_code_t
+mmc_read_cd_msf ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                  int read_sector_type, bool b_digital_audio_play,
+                  bool b_sync, uint8_t header_codes, bool b_user_data,
+                  bool b_edc_ecc, uint8_t c2_error_information,
+                  uint8_t subchannel_selection, uint16_t i_blocksize,
+                  uint32_t i_blocks )
+{
+  mmc_cdb_t cdb = {{0, }};
+  uint8_t cdb9 = 0;
+
+  CDIO_MMC_SET_COMMAND  (cdb.field, CDIO_MMC_GPCMD_READ_MSF);
+  CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
+  if (b_digital_audio_play) { cdb.field[1] |= 0x2; }
+  
+  if (b_sync)      { cdb9 |= 128; }
+  if (b_user_data) { cdb9 |=  16; }
+  if (b_edc_ecc)   { cdb9 |=   8; }
+  cdb9 |= (header_codes & 3)         << 5;
+  cdb9 |= (c2_error_information & 3) << 1;
+  cdb.field[9]  = cdb9;
+
+  cdb.field[10] = (subchannel_selection & 7);
+  
+  {
+    unsigned int j = 0;
+    driver_return_code_t i_ret = DRIVER_OP_SUCCESS;
+    const uint8_t i_cdb = mmc_get_cmd_len(cdb.field[0]);
+    msf_t start_msf, end_msf;
+
+    cdio_lsn_to_msf(i_lsn, &end_msf);
+        
+    while (i_blocks > 0) {
+      const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
+        ? MAX_CD_READ_BLOCKS : i_blocks;
+      void *p_buf2 = ((char *)p_buf ) + (j * i_blocksize);
+
+      start_msf = end_msf;
+      cdio_lsn_to_msf(i_lsn + j + i_blocks2, &end_msf);
+      
+      cdb.field[3] = cdio_from_bcd8(start_msf.m);
+      cdb.field[4] = cdio_from_bcd8(start_msf.s);
+      cdb.field[5] = cdio_from_bcd8(start_msf.f);
+      cdb.field[6] = cdio_from_bcd8(  end_msf.m);
+      cdb.field[7] = cdio_from_bcd8(  end_msf.s);
+      cdb.field[8] = cdio_from_bcd8(  end_msf.f);
+
+      i_ret = mmc_run_cmd_len (p_cdio, CD_READ_TIMEOUT_MS,
+                               &cdb, i_cdb,
+                               SCSI_MMC_DATA_READ, 
+                               i_blocksize * i_blocks2,
+                               p_buf2);
+
+      if (i_ret) { return i_ret; }
+
+      i_blocks -= i_blocks2;
+      j += i_blocks2;
+    }
+
+    return i_ret;
+  }
 }

@@ -1,5 +1,3 @@
-move read_cd_msf into cdio2
-
 libcdio version in --version
 
 Debian packaging
