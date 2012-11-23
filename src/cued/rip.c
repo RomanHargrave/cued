@@ -44,8 +44,17 @@
 
 void cued_init_rip_data(rip_context_t *rip)
 {
-    memset(rip->ripData, 0x00, sizeof(rip->ripData));
-    memset(rip->mcn,     0x00, sizeof(rip->mcn));
+    int i, j;
+
+    for (i = 0;  i < SNELEMS(rip->ripData);  ++i) {
+        for (j = 0;  j < CUED_MAX_INDICES;  ++j) {
+            rip->ripData[i].indices[j] = CDIO_INVALID_LSN;
+        }
+        rip->ripData[i].isrc[0] = 0;
+        rip->ripData[i].flags   = 0;
+    }
+
+    memset(rip->mcn, 0x00, sizeof(rip->mcn));
     rip->year = 0;
 
     rip->trackHint  = 0;
@@ -58,8 +67,7 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
 {
     int flags;
     qsc_index_t index;
-    lba_t newLba;
-    lba_t *currLba;
+    lsn_t *currLsn;
     char *isrc;
 
     if (qsc_check_crc(qsc)) {
@@ -77,11 +85,9 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
                 // set this for ISRC case
                 rip->trackHint = index.track;
 
-                // it is more convenient to work with a zero-based index
-                newLba = index.absoluteLsn + CDIO_PREGAP_SECTORS;
-                currLba = &rip->ripData[index.track].indices[index.index];
-                if (!*currLba || newLba < *currLba) {
-                    *currLba = newLba;
+                currLsn = &rip->ripData[index.track].indices[index.index];
+                if (*currLsn == CDIO_INVALID_LSN || index.absoluteLsn < *currLsn) {
+                    *currLsn = index.absoluteLsn;
 
                     // do not do this for every record;  hence, inside the if statement
                     flags = 0;

@@ -330,7 +330,7 @@ int qsc_msf_to_lsn(msf_t *msf, lsn_t *lsn)
         return -1;
     }
 
-    *lsn = min * QSC_FPM + sec * QSC_FPS + frm - 150;
+    *lsn = min * QSC_FPM + sec * QSC_FPS + frm - QSC_FPG;
 
     // from mmc mmc3r10g page 282
     if (min >= 90) {
@@ -346,11 +346,11 @@ int qsc_lsn_to_msf(lsn_t lsn, msf_t *msf)
     int min, sec, frm;
 
     // from mmc mmc3r10g page 282
-    if (lsn < -150) {
+    if (lsn < -QSC_FPG) {
         lsn += 450000;
     }
 
-    lsn += 150;
+    lsn += QSC_FPG;
 
     min  = lsn / QSC_FPM;
     lsn %= QSC_FPM;

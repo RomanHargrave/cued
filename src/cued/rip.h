@@ -45,7 +45,7 @@
 
 typedef struct _rip_data_t {
 
-    lba_t indices[ CUED_MAX_INDICES ];
+    lsn_t indices[ CUED_MAX_INDICES ];
     char  isrc   [ ISRC_LEN + 1 ];
     int flags;
 

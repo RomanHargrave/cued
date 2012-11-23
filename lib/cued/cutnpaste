@@ -1,48 +1,3 @@
-// frames in pre-gap
-#define QSC_FPG (QSC_FPS * 2)
-
-static
-int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
-{
-    int min, sec, frm;
-
-    if (   bcd_to_int(msf->m, &min)
-        || bcd_to_int(msf->s, &sec)
-        || bcd_to_int(msf->f, &frm)
-       )
-    {
-        return -1;
-    }
-
-    *lba = cdio_msf_to_lba(msf);
-
-    return 0;
-}
-
-
-int qsc_msf_to_lba(msf_t *msf, lba_t *lba)
-{
-    int min, sec, frm;
-
-    if (   bcd_to_int(msf->m, &min)
-        || bcd_to_int(msf->s, &sec)
-        || bcd_to_int(msf->f, &frm)
-       )
-    {
-        return -1;
-    }
-
-    *lba = min * QSC_FPM + sec * QSC_FPS + frm;
-
-    // from mmc mmc3r10g page 282;  note that libcdio's lsn is mmc's lba
-    if (min >= 90) {
-        *lba -= 450000;
-    }
-
-    return 0;
-}
-
-
 static int reallocOpts(opt_param_t *opts[], int *optAlloc, int numOpts, int newOpts, int optHint)
 {
     opt_param_t *rcAlloc;
@@ -256,24 +211,6 @@ cleanup:
     exit(EXIT_SUCCESS);
 
 
-extern bool cdio2_get_track_msf(CdIo_t *cdObj, track_t track, msf_t *msf);
-
-
-bool cdio2_get_track_msf(CdIo_t *cdObj, track_t track, msf_t *msf)
-{
-    lsn_t lsn;
-
-    lsn = cdio_get_track_lsn(cdObj, track);
-    if (CDIO_INVALID_LSN == lsn) {
-        return false;
-    }
-
-    lsn -= CDIO_PREGAP_SECTORS;
-
-    return qsc_lsn_to_msf(lsn, msf) ? false : true;
-}
-
-
 /*  memory is requested from the operating system in larger chunks
 **  than the process needs immediately;  consequently, there're fewer
 **  switches to supervisor mode to obtain memory from the operating
@@ -352,27 +289,6 @@ int cddb2_get_file_path(
                             cddb2_abort("cannot use substitution code \"%c\" with --no-cddb option", patternChar);
                             goto error;
                         }
-
-
-
-int qsc_lsn_to_ascii(lsn_t lsn, char *ascii)
-{
-    msf_t msf;
-
-    return (qsc_lsn_to_msf(lsn, &msf) || qsc_msf_to_ascii(&msf, ascii)) ? -1 : 0;
-}
-
-
-int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii)
-{
-    lsn -= FPG;
-
-    return qsc_lsn_to_ascii(lsn, ascii);
-}
-
-
-extern int qsc_lsn_to_ascii(lsn_t lsn, char *ascii);
-extern int qsc_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii);
 
 
 lsn_t cdio2_get_track_last_lsn(CdIo_t *cdObj, track_t track, track_t discLastTrack)

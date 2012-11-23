@@ -107,5 +107,8 @@ extern crc16_t qsc_crc_data(uint8_t *data, ssize_t len);
 // frames per minute
 #define QSC_FPM (QSC_FPS * 60)
 
+// frames in pre-gap
+#define QSC_FPG (QSC_FPS * 2)
+
 
 #endif // QSC_H_INCLUDED

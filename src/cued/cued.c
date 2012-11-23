@@ -408,26 +408,26 @@ int main(int argc, char *const argv[])
 
         if (rip.cueFileNamePattern) {
 
-            lba_t *ripLba;
+            lsn_t *ripLsn;
             char *isrc;
-            lba_t pregap;
+            lsn_t pregap;
             track_t track;
 
             for (track = discFirstTrack;  track <= discLastTrack;  ++track) {
 
                 // for image files, libcdio may have the pregap;  if so, use it
-                pregap = cdio_get_track_pregap_lba(rip.cdObj, track);
-                if (CDIO_INVALID_LBA != pregap) {
-                    ripLba = rip.ripData[track].indices;
-                    if (!ripLba[0]) {
-                        ripLba[0] = pregap;
+                pregap = cdio_get_track_pregap_lsn(rip.cdObj, track);
+                if (CDIO_INVALID_LSN != pregap) {
+                    ripLsn = rip.ripData[track].indices;
+                    if (ripLsn[0] == CDIO_INVALID_LSN) {
+                        ripLsn[0] = pregap;
                         cdio_info("using pregap from cdio");
                     } else {
                         cdio_warn("ignoring cdio pregap for track %02d because Q sub-channel had pregap", track);
                     }
-                    if (!ripLba[1]) {
-                        ripLba[1] = cdio_get_track_lba(rip.cdObj, track);
-                        if (CDIO_INVALID_LBA == ripLba[1]) {
+                    if (ripLsn[1] == CDIO_INVALID_LSN) {
+                        ripLsn[1] = cdio_get_track_lsn(rip.cdObj, track);
+                        if (CDIO_INVALID_LSN == ripLsn[1]) {
                             cdio2_abort("failed to get first sector number for track %02d", track);
                         }
                     }
@@ -444,17 +444,17 @@ int main(int argc, char *const argv[])
 
             // Nero does not properly handle the pregap for the first track
             if (DRIVER_NRG == cdio_get_driver_id(rip.cdObj) && 1 == discFirstTrack) {
-                lba_t lba = cdio_get_track_lba(rip.cdObj, discFirstTrack);
-                if (CDIO_INVALID_LBA == lba) {
+                lsn_t lsn = cdio_get_track_lsn(rip.cdObj, discFirstTrack);
+                if (CDIO_INVALID_LSN == lsn) {
                     cdio2_abort("failed to get first sector number for track %02d", discFirstTrack);
-                } else if (CDIO_PREGAP_SECTORS != lba) {
+                } else if (lsn) {
                     char *mcn = cdio_get_mcn(rip.cdObj);
 
                     // (heuristic) check for DAO
                     if (mcn) {
                         libc_free(mcn);
-                        rip.ripData[discFirstTrack].indices[0] = CDIO_PREGAP_SECTORS;
-                        rip.ripData[discFirstTrack].indices[1] = lba;
+                        rip.ripData[discFirstTrack].indices[0] = 0;
+                        rip.ripData[discFirstTrack].indices[1] = lsn;
                     }
                 }
             }
