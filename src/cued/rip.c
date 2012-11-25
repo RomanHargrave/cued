@@ -44,17 +44,8 @@
 
 void cued_init_rip_data(rip_context_t *rip)
 {
-    int i, j;
-
-    for (i = 0;  i < SNELEMS(rip->ripData);  ++i) {
-        for (j = 0;  j < CUED_MAX_INDICES;  ++j) {
-            rip->ripData[i].indices[j] = CDIO_INVALID_LSN;
-        }
-        rip->ripData[i].isrc[0] = 0;
-        rip->ripData[i].flags   = 0;
-    }
-
-    memset(rip->mcn, 0x00, sizeof(rip->mcn));
+    memset(rip->ripData, 0x00, sizeof(rip->ripData));
+    memset(rip->mcn,     0x00, sizeof(rip->mcn));
     rip->year = 0;
 
     rip->trackHint  = 0;
@@ -86,7 +77,7 @@ static void cued_parse_qsc(qsc_buffer_t *qsc, rip_context_t *rip)
                 rip->trackHint = index.track;
 
                 currLsn = &rip->ripData[index.track].indices[index.index];
-                if (*currLsn == CDIO_INVALID_LSN || index.absoluteLsn < *currLsn) {
+                if (!*currLsn || index.absoluteLsn < *currLsn) {
                     *currLsn = index.absoluteLsn;
 
                     // do not do this for every record;  hence, inside the if statement

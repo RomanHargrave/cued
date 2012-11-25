@@ -419,13 +419,13 @@ int main(int argc, char *const argv[])
                 pregap = cdio_get_track_pregap_lsn(rip.cdObj, track);
                 if (CDIO_INVALID_LSN != pregap) {
                     ripLsn = rip.ripData[track].indices;
-                    if (ripLsn[0] == CDIO_INVALID_LSN) {
+                    if (!ripLsn[0]) {
                         ripLsn[0] = pregap;
                         cdio_info("using pregap from cdio");
                     } else {
                         cdio_warn("ignoring cdio pregap for track %02d because Q sub-channel had pregap", track);
                     }
-                    if (ripLsn[1] == CDIO_INVALID_LSN) {
+                    if (!ripLsn[1]) {
                         ripLsn[1] = cdio_get_track_lsn(rip.cdObj, track);
                         if (CDIO_INVALID_LSN == ripLsn[1]) {
                             cdio2_abort("failed to get first sector number for track %02d", track);
