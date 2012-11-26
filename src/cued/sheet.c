@@ -169,11 +169,11 @@ void cued_write_cuefile(
         ripLsn = rip->ripData[track].indices;
 
         // don't use ripLsn[0] here because it is possible ripLsn[1] is set, although ripLsn[0] is not
-        if (ripLsn[1]) {
+        if (CDIO_INVALID_LSN != ripLsn[1]) {
             for (index = 0;  index < CUED_MAX_INDICES;  ++index) {
 
                 useLsn = ripLsn[index];
-                if (!useLsn) {
+                if (CDIO_INVALID_LSN == useLsn) {
                     if (!index) {
 
                         // this is the case where ripLsn[1] is set, but ripLsn[0] is not (no pre-gap)

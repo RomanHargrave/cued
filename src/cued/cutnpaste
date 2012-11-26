@@ -1,14 +1,3 @@
-    int i, j;
-
-    for (i = 0;  i < SNELEMS(rip->ripData);  ++i) {
-        for (j = 0;  j < CUED_MAX_INDICES;  ++j) {
-            rip->ripData[i].indices[j] = CDIO_INVALID_LSN;
-        }
-        rip->ripData[i].isrc[0] = 0;
-        rip->ripData[i].flags   = 0;
-    }
-
-
     printf("%d\n", PATH_MAX);
     exit(EXIT_SUCCESS);
 
