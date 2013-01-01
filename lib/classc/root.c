@@ -72,11 +72,14 @@ cc_begin_meta_method(MetaRoot, initVector)
     for (i = 0;  i < nelems;  ++i) {
 
         obj->isa = my;
+
+        // should there be an option to skip the initMethod for arrays allocated in zero memory (statically?)
         (void) initMethod(obj, "init", nelems - 2, &argv[2]);
+
         obj = (cc_vars_Root *) ((char *) obj + my->size);
     }
 
-    // which one would we return?  the first?
+    // which one would we return?  the first?  returning the class object is confusing
     //return by_obj(my);
 
     // return NULL in order to avoid the case where the object is not what the user thinks
