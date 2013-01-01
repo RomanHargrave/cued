@@ -23,9 +23,9 @@
 
 
 cc_begin_meta_method(MetaRoot, new)
-    cc_obj obj = as_obj(cc_msg(my, "alloc"));
+    cc_obj obj = as_obj(cc_msg(my, "alloc", argc, argv));
     if (obj) {
-        return cc_msg(obj, "init");
+        return cc_msg(obj, "init", argc, argv);
     } else {
         return cc_msg(my, "error", by_str("alloc method did not return instance for class \""),
                       by_str(my->name), by_str("\""));
@@ -50,8 +50,8 @@ cc_begin_meta_method(MetaRoot, initVector)
     cc_vars_Root *obj;
     int i, nelems;
 
-    if (argc != 2) {
-        return cc_msg(my, "error", by_str("wrong number of arguments to initVector for class \""),
+    if (argc < 2) {
+        return cc_msg(my, "error", by_str("too few arguments to initVector for class \""),
                       by_str(my->name), by_str("\""));
     }
 
@@ -72,7 +72,7 @@ cc_begin_meta_method(MetaRoot, initVector)
     for (i = 0;  i < nelems;  ++i) {
 
         obj->isa = my;
-        (void) initMethod(obj, "init", 0, NULL);
+        (void) initMethod(obj, "init", nelems - 2, &argv[2]);
         obj = (cc_vars_Root *) ((char *) obj + my->size);
     }
 
@@ -98,7 +98,7 @@ cc_end_method
 
 cc_begin_method(Root, copy)
     cc_class_object *cls = my->isa;
-    cc_vars_Root *copy = (cc_vars_Root *) as_obj(cc_msg(cls, "alloc"));
+    cc_vars_Root *copy = (cc_vars_Root *) as_obj(cc_msg(cls, "alloc", argc, argv));
     memcpy((char *) copy + sizeof(cc_vars_Root), (char *) my + sizeof(cc_vars_Root),
            cls->size - sizeof(cc_vars_Root));
     return by_obj(copy);
