@@ -23,7 +23,7 @@
 
 
 cc_begin_meta_method(MetaRoot, new)
-    cc_obj obj = as_obj(_cc_send(my, "alloc", argc, argv));
+    cc_obj obj = as_obj(cc_msg(my, "alloc"));
     if (obj) {
         return _cc_send(obj, "init", argc, argv);
     } else {
@@ -98,7 +98,7 @@ cc_end_method
 
 cc_begin_method(Root, copy)
     cc_class_object *cls = my->isa;
-    cc_vars_Root *copy = (cc_vars_Root *) as_obj(_cc_send(cls, "alloc", argc, argv));
+    cc_vars_Root *copy = (cc_vars_Root *) as_obj(cc_msg(cls, "alloc"));
     memcpy((char *) copy + sizeof(cc_vars_Root), (char *) my + sizeof(cc_vars_Root),
            cls->size - sizeof(cc_vars_Root));
     return by_obj(copy);
