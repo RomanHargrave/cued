@@ -1,7 +1,7 @@
 //
 // root.c
 //
-// Copyright (C) 2008 Robert William Fuller <hydrologiccycle@gmail.com>
+// Copyright (C) 2008-2012 Robert William Fuller <hydrologiccycle@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ cc_begin_meta_method(MetaRoot, new)
         return cc_msg(obj, "init");
     } else {
         return cc_msg(my, "error", by_str("alloc method did not return instance for class \""),
-            by_str(my->name), by_str("\""));
+                      by_str(my->name), by_str("\""));
     }
 cc_end_method
 
@@ -40,8 +40,47 @@ cc_begin_meta_method(MetaRoot, alloc)
         return by_obj(obj);
     } else {
         return cc_msg(my, "error", by_str("out of memory allocating object of class \""),
-            by_str(my->name), by_str("\""));
+                      by_str(my->name), by_str("\""));
     }
+cc_end_method
+
+
+cc_begin_meta_method(MetaRoot, initVector)
+    cc_method_fp initMethod;
+    cc_vars_Root *obj;
+    int i, nelems;
+
+    if (argc != 2) {
+        return cc_msg(my, "error", by_str("wrong number of arguments to initVector for class \""),
+                      by_str(my->name), by_str("\""));
+    }
+
+    // some optimization for vector init: look up the method only once (optimize for large vector);
+    // this lookup is correct because we are using "my" as the class, not "my->isa" which would be the meta class
+    //
+    initMethod = cc_lookup_method(my, "init");
+    if (!initMethod) {
+        return cc_msg(my, "error", by_str("initVector called for class \""),
+                      by_str(my->name), by_str("\" which lacks init method"));
+    }
+
+    // should check for "!is_ptr && !is_obj && !is_any" and treat as error?
+    // is it a pointer until it is made into an object?  or is it an object that is not initialized?
+    //
+    obj = (cc_vars_Root *) argv[0].u.p;
+    nelems = as_int(argv[1]);
+    for (i = 0;  i < nelems;  ++i) {
+
+        obj->isa = my;
+        (void) initMethod(obj, "init", 0, NULL);
+        obj = (cc_vars_Root *) ((char *) obj + my->size);
+    }
+
+    // which one would we return?  the first?
+    //return by_obj(my);
+
+    // return NULL in order to avoid the case where the object is not what the user thinks
+    return by_ptr(NULL);
 cc_end_method
 
 
@@ -60,7 +99,8 @@ cc_end_method
 cc_begin_method(Root, copy)
     cc_class_object *cls = my->isa;
     cc_vars_Root *copy = (cc_vars_Root *) as_obj(cc_msg(cls, "alloc"));
-    memcpy((char *) copy + sizeof(cc_vars_Root), (char *) my + sizeof(cc_vars_Root), cls->size - sizeof(cc_vars_Root));
+    memcpy((char *) copy + sizeof(cc_vars_Root), (char *) my + sizeof(cc_vars_Root),
+           cls->size - sizeof(cc_vars_Root));
     return by_obj(copy);
 cc_end_method
 
@@ -78,9 +118,10 @@ cc_end_method
 
 
 cc_construct_methods(MetaRoot, MetaRoot, 
-    cc_method("alloc", allocMetaRoot),
-    cc_method("new",   newMetaRoot),
-    cc_method("error", errorRoot),
+    cc_method("new",        newMetaRoot),
+    cc_method("alloc",      allocMetaRoot),
+    cc_method("initVector", initVectorMetaRoot),
+    cc_method("error",      errorRoot),
     )
 cc_destruct_methods(MetaRoot)
 
@@ -88,17 +129,17 @@ cc_class_object MetaRoot = {
     NULL,
     NULL,
     "MetaRoot",
-    sizeof(cc_vars_Root),
+    (size_t) -1,
     0,
     NULL
 };
 
 
 cc_construct_methods(Root, Root,
-    cc_method("free",  freeRoot),
     cc_method("init",  initRoot),
-    cc_method("error", errorRoot),
+    cc_method("free",  freeRoot),
     cc_method("copy",  copyRoot),
+    cc_method("error", errorRoot),
     )
 cc_destruct_methods(Root)
 

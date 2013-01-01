@@ -1,3 +1,22 @@
+//
+// test.c
+//
+// Copyright (C) 2008-2012 Robert William Fuller <hydrologiccycle@gmail.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 #include "ob.h"
 
 #include <stdlib.h>
@@ -14,6 +33,10 @@ cc_begin_method(Foo, test)
     }
     printf("\n");
 
+    if (!argc) {
+        printf("argv[0] type is %d\n", argv[0].t);
+    }
+
     printf("msg is %s\n", msg);
     printf("bar is %d\n", my->bar);
 
@@ -27,6 +50,12 @@ cc_begin_method(Foo, setBar)
 cc_end_method
 
 
+cc_begin_method(Foo, forward)
+    printf("forward handler called with message %s!!!\n", msg);
+    return by_obj(my);
+cc_end_method
+
+
 cc_class_object(Foo)
 
 
@@ -35,7 +64,7 @@ cc_class(Foo,
     cc_method("test", testFoo),
     cc_method("blow", testFoo),
     cc_method("blarf", testFoo),
-    cc_method("forward", testFoo),
+    cc_method("forward", forwardFoo),
     )
 
 cc_category(Foo, Blastme,
@@ -67,8 +96,11 @@ int main(int argc, char *argv[])
     cc_msg(f, "setBar", by_int(34));
 
     cc_msg(f, test, by_int(1), by_int(2), by_obj(f));
+    cc_msg(f, test);
 
     cc_msg(f, "blacker", by_int(1));
+
+    cc_msg(f, "not found");
 
     cc_msg(f, "free");
 

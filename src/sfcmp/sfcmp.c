@@ -347,7 +347,8 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
             // would need to be asserted above, especially in the case
             // where we are looking for a match smaller than the threshold
             // (at the end of the track);  also, this does not discern
-            // silence in the latter portion of the match
+            // silence in the latter portion of the match;  not to mention
+            // that silence could be some other non-varying value than zero....
             //
             if (n == countLeadingZeros(sw1, n, 1)) {
 

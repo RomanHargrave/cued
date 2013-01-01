@@ -1,7 +1,7 @@
 //
 // classc.h
 //
-// Copyright (C) 2008 Robert William Fuller <hydrologiccycle@gmail.com>
+// Copyright (C) 2008-2012 Robert William Fuller <hydrologiccycle@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -219,7 +219,7 @@ cc_class_object Meta##cls = { \
     NULL, \
     &cc_Meta##cls##_isa, \
     "Meta" #cls, \
-    sizeof(cc_vars_##cls), \
+    (size_t) -1, \
     0, \
     NULL \
     };
@@ -242,6 +242,9 @@ static cc_arg_t fn_name##cls(cc_class_object *my, const char *msg, int argc, cc_
 
 
 typedef cc_arg_t (*cc_method_fp)(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
+
+extern cc_method_fp cc_lookup_method(cc_class_object *cls, const char *msg);
+
 
 struct _cc_method_name {
 
@@ -269,9 +272,6 @@ struct _cc_class_object {
     // method pointers paired with their names
     cc_method_name *methods;
 };
-
-extern cc_method_fp _cc_lookup_method(cc_class_object *cls, const char *msg);
-
 
 typedef struct _cc_vars_Root {
 
