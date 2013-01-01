@@ -73,7 +73,7 @@ cc_begin_meta_method(MetaRoot, initVector)
 
         obj->isa = my;
 
-        // should there be an option to skip the initMethod for arrays allocated in zero memory (statically?)
+        // should there be an option to skip the initMethod for arrays allocated in zeroed memory (statically?)
         (void) initMethod(obj, "init", nelems - 2, &argv[2]);
 
         obj = (cc_vars_Root *) ((char *) obj + my->size);
