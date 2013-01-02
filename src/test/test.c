@@ -73,6 +73,10 @@ cc_category(Foo, Blastme,
     )
 
 
+cc_vars_Foo fooVector[5];
+
+#define NELEMS(vector) (sizeof(vector) / sizeof(vector[0]))
+
 #include "firstcls.h"
 
 int main(int argc, char *argv[])
@@ -196,6 +200,11 @@ int main(int argc, char *argv[])
     if (is_str(foo)) {
         printf("is_str(foo) returns true\n");
     }
+
+
+    cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(NELEMS(fooVector)));
+    cc_msg(&fooVector[4], "test", by_int(5));
+
 
     //cc_msg(list, "son of a whore");
     //as_int(foo);
