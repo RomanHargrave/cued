@@ -306,11 +306,98 @@ static inline FcTreeNode *TreeUnbalancedInsert
 }
 
 
+static inline FcTreeNode *TreeInsert(cc_vars_FcTree *theTree, cc_arg_t theItem, FcTreeNode *theNewSubTree)
+{
+    FcTreeNode *anUncle;
+
+    FcTreeNode *aSubTree = TreeUnbalancedInsert(theTree, theItem, theNewSubTree);
+    if (aSubTree != theNewSubTree) {
+        return aSubTree;
+    }
+
+    aSubTree->color = TREE_NODE_RED;
+    while (aSubTree != theTree->root && TREE_NODE_RED == aSubTree->parent->color)
+    {
+        if (aSubTree->parent == aSubTree->parent->parent->left)
+        {
+            anUncle = aSubTree->parent->parent->right;
+            if (TREE_NODE_RED == anUncle->color)
+            {
+                aSubTree->parent->color         = TREE_NODE_BLACK;
+                anUncle->color                  = TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = TREE_NODE_RED;
+                aSubTree = aSubTree->parent->parent;
+            }
+            else
+            {
+                if (aSubTree == aSubTree->parent->right)
+                {
+                    aSubTree = aSubTree->parent;
+                    TreeLeftRotate(theTree, aSubTree);
+                }               
+                aSubTree->parent->color         = TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = TREE_NODE_RED;
+                TreeRightRotate(theTree, aSubTree->parent->parent);
+            }
+        }
+        else
+        {
+            anUncle = aSubTree->parent->parent->left;
+            if (TREE_NODE_RED == anUncle->color)
+            {
+                aSubTree->parent->color         = TREE_NODE_BLACK;
+                anUncle->color                  = TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = TREE_NODE_RED;
+                aSubTree = aSubTree->parent->parent;
+            }
+            else
+            {
+                if (aSubTree == aSubTree->parent->left)
+                {
+                    aSubTree = aSubTree->parent;
+                    TreeRightRotate(theTree, aSubTree);
+                }               
+                aSubTree->parent->color         = TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = TREE_NODE_RED;
+                TreeLeftRotate(theTree, aSubTree->parent->parent);
+            }           
+        }
+    }
+    theTree->root->color = TREE_NODE_BLACK;
+
+    return theNewSubTree;
+}
+
+
+cc_begin_method(FcTree, insert)
+    FcTreeNode *aSubTree;
+    FcTreeNode *aNewSubTree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
+    if (!aNewSubTree) {
+        return cc_msg(my, "error", by_str("out of memory allocating list node"));
+    }
+
+    aSubTree = TreeInsert(my, argv[0], aNewSubTree);
+    if (aSubTree != aNewSubTree) {
+        free(aNewSubTree);
+    }
+
+    return aSubTree->item;
+cc_end_method
+
+
 cc_class_object(FcTree)
 
 cc_class(FcTree,
     cc_method("init",               initFcTree),
     cc_method("isEmpty",            isEmptyFcTree),
+
+    // should list gain an insert/remove that do a comparison?
+    cc_method("insert",             insertFcTree),
+
+    // prefix and affix also call insert in order to align with list
+    cc_method("prefix",             insertFcTree),
+    cc_method("afffix",             insertFcTree),
+
     cc_method("findEqual",          findEqualFcTree),
     cc_method("findGreater",        findGreaterFcTree),
     cc_method("findLesser",         findLesserFcTree),
@@ -322,16 +409,8 @@ cc_class(FcTree,
 
 #if 0
 
-    // these are from list
-    cc_method("prefix",             insertFcTree),
-    cc_method("affix",              insertFcTree),
-//  cc_method("removePrefix",       removePrefixFcTree),
-//  cc_method("removeAffix",        removeAffixFcTree),
-
     // should list gain a findEqual that does a comparison?
 
-    // should list gain an insert/remove that do a comparison?
-    cc_method("insert",             insertFcTree),
     cc_method("remove",             removeFcTree),
 
     //
@@ -377,7 +456,7 @@ cc_begin_method(FcTreeCursor, findGreaterOrEqual)
 cc_end_method
 
 
-static FcTreeNode *TreeMinimum(cc_vars_FcTree *theTree)
+static inline FcTreeNode *TreeMinimum(cc_vars_FcTree *theTree)
 {
     FcTreeNode *aMinimumNode = &theTree->sentinel;
     FcTreeNode *aTreeNode = theTree->root;
@@ -393,7 +472,7 @@ static FcTreeNode *TreeMinimum(cc_vars_FcTree *theTree)
 }
 
 
-static FcTreeNode *TreeMaximum(cc_vars_FcTree *theTree)
+static inline FcTreeNode *TreeMaximum(cc_vars_FcTree *theTree)
 {
     FcTreeNode *aMaximumNode = &theTree->sentinel;
     FcTreeNode *aTreeNode = theTree->root;
@@ -409,7 +488,7 @@ static FcTreeNode *TreeMaximum(cc_vars_FcTree *theTree)
 }
 
 
-static FcTreeNode *TreeSuccessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNode)
+static inline FcTreeNode *TreeSuccessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNode)
 {
     if (&theTree->sentinel != theTreeNode) {
 
@@ -442,7 +521,7 @@ static FcTreeNode *TreeSuccessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNod
 }
 
 
-static FcTreeNode *TreePredecessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNode)
+static inline FcTreeNode *TreePredecessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNode)
 {
     if (&theTree->sentinel != theTreeNode) {
 
