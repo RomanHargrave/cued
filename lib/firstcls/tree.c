@@ -382,6 +382,104 @@ cc_begin_method(FcTree, insert)
 cc_end_method
 
 
+static inline void TreeRemoveFixup(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+{
+    FcTreeNode *aSibling;
+
+    while (theSubTree != theTree->root && TREE_NODE_BLACK == theSubTree->color)
+    {
+        if (theSubTree == theSubTree->parent->left)
+        {
+            aSibling = theSubTree->parent->right;
+            if (TREE_NODE_RED == aSibling->color)
+            {
+                aSibling->color             = TREE_NODE_BLACK;
+                theSubTree->parent->color   = TREE_NODE_RED;
+                TreeLeftRotate(theTree, theSubTree->parent);
+                aSibling = theSubTree->parent->right;
+            }
+            if (   TREE_NODE_BLACK == aSibling->left->color
+                && TREE_NODE_BLACK == aSibling->right->color)
+            {
+                aSibling->color = TREE_NODE_RED;
+                theSubTree = theSubTree->parent;
+            }
+            else 
+            {
+                if (TREE_NODE_BLACK == aSibling->right->color)
+                {
+                    aSibling->left->color   = TREE_NODE_BLACK;
+                    aSibling->color         = TREE_NODE_RED;
+                    TreeRightRotate(theTree, aSibling);
+                    aSibling = theSubTree->parent->right;
+                }
+                aSibling->color = theSubTree->parent->color;
+                theSubTree->parent->color   = TREE_NODE_BLACK;
+                aSibling->right->color      = TREE_NODE_BLACK;
+                TreeLeftRotate(theTree, theSubTree->parent);
+
+                break;
+            }
+        }
+        else
+        {
+            aSibling = theSubTree->parent->left;
+            if (TREE_NODE_RED == aSibling->color)
+            {
+                aSibling->color             = TREE_NODE_BLACK;
+                theSubTree->parent->color   = TREE_NODE_RED;
+                TreeRightRotate(theTree, theSubTree->parent);
+                aSibling = theSubTree->parent->left;
+            }
+            if (   TREE_NODE_BLACK == aSibling->right->color 
+                && TREE_NODE_BLACK == aSibling->left->color)
+            {
+                aSibling->color = TREE_NODE_RED;
+                theSubTree = theSubTree->parent;
+            }
+            else 
+            {
+                if (TREE_NODE_BLACK == aSibling->left->color)
+                {
+                    aSibling->right->color  = TREE_NODE_BLACK;
+                    aSibling->color         = TREE_NODE_RED;
+                    TreeLeftRotate(theTree, aSibling);
+                    aSibling = theSubTree->parent->left;
+                }
+                aSibling->color = theSubTree->parent->color;
+                theSubTree->parent->color   = TREE_NODE_BLACK;
+                aSibling->left->color       = TREE_NODE_BLACK;
+                TreeRightRotate(theTree, theSubTree->parent);
+
+                break;
+            }
+        }
+    }
+    theSubTree->color = TREE_NODE_BLACK;
+}
+
+
+void TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+{
+
+
+}
+
+
+cc_begin_method(FcTree, remove)
+    cc_arg_t rc;
+    FcTreeNode *aTreeNode = TreeFindEqual(my, argv[0]);
+    if (aTreeNode) {
+        TreeRemoveNode(my, aTreeNode);
+        rc = aTreeNode->item;
+        free(aTreeNode);
+    } else {
+        rc = cc_null;
+    }
+    return rc;
+cc_end_method
+
+
 cc_class_object(FcTree)
 
 cc_class(FcTree,
@@ -395,26 +493,18 @@ cc_class(FcTree,
     cc_method("prefix",             insertFcTree),
     cc_method("afffix",             insertFcTree),
 
+    // should list gain a findEqual that does a comparison?
     cc_method("findEqual",          findEqualFcTree),
     cc_method("findGreater",        findGreaterFcTree),
     cc_method("findLesser",         findLesserFcTree),
     cc_method("findLesserOrEqual",  findLesserOrEqualFcTree),
     cc_method("findGreaterOrEqual", findGreaterOrEqualFcTree),
     cc_method("cursor",             cursorFcTree),
-    )
-
-#if 0
-
-    // should list gain a findEqual that does a comparison?
-
     cc_method("remove",             removeFcTree),
 
-    //
     // list should have a free?  should this do other things than free?  take a method?
-    //
-    cc_method("delete",             deleteFcTree),
-
-#endif
+    //cc_method("delete",             deleteFcTree),
+    )
 
 
 cc_begin_method(FcTreeCursor, findEqual)
@@ -597,13 +687,11 @@ cc_class(FcTreeCursor,
     cc_method("next",               nextFcTreeCursor),
     cc_method("previous",           previousFcTreeCursor),
     cc_method("current",            currentFcTreeCursor),
+
+    //  what do you set the cursor to after a remove?  next, previous?
+    //cc_method("remove",             removeFcTreeCursor),
+
+    //  do we need these to align with list?
+    //cc_method("prefix",     prefixFcTreeCursor),
+    //cc_method("affix",      affixFcTreeCursor),
     )
-
-#if 0
-
-//  cc_method("prefix",     prefixFcTreeCursor),
-//  cc_method("affix",      affixFcTreeCursor),
-
-    cc_method("remove",     removeFcTreeCursor),
-    )
-#endif
