@@ -1,3 +1,6 @@
+    return my->curr ? my->curr->item : cc_null;
+
+
 cc_begin_meta_method(alloc, MetaDbleList)
     cc_vars_DbleList *obj = as_obj(cc_msg_super("alloc"));
     if (obj) {

@@ -64,7 +64,7 @@ cc_begin_meta_method(MetaRoot, initVector)
                       by_str(my->name), by_str("\" which lacks init method"));
     }
 
-    // should check for "!is_ptr && !is_obj && !is_any" and treat as error?
+    // TODO:  should check for "!is_ptr && !is_obj && !is_any" and treat as error?
     // is it a pointer until it is made into an object?  or is it an object that is not initialized?
     //
     obj = (cc_vars_Root *) argv[0].u.p;
@@ -78,12 +78,7 @@ cc_begin_meta_method(MetaRoot, initVector)
 
         obj = (cc_vars_Root *) ((char *) obj + my->size);
     }
-
-    // which one would we return?  the first?  returning the class object is confusing
-    //return by_obj(my);
-
-    // return NULL in order to avoid the case where the object is not what the user thinks
-    return by_ptr(NULL);
+    return cc_null;
 cc_end_method
 
 
@@ -95,7 +90,7 @@ cc_end_method
 
 cc_begin_method(Root, free)
     free(my);
-    return by_ptr(NULL);
+    return cc_null;
 cc_end_method
 
 

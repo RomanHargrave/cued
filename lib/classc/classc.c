@@ -71,6 +71,10 @@ const char *cc_type_names[] = {
 };
 
 
+// type is "any" and value is zero;  techncially, no initializer needed since values are all 0
+cc_arg_t cc_null = { { 0 }, cc_type_any };
+
+
 // if constant string folding is enabled, then compare string pointers before executing
 // strcmp intrinsically
 //

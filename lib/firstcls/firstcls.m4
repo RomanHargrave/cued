@@ -18,6 +18,10 @@ class(FcListCursor, Root,
 `    FcListNode *curr;')
 
 
+typedef int (*FcCompare)(cc_arg_t item, cc_arg_t key);
+
+extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
+
 typedef struct _FcTreeNode {
 
     cc_arg_t item;
@@ -29,7 +33,7 @@ typedef struct _FcTreeNode {
 class(FcTree, Root,
 `    FcTreeNode sentinel;'
 `    FcTreeNode *root;'
-`    cc_method_fp cmpMethod;')
+`    FcCompare cmpMethod;')
 
 class(FcTreeCursor, Root,
 `    cc_vars_FcTree *tree;'

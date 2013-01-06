@@ -1,3 +1,13 @@
+#define cc_Root_isa NULL
+
+cc_class(Root,
+    cc_method("init",  initRoot),
+    cc_method("free",  freeRoot),
+    cc_method("copy",  copyRoot),
+    cc_method("error", errorRoot),
+    )
+
+
 // TODO:  should this use sizeof(cc_class_object), even though size is unused?
 // should we set to -1, ha ha ?
 //

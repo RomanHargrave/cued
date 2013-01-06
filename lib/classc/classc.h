@@ -79,6 +79,8 @@ typedef struct _cc_arg_t {
 
 extern const char *cc_type_names[];
 
+extern cc_arg_t cc_null;
+
 #ifdef __cplusplus
 #define by(x, y) ({ cc_arg_t _cc_tmp_arg;  _cc_tmp_arg.u.x = (y);  _cc_tmp_arg.t = cc_type_##x;  _cc_tmp_arg; })
 #else

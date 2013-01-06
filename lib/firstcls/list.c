@@ -28,11 +28,9 @@ cc_end_method
 
 
 cc_begin_method(FcList, isEmpty)
-    if (&my->head == my->head.next) {
-        return by_int(1);
-    } else {
-        return by_int(0);
-    }
+    int rc;
+    rc = (&my->head == my->head.next) ? 1 : 0;
+    return by_int(rc);
 cc_end_method
 
 
@@ -146,8 +144,11 @@ cc_end_method
 
 cc_begin_method(FcList, cursor)
     cc_vars_FcListCursor *cursor = (cc_vars_FcListCursor *) as_obj(cc_msg(&FcListCursor, "alloc"));
+
+    // init is not called here or in tree
     cursor->list = my;
     cursor->curr = &my->head;
+
     return by_obj(cursor);
 cc_end_method
 
@@ -168,7 +169,7 @@ cc_class(FcList,
 
 static inline cc_arg_t getCurrent(cc_vars_FcListCursor *my)
 {
-    // item should be NULL in the list head
+    // item is equivalent to cc_null in the list head
     return my->curr->item;
 }
 
