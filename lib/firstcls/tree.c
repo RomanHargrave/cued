@@ -211,6 +211,101 @@ cc_begin_method(FcTree, cursor)
 cc_end_method
 
 
+static void TreeLeftRotate(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+{
+    FcTreeNode *aRightChild = theSubTree->right;
+
+    theSubTree->right = aRightChild->left;
+
+    if (aRightChild->left != &theTree->sentinel)
+        aRightChild->left->parent = theSubTree;
+
+    aRightChild->parent = theSubTree->parent;
+    if (&theTree->sentinel == theSubTree->parent) {
+        theTree->root = aRightChild;
+    } else {
+        if (theSubTree == theSubTree->parent->left)
+            theSubTree->parent->left  = aRightChild;
+        else
+            theSubTree->parent->right = aRightChild;
+    }
+    aRightChild->left = theSubTree;
+    theSubTree->parent = aRightChild;
+}
+
+
+static void TreeRightRotate(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+{
+    FcTreeNode *aLeftChild = theSubTree->left;
+
+    theSubTree->left = aLeftChild->right;
+
+    if (aLeftChild->right != &theTree->sentinel)
+        aLeftChild->right->parent = theSubTree;
+
+    aLeftChild->parent = theSubTree->parent;
+    if (&theTree->sentinel == theSubTree->parent) {
+        theTree->root = aLeftChild;
+    } else {
+        if (theSubTree == theSubTree->parent->right)
+            theSubTree->parent->right = aLeftChild;
+        else
+            theSubTree->parent->left  = aLeftChild;
+    }
+    aLeftChild->right = theSubTree;
+    theSubTree->parent = aLeftChild;
+}
+
+
+static inline FcTreeNode *TreeUnbalancedInsert
+    (
+    cc_vars_FcTree *theTree,
+    cc_arg_t theItem,
+    FcTreeNode *theNewSubTree
+    )
+{
+    int aCmpResult;
+    FcTreeNode *aSubTree = theTree->root;
+
+    // TODO: allocate theNewSubTree in this function (in two places?)
+    // is finding the node already present a common use case?
+    // could save the unused node for later in the tree?
+
+    if (&theTree->sentinel == aSubTree) {
+        theTree->root = theNewSubTree;
+    } else {
+        for (;;) {
+            aCmpResult = (theTree->cmpMethod)(theItem, aSubTree->item);
+            if (aCmpResult > 0) {
+                if (&theTree->sentinel == aSubTree->right) {
+                    aSubTree->right = theNewSubTree;
+                    break;
+                } else {
+                    aSubTree = aSubTree->right;
+                }
+            } else if (aCmpResult < 0) {
+                if (&theTree->sentinel == aSubTree->left) {
+                    aSubTree->left = theNewSubTree;
+                    break;
+                } else {
+                    aSubTree = aSubTree->left;
+                }
+            } else {
+                // found
+                return aSubTree;
+            }
+        }
+    }
+
+    theNewSubTree->item   = theItem;
+    theNewSubTree->left   = &theTree->sentinel;
+    theNewSubTree->right  = &theTree->sentinel;
+    theNewSubTree->parent = aSubTree;
+
+    return theNewSubTree;    
+}
+
+
 cc_class_object(FcTree)
 
 cc_class(FcTree,
@@ -409,7 +504,7 @@ cc_end_method
 
 
 cc_begin_method(FcTreeCursor, current)
-    // this is equivalent to cc_null if my->curr points to sentinel
+    // this is equivalent to cc_null when my->curr points to sentinel
     return my->curr->item;
 cc_end_method
 
