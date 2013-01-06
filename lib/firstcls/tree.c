@@ -267,10 +267,6 @@ static inline FcTreeNode *TreeUnbalancedInsert
     int aCmpResult;
     FcTreeNode *aSubTree = theTree->root;
 
-    // TODO: allocate theNewSubTree in this function (in two places?)
-    // is finding the node already present a common use case?
-    // could save the unused node for later in the tree?
-
     if (&theTree->sentinel == aSubTree) {
         theTree->root = theNewSubTree;
     } else {
@@ -371,6 +367,7 @@ static inline FcTreeNode *TreeInsert(cc_vars_FcTree *theTree, cc_arg_t theItem, 
 
 cc_begin_method(FcTree, insert)
     FcTreeNode *aSubTree;
+
     FcTreeNode *aNewSubTree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
     if (!aNewSubTree) {
         return cc_msg(my, "error", by_str("out of memory allocating list node"));
@@ -405,7 +402,6 @@ cc_class(FcTree,
     cc_method("findGreaterOrEqual", findGreaterOrEqualFcTree),
     cc_method("cursor",             cursorFcTree),
     )
-
 
 #if 0
 

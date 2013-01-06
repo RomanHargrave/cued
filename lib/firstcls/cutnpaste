@@ -1,3 +1,7 @@
+    // TODO: allocate theNewSubTree in this function (in two places?) (TreeUnbalancedInsert)
+    // is finding the node already present a common use case?
+    // could save the unused node for later in the tree?
+
     return my->curr ? my->curr->item : cc_null;
 
 
