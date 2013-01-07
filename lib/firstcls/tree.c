@@ -461,8 +461,51 @@ static inline void TreeRemoveFixup(cc_vars_FcTree *theTree, FcTreeNode *theSubTr
 
 void TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
 {
+    FcTreeNode *aChild, *aRemovedNode;
 
+    if (&theTree->sentinel == theSubTree->left) {
+        //
+        // promote right child
+        //
+        aRemovedNode = theSubTree;
+        aChild = aRemovedNode->right;
+    } else if (&theTree->sentinel == theSubTree->right) {
+        //
+        // promote left child
+        //
+        aRemovedNode = theSubTree;
+        aChild = aRemovedNode->left;
+    } else {
+        //
+        // the node containing the deleted item has two children;
+        // its successor will be in the deleted item's subtree and
+        // lack a left child (because the deleted item would be the
+        // successor's left child, if it were not higher in the tree);
+        // remove the successor's node and replace the deleted item
+        // with its successor
+        //
+        aRemovedNode = theSubTree->right;
+        while (aRemovedNode->left != &theTree->sentinel) {
+            aRemovedNode = aRemovedNode->left;
+        }
+        theSubTree->item = aRemovedNode->item;
+        aChild = aRemovedNode->right;
+    }
 
+    aChild->parent = aRemovedNode->parent;
+    if (aRemovedNode->parent == &theTree->sentinel) {
+        theTree->root = aChild;
+    } else if (aRemovedNode->parent->left == aRemovedNode) {
+        aRemovedNode->parent->left  = aChild;
+    } else {
+        aRemovedNode->parent->right = aChild;
+    }
+
+    if (TREE_NODE_BLACK == aRemovedNode->color) {
+        TreeRemoveFixup(theTree, aChild);
+    }
+
+    free(aRemovedNode);
 }
 
 
@@ -470,9 +513,8 @@ cc_begin_method(FcTree, remove)
     cc_arg_t rc;
     FcTreeNode *aTreeNode = TreeFindEqual(my, argv[0]);
     if (aTreeNode) {
-        TreeRemoveNode(my, aTreeNode);
         rc = aTreeNode->item;
-        free(aTreeNode);
+        TreeRemoveNode(my, aTreeNode);
     } else {
         rc = cc_null;
     }
