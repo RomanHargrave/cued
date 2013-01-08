@@ -20,13 +20,11 @@
 #include "firstcls.h"
 
 
-// TREE_NODE_BLACK must be zero unless code is added
-// to TreeInitInZeroedMemory() to set tree_t.sentinel.color to TREE_NODE_BLACK;
-// formerly, these definitions were private to the implementation file,
-// but they're needed for the TREE_DECLARE macro
+// TREE_NODE_BLACK must be zero unless code is added to initialize
+// the color of the sentinel
 //
-#define TREE_NODE_BLACK 0
-#define TREE_NODE_RED   1
+#define FC_TREE_NODE_BLACK 0
+#define FC_TREE_NODE_RED   1
 
 
 cc_begin_method(FcTree, init)
@@ -223,11 +221,10 @@ static void TreeLeftRotate(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
     aRightChild->parent = theSubTree->parent;
     if (&theTree->sentinel == theSubTree->parent) {
         theTree->root = aRightChild;
+    } else if (theSubTree == theSubTree->parent->left) {
+        theSubTree->parent->left  = aRightChild;
     } else {
-        if (theSubTree == theSubTree->parent->left)
-            theSubTree->parent->left  = aRightChild;
-        else
-            theSubTree->parent->right = aRightChild;
+        theSubTree->parent->right = aRightChild;
     }
     aRightChild->left = theSubTree;
     theSubTree->parent = aRightChild;
@@ -246,11 +243,10 @@ static void TreeRightRotate(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
     aLeftChild->parent = theSubTree->parent;
     if (&theTree->sentinel == theSubTree->parent) {
         theTree->root = aLeftChild;
+    } else if (theSubTree == theSubTree->parent->right) {
+        theSubTree->parent->right = aLeftChild;
     } else {
-        if (theSubTree == theSubTree->parent->right)
-            theSubTree->parent->right = aLeftChild;
-        else
-            theSubTree->parent->left  = aLeftChild;
+        theSubTree->parent->left  = aLeftChild;
     }
     aLeftChild->right = theSubTree;
     theSubTree->parent = aLeftChild;
@@ -311,43 +307,43 @@ static inline FcTreeNode *TreeInsert(cc_vars_FcTree *theTree, cc_arg_t theItem, 
         return aSubTree;
     }
 
-    aSubTree->color = TREE_NODE_RED;
-    while (aSubTree != theTree->root && TREE_NODE_RED == aSubTree->parent->color) {
+    aSubTree->color = FC_TREE_NODE_RED;
+    while (aSubTree != theTree->root && FC_TREE_NODE_RED == aSubTree->parent->color) {
         if (aSubTree->parent == aSubTree->parent->parent->left) {
             anUncle = aSubTree->parent->parent->right;
-            if (TREE_NODE_RED == anUncle->color) {
-                aSubTree->parent->color         = TREE_NODE_BLACK;
-                anUncle->color                  = TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = TREE_NODE_RED;
+            if (FC_TREE_NODE_RED == anUncle->color) {
+                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
+                anUncle->color                  = FC_TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
                 aSubTree = aSubTree->parent->parent;
             } else {
                 if (aSubTree == aSubTree->parent->right) {
                     aSubTree = aSubTree->parent;
                     TreeLeftRotate(theTree, aSubTree);
                 }               
-                aSubTree->parent->color         = TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = TREE_NODE_RED;
+                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
                 TreeRightRotate(theTree, aSubTree->parent->parent);
             }
         } else {
             anUncle = aSubTree->parent->parent->left;
-            if (TREE_NODE_RED == anUncle->color) {
-                aSubTree->parent->color         = TREE_NODE_BLACK;
-                anUncle->color                  = TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = TREE_NODE_RED;
+            if (FC_TREE_NODE_RED == anUncle->color) {
+                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
+                anUncle->color                  = FC_TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
                 aSubTree = aSubTree->parent->parent;
             } else {
                 if (aSubTree == aSubTree->parent->left) {
                     aSubTree = aSubTree->parent;
                     TreeRightRotate(theTree, aSubTree);
                 }               
-                aSubTree->parent->color         = TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = TREE_NODE_RED;
+                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
+                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
                 TreeLeftRotate(theTree, aSubTree->parent->parent);
             }           
         }
     }
-    theTree->root->color = TREE_NODE_BLACK;
+    theTree->root->color = FC_TREE_NODE_BLACK;
 
     return theNewSubTree;
 }
@@ -374,30 +370,30 @@ static inline void TreeRemoveFixup(cc_vars_FcTree *theTree, FcTreeNode *theSubTr
 {
     FcTreeNode *aSibling;
 
-    while (theSubTree != theTree->root && TREE_NODE_BLACK == theSubTree->color) {
+    while (theSubTree != theTree->root && FC_TREE_NODE_BLACK == theSubTree->color) {
         if (theSubTree == theSubTree->parent->left) {
             aSibling = theSubTree->parent->right;
-            if (TREE_NODE_RED == aSibling->color) {
-                aSibling->color             = TREE_NODE_BLACK;
-                theSubTree->parent->color   = TREE_NODE_RED;
+            if (FC_TREE_NODE_RED == aSibling->color) {
+                aSibling->color             = FC_TREE_NODE_BLACK;
+                theSubTree->parent->color   = FC_TREE_NODE_RED;
                 TreeLeftRotate(theTree, theSubTree->parent);
                 aSibling = theSubTree->parent->right;
             }
-            if (   TREE_NODE_BLACK == aSibling->left->color
-                && TREE_NODE_BLACK == aSibling->right->color)
+            if (   FC_TREE_NODE_BLACK == aSibling->left->color
+                && FC_TREE_NODE_BLACK == aSibling->right->color)
             {
-                aSibling->color = TREE_NODE_RED;
+                aSibling->color = FC_TREE_NODE_RED;
                 theSubTree = theSubTree->parent;
             } else {
-                if (TREE_NODE_BLACK == aSibling->right->color) {
-                    aSibling->left->color   = TREE_NODE_BLACK;
-                    aSibling->color         = TREE_NODE_RED;
+                if (FC_TREE_NODE_BLACK == aSibling->right->color) {
+                    aSibling->left->color   = FC_TREE_NODE_BLACK;
+                    aSibling->color         = FC_TREE_NODE_RED;
                     TreeRightRotate(theTree, aSibling);
                     aSibling = theSubTree->parent->right;
                 }
                 aSibling->color = theSubTree->parent->color;
-                theSubTree->parent->color   = TREE_NODE_BLACK;
-                aSibling->right->color      = TREE_NODE_BLACK;
+                theSubTree->parent->color   = FC_TREE_NODE_BLACK;
+                aSibling->right->color      = FC_TREE_NODE_BLACK;
                 TreeLeftRotate(theTree, theSubTree->parent);
 
                 break;
@@ -406,34 +402,34 @@ static inline void TreeRemoveFixup(cc_vars_FcTree *theTree, FcTreeNode *theSubTr
         else
         {
             aSibling = theSubTree->parent->left;
-            if (TREE_NODE_RED == aSibling->color) {
-                aSibling->color             = TREE_NODE_BLACK;
-                theSubTree->parent->color   = TREE_NODE_RED;
+            if (FC_TREE_NODE_RED == aSibling->color) {
+                aSibling->color             = FC_TREE_NODE_BLACK;
+                theSubTree->parent->color   = FC_TREE_NODE_RED;
                 TreeRightRotate(theTree, theSubTree->parent);
                 aSibling = theSubTree->parent->left;
             }
-            if (   TREE_NODE_BLACK == aSibling->right->color 
-                && TREE_NODE_BLACK == aSibling->left->color)
+            if (   FC_TREE_NODE_BLACK == aSibling->right->color 
+                && FC_TREE_NODE_BLACK == aSibling->left->color)
             {
-                aSibling->color = TREE_NODE_RED;
+                aSibling->color = FC_TREE_NODE_RED;
                 theSubTree = theSubTree->parent;
             } else {
-                if (TREE_NODE_BLACK == aSibling->left->color) {
-                    aSibling->right->color  = TREE_NODE_BLACK;
-                    aSibling->color         = TREE_NODE_RED;
+                if (FC_TREE_NODE_BLACK == aSibling->left->color) {
+                    aSibling->right->color  = FC_TREE_NODE_BLACK;
+                    aSibling->color         = FC_TREE_NODE_RED;
                     TreeLeftRotate(theTree, aSibling);
                     aSibling = theSubTree->parent->left;
                 }
                 aSibling->color = theSubTree->parent->color;
-                theSubTree->parent->color   = TREE_NODE_BLACK;
-                aSibling->left->color       = TREE_NODE_BLACK;
+                theSubTree->parent->color   = FC_TREE_NODE_BLACK;
+                aSibling->left->color       = FC_TREE_NODE_BLACK;
                 TreeRightRotate(theTree, theSubTree->parent);
 
                 break;
             }
         }
     }
-    theSubTree->color = TREE_NODE_BLACK;
+    theSubTree->color = FC_TREE_NODE_BLACK;
 }
 
 
@@ -479,7 +475,7 @@ void TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
         aRemovedNode->parent->right = aChild;
     }
 
-    if (TREE_NODE_BLACK == aRemovedNode->color) {
+    if (FC_TREE_NODE_BLACK == aRemovedNode->color) {
         TreeRemoveFixup(theTree, aChild);
     }
 

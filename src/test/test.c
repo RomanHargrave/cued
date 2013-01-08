@@ -210,7 +210,8 @@ int main(int argc, char *argv[])
     // test tree
     //
 
-    t = as_obj(cc_msg(&FcTree, "new", by_ptr(int_cmp)));
+    // C++ needs the cast to void (ugh)
+    t = as_obj(cc_msg(&FcTree, "new", by_ptr((void *) int_cmp)));
     int i, n[TREE_NODES];
 //    for (i = TREE_NODES - 1;  i >= 0;  --i) {
     for (i = 0;  i < TREE_NODES;  ++i) {
