@@ -433,7 +433,7 @@ static inline void TreeRemoveFixup(cc_vars_FcTree *theTree, FcTreeNode *theSubTr
 }
 
 
-void TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+FcTreeNode *TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
 {
     FcTreeNode *aChild, *aRemovedNode;
 
@@ -479,7 +479,7 @@ void TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
         TreeRemoveFixup(theTree, aChild);
     }
 
-    free(aRemovedNode);
+    return aRemovedNode;
 }
 
 
@@ -488,7 +488,12 @@ cc_begin_method(FcTree, remove)
     FcTreeNode *aTreeNode = TreeFindEqual(my, argv[0]);
     rc = aTreeNode->item;
     if (&my->sentinel != aTreeNode) {
-        TreeRemoveNode(my, aTreeNode);
+        //
+        // an optimization removes the successor rather than replacing it;
+        // consequently, a different node may be removed from the tree
+        //
+        aTreeNode = TreeRemoveNode(my, aTreeNode);
+        free(aTreeNode);
     }
     return rc;
 cc_end_method
