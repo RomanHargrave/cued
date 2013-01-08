@@ -81,6 +81,8 @@ extern const char *cc_type_names[];
 
 extern cc_arg_t cc_null;
 
+#define cc_is_null(x) ((x).t == cc_type_any && !(x).u.ull)
+
 #ifdef __cplusplus
 #define by(x, y) ({ cc_arg_t _cc_tmp_arg;  _cc_tmp_arg.u.x = (y);  _cc_tmp_arg.t = cc_type_##x;  _cc_tmp_arg; })
 #else
