@@ -21,7 +21,7 @@
 
 
 // TREE_NODE_BLACK must be zero unless code is added to initialize
-// the color of the sentinel
+// the sentinel's color
 //
 #define FC_TREE_NODE_BLACK 0
 #define FC_TREE_NODE_RED   1
