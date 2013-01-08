@@ -20,7 +20,7 @@
 #include "firstcls.h"
 
 
-// TREE_NODE_BLACK must be zero unless code is added to initialize
+// FC_TREE_NODE_BLACK must be zero unless code is added to initialize
 // the sentinel's color
 //
 #define FC_TREE_NODE_BLACK 0
@@ -200,6 +200,7 @@ cc_begin_method(FcTree, cursor)
 
     // init is not called here or in list
     // TODO:  should cursor's init method take a tree?  then we would call new here
+    // YES:  consider use cases such as initVector
     cursor->tree = my;
 
     // start in the midst of the tree:  a useful diagnostic
