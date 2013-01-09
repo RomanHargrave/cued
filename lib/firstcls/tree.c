@@ -20,6 +20,11 @@
 #include "firstcls.h"
 
 
+// TODO:  need a generalized solution for validating argc
+// cc_check_argc(my, argc, some number): does a cc_msg(my, "error", ...)
+// what does it return?  nothing I guess....  can just abort
+//
+
 // FC_TREE_NODE_BLACK must be zero unless code is added to initialize
 // the sentinel's color
 //
