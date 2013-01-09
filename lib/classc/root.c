@@ -64,10 +64,8 @@ cc_begin_meta_method(MetaRoot, initVector)
                       by_str(my->name), by_str("\" which lacks init method"));
     }
 
-    // TODO:  should check for "!is_ptr && !is_obj && !is_any" and treat as error?
-    // is it a pointer until it is made into an object?  or is it an object that is not initialized?
-    //
-    obj = (cc_vars_Root *) argv[0].u.p;
+    // it's a pointer until initVector runs, so it should be passed as a pointer, not an object
+    obj = (cc_vars_Root *) as_ptr(argv[0]);
     nelems = as_int(argv[1]);
     for (i = 0;  i < nelems;  ++i) {
 
