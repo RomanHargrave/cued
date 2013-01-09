@@ -196,17 +196,7 @@ cc_end_method
 
 
 cc_begin_method(FcTree, cursor)
-    cc_vars_FcTreeCursor *cursor = (cc_vars_FcTreeCursor *) as_obj(cc_msg(&FcTreeCursor, "alloc"));
-
-    // init is not called here or in list
-    // TODO:  should cursor's init method take a tree?  then we would call new here
-    // YES:  consider use cases such as initVector
-    cursor->tree = my;
-
-    // start in the midst of the tree:  a useful diagnostic
-    cursor->curr = my->root;
-
-    return by_obj(cursor);
+    return cc_msg(&FcTreeCursor, "new", by_obj(my));
 cc_end_method
 
 
@@ -694,9 +684,18 @@ cc_begin_method(FcTreeCursor, current)
 cc_end_method
 
 
+cc_begin_method(FcTreeCursor, init)
+    cc_msg_super("init");
+    my->tree = (cc_vars_FcTree *) as_obj(argv[0]);
+    my->curr = &my->tree->sentinel;
+    return by_obj(my);
+cc_end_method
+
+
 cc_class_object(FcTreeCursor)
 
 cc_class(FcTreeCursor,
+    cc_method("init",               initFcTreeCursor),
     cc_method("findEqual",          findEqualFcTreeCursor),
     cc_method("findGreater",        findGreaterFcTreeCursor),
     cc_method("findLesser",         findLesserFcTreeCursor),

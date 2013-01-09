@@ -143,13 +143,7 @@ cc_end_method
 
 
 cc_begin_method(FcList, cursor)
-    cc_vars_FcListCursor *cursor = (cc_vars_FcListCursor *) as_obj(cc_msg(&FcListCursor, "alloc"));
-
-    // init is not called here or in tree
-    cursor->list = my;
-    cursor->curr = &my->head;
-
-    return by_obj(cursor);
+    return cc_msg(&FcListCursor, "new", by_obj(my));
 cc_end_method
 
 
@@ -231,10 +225,18 @@ cc_begin_method(FcListCursor, affix)
     return by_obj(my);
 cc_end_method
 
+cc_begin_method(FcListCursor, init)
+    cc_msg_super("init");
+    my->list = (cc_vars_FcList *) as_obj(argv[0]);
+    my->curr = &my->list->head;
+    return by_obj(my);
+cc_end_method
+
 cc_class_object(FcListCursor)
 
 
 cc_class(FcListCursor,
+    cc_method("init",       initFcListCursor),
     cc_method("current",    currentFcListCursor),
     cc_method("first",      firstFcListCursor),
     cc_method("last",       lastFcListCursor),
