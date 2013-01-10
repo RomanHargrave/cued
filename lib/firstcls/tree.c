@@ -27,12 +27,23 @@
 #define FC_TREE_NODE_RED   1
 
 
+// TODO:  need to overload free in tree and list to delete nodes
+
+
 cc_begin_method(FcTree, init)
     cc_msg_super("init");
     my->root = &my->sentinel;
-
-    // TODO:  really need to check for 0 or 1
-    my->cmpMethod = (argc >= 1) ? (FcCompare) as_ptr(argv[0]) : FcObjCompare;
+    switch (argc) {
+        case 0:
+            my->cmpMethod = FcObjCompare;
+            break;
+        case 1:
+            my->cmpMethod = (FcCompare) as_ptr(argv[0]);
+            break;
+        default:
+            return cc_msg(my, "error", by_str("too many arguments to \""), by_str(msg),
+                          by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
+    }
     return by_obj(my);
 cc_end_method
 
