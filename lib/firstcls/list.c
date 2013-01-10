@@ -227,7 +227,7 @@ cc_end_method
 
 cc_begin_method(FcListCursor, init)
     cc_msg_super("init");
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     my->list = (cc_vars_FcList *) as_obj(argv[0]);
     my->curr = &my->list->head;
     return by_obj(my);

@@ -32,18 +32,9 @@
 
 cc_begin_method(FcTree, init)
     cc_msg_super("init");
+    FcCheckArgcRange(0, 1);
+    my->cmpMethod = argc ? (FcCompare) as_ptr(argv[0]) : FcObjCompare;
     my->root = &my->sentinel;
-    switch (argc) {
-        case 0:
-            my->cmpMethod = FcObjCompare;
-            break;
-        case 1:
-            my->cmpMethod = (FcCompare) as_ptr(argv[0]);
-            break;
-        default:
-            return cc_msg(my, "error", by_str("too many arguments to \""), by_str(msg),
-                          by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
-    }
     return by_obj(my);
 cc_end_method
 
@@ -180,7 +171,7 @@ static FcTreeNode *TreeFindGreaterOrEqual(cc_vars_FcTree *theTree, cc_arg_t theK
 
 cc_begin_method(FcTree, findEqual)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindEqual(my, argv[0]);
     return aTreeNode->item;
 cc_end_method
@@ -188,7 +179,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findGreater)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindGreater(my, argv[0]);
     return aTreeNode->item;
 cc_end_method
@@ -196,7 +187,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findLesser)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindLesser(my, argv[0]);
     return aTreeNode->item;
 cc_end_method
@@ -204,7 +195,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findLesserOrEqual)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindLesserOrEqual(my, argv[0]);
     return aTreeNode->item;
 cc_end_method
@@ -212,7 +203,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findGreaterOrEqual)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindGreaterOrEqual(my, argv[0]);
     return aTreeNode->item;
 cc_end_method
@@ -366,7 +357,7 @@ static inline FcTreeNode *TreeInsert(cc_vars_FcTree *theTree, cc_arg_t theItem, 
 cc_begin_method(FcTree, insert)
     FcTreeNode *aNewSubTree, *aSubTree;
 
-    FcCheckArgs(1);
+    FcCheckArgc(1);
 
     aNewSubTree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
     if (!aNewSubTree) {
@@ -502,7 +493,7 @@ FcTreeNode *TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
 cc_begin_method(FcTree, remove)
     cc_arg_t rc;
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindEqual(my, argv[0]);
     rc = aTreeNode->item;
     if (&my->sentinel != aTreeNode) {
@@ -546,7 +537,7 @@ cc_class(FcTree,
 
 cc_begin_method(FcTreeCursor, findEqual)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindEqual(my->tree, argv[0]);
     my->curr = aTreeNode;
     return aTreeNode->item;
@@ -555,7 +546,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findGreater)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindGreater(my->tree, argv[0]);
     my->curr = aTreeNode;
     return aTreeNode->item;
@@ -564,7 +555,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findLesser)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindLesser(my->tree, argv[0]);
     my->curr = aTreeNode;
     return aTreeNode->item;
@@ -573,7 +564,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findLesserOrEqual)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindLesserOrEqual(my->tree, argv[0]);
     my->curr = aTreeNode;
     return aTreeNode->item;
@@ -582,7 +573,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findGreaterOrEqual)
     FcTreeNode *aTreeNode;
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     aTreeNode = TreeFindGreaterOrEqual(my->tree, argv[0]);
     my->curr = aTreeNode;
     return aTreeNode->item;
@@ -723,7 +714,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, init)
     cc_msg_super("init");
-    FcCheckArgs(1);
+    FcCheckArgc(1);
     my->tree = (cc_vars_FcTree *) as_obj(argv[0]);
     my->curr = &my->tree->sentinel;
     return by_obj(my);
