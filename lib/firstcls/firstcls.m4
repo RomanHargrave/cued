@@ -2,6 +2,16 @@ include(`inherit.m4')
 guard_h
 
 
+#define FcCheckArgs(n) _FcCheckArgs(my, msg, argc, (n))
+
+extern cc_arg_t _FcCheckArgs(cc_obj my, const char *msg, int argc, int narg);
+
+
+typedef int (*FcCompare)(cc_arg_t item, cc_arg_t key);
+
+extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
+
+
 typedef struct _FcListNode {
 
     cc_arg_t item;
@@ -17,10 +27,6 @@ class(FcListCursor, Root,
 `    cc_vars_FcList *list;'
 `    FcListNode *curr;')
 
-
-typedef int (*FcCompare)(cc_arg_t item, cc_arg_t key);
-
-extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
 
 typedef struct _FcTreeNode {
 

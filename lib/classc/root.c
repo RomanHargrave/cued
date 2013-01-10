@@ -51,7 +51,7 @@ cc_begin_meta_method(MetaRoot, initVector)
     int i, nelems;
 
     if (argc < 2) {
-        return cc_msg(my, "error", by_str("too few arguments to initVector for class \""),
+        return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg), by_str("\" for class \""),
                       by_str(my->name), by_str("\""));
     }
 

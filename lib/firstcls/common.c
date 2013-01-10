@@ -24,3 +24,17 @@ int FcObjCompare(cc_arg_t item, cc_arg_t key)
 {
     return as_int(cc_msg(as_obj(item), "compare", key));
 }
+
+
+cc_arg_t _FcCheckArgs(cc_obj my, const char *msg, int argc, int narg)
+{
+    cc_class_object *cls = ((cc_vars_Root *) my)->isa;
+
+    if (argc == narg) {
+        return cc_null;
+    }
+
+    return cc_msg(my, "error", by_str("too "), argc < narg ? by_str("few") : by_str("many"),
+                  by_str(" arguments to \""), by_str(msg),
+                  by_str("\" for class \""), by_str(cls->name), by_str("\""));
+}
