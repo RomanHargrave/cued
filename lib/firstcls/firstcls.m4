@@ -2,11 +2,12 @@ include(`inherit.m4')
 guard_h
 
 
-#define FcCheckArgc(n) FcCheckArgcRange((n), (n))
+#define FcCheckArgc(n) (((n) == argc) ? cc_null : _FcErrorArgc(my, msg, argc, (n), (n)))
 
-#define FcCheckArgcRange(n1, n2) _FcCheckArgc(my, msg, argc, (n1), (n2))
+#define FcCheckArgcRange(n1, n2) ((argc >= (n1) && argc <= (n2)) ? cc_null : \
+                                  _FcErrorArgc(my, msg, argc, (n1), (n2)))
 
-extern cc_arg_t _FcCheckArgc(cc_obj my, const char *msg, int argc, int minArgc, int maxArgc);
+extern cc_arg_t _FcErrorArgc(cc_obj my, const char *msg, int argc, int minArgc, int maxArgc);
 
 
 typedef int (*FcCompare)(cc_arg_t item, cc_arg_t key);

@@ -26,13 +26,9 @@ int FcObjCompare(cc_arg_t item, cc_arg_t key)
 }
 
 
-cc_arg_t _FcCheckArgc(cc_obj my, const char *msg, int argc, int minArgc, int maxArgc)
+cc_arg_t _FcErrorArgc(cc_obj my, const char *msg, int argc, int minArgc, int maxArgc)
 {
     cc_class_object *cls = ((cc_vars_Root *) my)->isa;
-
-    if (argc >= minArgc && argc <= maxArgc) {
-        return cc_null;
-    }
 
     return cc_msg(my, "error", by_str("too "), argc < minArgc ? by_str("few") : by_str("many"),
                   by_str(" arguments to \""), by_str(msg),
