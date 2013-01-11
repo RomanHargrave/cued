@@ -2,6 +2,15 @@ include(`inherit.m4')
 guard_h
 
 
+typedef enum _FcEmptyHow {
+
+    FcEmptyNone = 0,
+    FcEmptyFreeObject,
+    FcEmptyFreePointer
+
+} FcEmptyHow;
+
+
 #define FcCheckArgc(n) (((n) == argc) ? cc_null : _FcErrorArgc(my, msg, argc, (n), (n)))
 
 #define FcCheckArgcRange(n1, n2) ((argc >= (n1) && argc <= (n2)) ? cc_null : \

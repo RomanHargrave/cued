@@ -1,3 +1,11 @@
+        printf("delete %s\n", as_str(curr->item));
+
+cc_begin_method(FcTreeCursor, remove)
+    // hmm, remove sometimes finds the successor for you;  is it worth optimizing?
+    FcTreeNode *next = TreeSuccessor(my->tree, my->curr);
+cc_end_method
+
+
     // TODO: allocate theNewSubTree in this function (in two places?) (TreeUnbalancedInsert)
     // is finding the node already present a common use case?
     // could save the unused node for later in the tree?

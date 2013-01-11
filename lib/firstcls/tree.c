@@ -356,7 +356,6 @@ static inline FcTreeNode *TreeInsert(cc_vars_FcTree *theTree, cc_arg_t theItem, 
 
 cc_begin_method(FcTree, insert)
     FcTreeNode *aNewSubTree, *aSubTree;
-
     FcCheckArgc(1);
 
     aNewSubTree = (FcTreeNode *) malloc(sizeof(FcTreeNode));

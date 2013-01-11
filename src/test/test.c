@@ -150,6 +150,8 @@ int main(int argc, char *argv[])
         printf("list starts out as empty\n");
     }
 
+    //cc_msg(list, "removePrefix");
+
     cc_msg(list, "affix", by_str("doh"), by_str("bleh"));
 
     // empty?
@@ -193,6 +195,9 @@ int main(int argc, char *argv[])
     }
 
     cc_msg(cursor, "free");
+
+    cc_msg(list, "free");
+    //cc_msg(list, "empty");
 
 
     // by/is
@@ -283,7 +288,7 @@ int main(int argc, char *argv[])
         cc_msg(t, "remove", by_int(n[i]));
         rc = cc_msg(t, "isEmpty");
         if (as_int(rc)) {
-            printf("list is empty\n");
+            printf("tree is empty\n");
             break;
         }
     }

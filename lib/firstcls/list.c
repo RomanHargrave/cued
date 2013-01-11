@@ -142,6 +142,36 @@ cc_begin_method(FcList, removeAffix)
 cc_end_method
 
 
+cc_begin_method(FcList, free)
+    _cc_send(my, "empty", argc, argv);
+    return cc_msg_super("free");
+cc_end_method
+
+
+cc_begin_method(FcList, empty)
+    FcListNode *curr, *next;
+    FcEmptyHow how = FcEmptyNone;
+    if (1 == argc) {
+        how = (FcEmptyHow) as_int(argv[0]);
+    }
+    for (curr = my->head.next;  curr != &my->head;  curr = next) {
+        next = curr->next;
+        switch (how) {
+            case FcEmptyNone:
+                break;
+            case FcEmptyFreeObject:
+                cc_msg(as_obj(curr->item), "free");
+                break;
+            case FcEmptyFreePointer:
+                free(as_ptr(curr->item));
+                break;
+        }
+        free(curr);
+    }
+    return cc_msg(my, "init");
+cc_end_method
+
+
 cc_begin_method(FcList, cursor)
     return cc_msg(&FcListCursor, "new", by_obj(my));
 cc_end_method
@@ -158,6 +188,8 @@ cc_class(FcList,
     cc_method("removePrefix",   removePrefixFcList),
     cc_method("removeAffix",    removeAffixFcList),
     cc_method("cursor",         cursorFcList),
+    cc_method("empty",          emptyFcList),
+    cc_method("free",           freeFcList)
     )
 
 
