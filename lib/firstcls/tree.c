@@ -27,9 +27,6 @@
 #define FC_TREE_NODE_RED   1
 
 
-// TODO:  need to overload free in tree and list to delete nodes
-
-
 cc_begin_method(FcTree, init)
     cc_msg_super("init");
     FcCheckArgcRange(0, 1);
@@ -43,6 +40,45 @@ cc_begin_method(FcTree, isEmpty)
     int rc;
     rc = (&my->sentinel == my->root) ? 1 : 0;
     return by_int(rc);
+cc_end_method
+
+
+static void FcTreeWalk(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
+{
+    if (&tree->sentinel == node)
+        return;
+
+    FcTreeWalk(tree, node->left,  how);
+    FcTreeWalk(tree, node->right, how);
+
+    switch (how) {
+        case FcEmptyNone:
+            break;
+        case FcEmptyFreeObject:
+            cc_msg(as_obj(node->item), "free");
+            break;
+        case FcEmptyFreePointer:
+            free(as_ptr(node->item));
+            break;
+    }
+    free(node);
+}
+
+
+cc_begin_method(FcTree, empty)
+    FcEmptyHow how = FcEmptyNone;
+    if (1 == argc) {
+        how = (FcEmptyHow) as_int(argv[0]);
+    }
+    FcTreeWalk(my, my->root, how);
+    return cc_msg(my, "init");
+cc_end_method
+
+
+// TODO:  common function?
+cc_begin_method(FcTree, free)
+    _cc_send(my, "empty", argc, argv);
+    return cc_msg_super("free");
 cc_end_method
 
 
@@ -512,6 +548,8 @@ cc_class_object(FcTree)
 cc_class(FcTree,
     cc_method("init",               initFcTree),
     cc_method("isEmpty",            isEmptyFcTree),
+    cc_method("empty",              emptyFcTree),
+    cc_method("free",               freeFcTree),
 
     // should list gain an insert/remove that do a comparison?
     cc_method("insert",             insertFcTree),

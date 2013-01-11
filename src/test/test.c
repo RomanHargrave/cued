@@ -294,6 +294,8 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    cc_msg(t, "free");
+
     //cc_msg(t, "init", by_ptr(NULL), by_ptr(NULL));
 
     return (EXIT_SUCCESS);
