@@ -518,7 +518,7 @@ cc_class(FcTree,
 
     // prefix and affix also call insert in order to align with list
     cc_method("prefix",             insertFcTree),
-    cc_method("afffix",             insertFcTree),
+    cc_method("affix",              insertFcTree),
 
     // should list gain a findEqual that does a comparison?
     cc_method("findEqual",          findEqualFcTree),
