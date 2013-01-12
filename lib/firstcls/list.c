@@ -142,12 +142,6 @@ cc_begin_method(FcList, removeAffix)
 cc_end_method
 
 
-cc_begin_method(FcList, free)
-    _cc_send(my, "empty", argc, argv);
-    return cc_msg_super("free");
-cc_end_method
-
-
 cc_begin_method(FcList, empty)
     FcListNode *curr, *next;
     FcEmptyHow how = FcEmptyNone;
@@ -159,6 +153,7 @@ cc_begin_method(FcList, empty)
         next = curr->next;
         switch (how) {
             case FcEmptyNone:
+                //printf("delete %s\n", as_str(curr->item));
                 break;
             case FcEmptyFreeObject:
                 cc_msg(as_obj(curr->item), "free");
@@ -190,7 +185,7 @@ cc_class(FcList,
     cc_method("removeAffix",    removeAffixFcList),
     cc_method("cursor",         cursorFcList),
     cc_method("empty",          emptyFcList),
-    cc_method("free",           freeFcList)
+    cc_method("free",           FcContainerFree)
     )
 
 

@@ -34,3 +34,10 @@ cc_arg_t _FcErrorArgc(cc_obj my, const char *msg, int argc, int minArgc, int max
                   by_str(" arguments to \""), by_str(msg),
                   by_str("\" for class \""), by_str(cls->name), by_str("\""));
 }
+
+
+cc_arg_t FcContainerFree(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
+{
+    _cc_send(my, "empty", argc, argv);
+    return cc_msg_super("free");
+}

@@ -76,13 +76,6 @@ cc_begin_method(FcTree, empty)
 cc_end_method
 
 
-// TODO:  common function?
-cc_begin_method(FcTree, free)
-    _cc_send(my, "empty", argc, argv);
-    return cc_msg_super("free");
-cc_end_method
-
-
 static FcTreeNode *TreeFindEqual(cc_vars_FcTree *theTree, cc_arg_t theKey)
 {
     int aCmpResult;
@@ -550,7 +543,7 @@ cc_class(FcTree,
     cc_method("init",               initFcTree),
     cc_method("isEmpty",            isEmptyFcTree),
     cc_method("empty",              emptyFcTree),
-    cc_method("free",               freeFcTree),
+    cc_method("free",               FcContainerFree),
 
     // should list gain an insert/remove that do a comparison?
     cc_method("insert",             insertFcTree),
@@ -568,8 +561,7 @@ cc_class(FcTree,
     cc_method("cursor",             cursorFcTree),
     cc_method("remove",             removeFcTree),
 
-    // list should have a free?  should this do other things than free?  take a method?
-    //cc_method("delete",             deleteFcTree),
+    // TODO:  apply for list and tree
     )
 
 
@@ -774,7 +766,7 @@ cc_class(FcTreeCursor,
     cc_method("previous",           previousFcTreeCursor),
     cc_method("current",            currentFcTreeCursor),
 
-    //  what do you set the cursor to after a remove?  next, previous?
+    //  what do you set the cursor to after a remove?  next...
     //cc_method("remove",             removeFcTreeCursor),
 
     //  do we need these to align with list?

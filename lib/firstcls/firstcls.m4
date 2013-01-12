@@ -24,6 +24,9 @@ typedef int (*FcCompare)(cc_arg_t item, cc_arg_t key);
 extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
 
 
+extern cc_arg_t FcContainerFree(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
+
+
 typedef struct _FcListNode {
 
     cc_arg_t item;
