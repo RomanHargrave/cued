@@ -76,166 +76,166 @@ cc_begin_method(FcTree, empty)
 cc_end_method
 
 
-static FcTreeNode *TreeFindEqual(cc_vars_FcTree *theTree, cc_arg_t theKey)
+static FcTreeNode *TreeFindEqual(cc_vars_FcTree *tree, cc_arg_t key)
 {
-    int aCmpResult;
+    int cmpResult;
 
-    FcTreeNode *aTreeNode = theTree->root;
-    while (aTreeNode != &theTree->sentinel) {
-        aCmpResult = (theTree->cmpMethod)(aTreeNode->item, theKey);
-        if (aCmpResult < 0) {
-            aTreeNode = aTreeNode->right;
-        } else if (aCmpResult > 0) {
-            aTreeNode = aTreeNode->left;
+    FcTreeNode *node = tree->root;
+    while (node != &tree->sentinel) {
+        cmpResult = (tree->cmpMethod)(node->item, key);
+        if (cmpResult < 0) {
+            node = node->right;
+        } else if (cmpResult > 0) {
+            node = node->left;
         } else {
             // found
             break;
         }
     }
 
-    return aTreeNode;
+    return node;
 }
 
 
-static FcTreeNode *TreeFindGreater(cc_vars_FcTree *theTree, cc_arg_t theKey)
+static FcTreeNode *TreeFindGreater(cc_vars_FcTree *tree, cc_arg_t key)
 {
-    int aCmpResult;
-    FcTreeNode *aGreaterNode = &theTree->sentinel;
+    int cmpResult;
+    FcTreeNode *greaterNode = &tree->sentinel;
 
-    FcTreeNode *aTreeNode = theTree->root;
-    while (aTreeNode != &theTree->sentinel) {
-        aCmpResult = (theTree->cmpMethod)(aTreeNode->item, theKey);
-        if (aCmpResult < 0) {
-            aGreaterNode = aTreeNode;
-            aTreeNode = aTreeNode->right;
-        } else if (aCmpResult > 0) {
-            aTreeNode = aTreeNode->left;
+    FcTreeNode *node = tree->root;
+    while (node != &tree->sentinel) {
+        cmpResult = (tree->cmpMethod)(node->item, key);
+        if (cmpResult < 0) {
+            greaterNode = node;
+            node = node->right;
+        } else if (cmpResult > 0) {
+            node = node->left;
         } else {
             // if the data items are equal, check for a greater descendant
             // tree;  if there is a greater descendant tree, find its 
             // least member
             //
-            if (aTreeNode->right != &theTree->sentinel) {
-                aGreaterNode = aTreeNode->right;
-                while (aGreaterNode->left != &theTree->sentinel)
-                    aGreaterNode = aGreaterNode->left;
+            if (node->right != &tree->sentinel) {
+                greaterNode = node->right;
+                while (greaterNode->left != &tree->sentinel)
+                    greaterNode = greaterNode->left;
             }
             break;
         }
     }
 
-    return aGreaterNode;
+    return greaterNode;
 }
 
 
-static FcTreeNode *TreeFindLesser(cc_vars_FcTree *theTree, cc_arg_t theKey)
+static FcTreeNode *TreeFindLesser(cc_vars_FcTree *tree, cc_arg_t key)
 {
-    int aCmpResult;
-    FcTreeNode *aLesserNode = &theTree->sentinel;
+    int cmpResult;
+    FcTreeNode *lesserNode = &tree->sentinel;
 
-    FcTreeNode *aTreeNode = theTree->root;
-    while (aTreeNode != &theTree->sentinel) {
-        aCmpResult = (theTree->cmpMethod)(aTreeNode->item, theKey);
-        if (aCmpResult < 0) {
-            aTreeNode = aTreeNode->right;
-        } else if (aCmpResult > 0) {
-            aLesserNode = aTreeNode;
-            aTreeNode = aTreeNode->left;
+    FcTreeNode *node = tree->root;
+    while (node != &tree->sentinel) {
+        cmpResult = (tree->cmpMethod)(node->item, key);
+        if (cmpResult < 0) {
+            node = node->right;
+        } else if (cmpResult > 0) {
+            lesserNode = node;
+            node = node->left;
         } else {
-            if (aTreeNode->left != &theTree->sentinel) {
-                aLesserNode = aTreeNode->left;
-                while (aLesserNode->right != &theTree->sentinel)
-                    aLesserNode = aLesserNode->right;
+            if (node->left != &tree->sentinel) {
+                lesserNode = node->left;
+                while (lesserNode->right != &tree->sentinel)
+                    lesserNode = lesserNode->right;
             }
             break;
         }
     }
 
-    return aLesserNode;
+    return lesserNode;
 }
 
 
-static FcTreeNode *TreeFindLesserOrEqual(cc_vars_FcTree *theTree, cc_arg_t theKey)
+static FcTreeNode *TreeFindLesserOrEqual(cc_vars_FcTree *tree, cc_arg_t key)
 {
-    int aCmpResult;
-    FcTreeNode *aLesserNode = &theTree->sentinel;
+    int cmpResult;
+    FcTreeNode *lesserNode = &tree->sentinel;
 
-    FcTreeNode *aTreeNode = theTree->root;
-    while (aTreeNode != &theTree->sentinel) {
-        aCmpResult = (theTree->cmpMethod)(aTreeNode->item, theKey);
-        if (aCmpResult < 0) {
-            aTreeNode = aTreeNode->right;
-        } else if (aCmpResult > 0) {
-            aLesserNode = aTreeNode;
-            aTreeNode = aTreeNode->left;
+    FcTreeNode *node = tree->root;
+    while (node != &tree->sentinel) {
+        cmpResult = (tree->cmpMethod)(node->item, key);
+        if (cmpResult < 0) {
+            node = node->right;
+        } else if (cmpResult > 0) {
+            lesserNode = node;
+            node = node->left;
         } else {
-            return aTreeNode;
+            return node;
         }
     }
 
-    return aLesserNode;
+    return lesserNode;
 }
 
 
-static FcTreeNode *TreeFindGreaterOrEqual(cc_vars_FcTree *theTree, cc_arg_t theKey)
+static FcTreeNode *TreeFindGreaterOrEqual(cc_vars_FcTree *tree, cc_arg_t key)
 {
-    int aCmpResult;
-    FcTreeNode *aGreaterNode = &theTree->sentinel;
+    int cmpResult;
+    FcTreeNode *greaterNode = &tree->sentinel;
 
-    FcTreeNode *aTreeNode = theTree->root;
-    while (aTreeNode != &theTree->sentinel) {
-        aCmpResult = (theTree->cmpMethod)(aTreeNode->item, theKey);
-        if (aCmpResult < 0) {
-            aGreaterNode = aTreeNode;
-            aTreeNode = aTreeNode->right;
-        } else if (aCmpResult > 0) {
-            aTreeNode = aTreeNode->left;
+    FcTreeNode *node = tree->root;
+    while (node != &tree->sentinel) {
+        cmpResult = (tree->cmpMethod)(node->item, key);
+        if (cmpResult < 0) {
+            greaterNode = node;
+            node = node->right;
+        } else if (cmpResult > 0) {
+            node = node->left;
         } else {
-            return aTreeNode;
+            return node;
         }
     }
 
-    return aGreaterNode;
+    return greaterNode;
 }
 
 
 cc_begin_method(FcTree, findEqual)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindEqual(my, argv[0]);
-    return aTreeNode->item;
+    node = TreeFindEqual(my, argv[0]);
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTree, findGreater)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindGreater(my, argv[0]);
-    return aTreeNode->item;
+    node = TreeFindGreater(my, argv[0]);
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTree, findLesser)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindLesser(my, argv[0]);
-    return aTreeNode->item;
+    node = TreeFindLesser(my, argv[0]);
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTree, findLesserOrEqual)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindLesserOrEqual(my, argv[0]);
-    return aTreeNode->item;
+    node = TreeFindLesserOrEqual(my, argv[0]);
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTree, findGreaterOrEqual)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindGreaterOrEqual(my, argv[0]);
-    return aTreeNode->item;
+    node = TreeFindGreaterOrEqual(my, argv[0]);
+    return node->item;
 cc_end_method
 
 
@@ -244,247 +244,247 @@ cc_begin_method(FcTree, cursor)
 cc_end_method
 
 
-static void TreeLeftRotate(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+static void TreeLeftRotate(cc_vars_FcTree *tree, FcTreeNode *subtree)
 {
-    FcTreeNode *aRightChild = theSubTree->right;
+    FcTreeNode *rightChild = subtree->right;
 
-    theSubTree->right = aRightChild->left;
+    subtree->right = rightChild->left;
 
-    if (aRightChild->left != &theTree->sentinel)
-        aRightChild->left->parent = theSubTree;
+    if (rightChild->left != &tree->sentinel)
+        rightChild->left->parent = subtree;
 
-    aRightChild->parent = theSubTree->parent;
-    if (&theTree->sentinel == theSubTree->parent) {
-        theTree->root = aRightChild;
-    } else if (theSubTree == theSubTree->parent->left) {
-        theSubTree->parent->left  = aRightChild;
+    rightChild->parent = subtree->parent;
+    if (&tree->sentinel == subtree->parent) {
+        tree->root = rightChild;
+    } else if (subtree == subtree->parent->left) {
+        subtree->parent->left  = rightChild;
     } else {
-        theSubTree->parent->right = aRightChild;
+        subtree->parent->right = rightChild;
     }
-    aRightChild->left = theSubTree;
-    theSubTree->parent = aRightChild;
+    rightChild->left = subtree;
+    subtree->parent = rightChild;
 }
 
 
-static void TreeRightRotate(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+static void TreeRightRotate(cc_vars_FcTree *tree, FcTreeNode *subtree)
 {
-    FcTreeNode *aLeftChild = theSubTree->left;
+    FcTreeNode *leftChild = subtree->left;
 
-    theSubTree->left = aLeftChild->right;
+    subtree->left = leftChild->right;
 
-    if (aLeftChild->right != &theTree->sentinel)
-        aLeftChild->right->parent = theSubTree;
+    if (leftChild->right != &tree->sentinel)
+        leftChild->right->parent = subtree;
 
-    aLeftChild->parent = theSubTree->parent;
-    if (&theTree->sentinel == theSubTree->parent) {
-        theTree->root = aLeftChild;
-    } else if (theSubTree == theSubTree->parent->right) {
-        theSubTree->parent->right = aLeftChild;
+    leftChild->parent = subtree->parent;
+    if (&tree->sentinel == subtree->parent) {
+        tree->root = leftChild;
+    } else if (subtree == subtree->parent->right) {
+        subtree->parent->right = leftChild;
     } else {
-        theSubTree->parent->left  = aLeftChild;
+        subtree->parent->left  = leftChild;
     }
-    aLeftChild->right = theSubTree;
-    theSubTree->parent = aLeftChild;
+    leftChild->right = subtree;
+    subtree->parent = leftChild;
 }
 
 
 static inline FcTreeNode *TreeUnbalancedInsert
     (
-    cc_vars_FcTree *theTree,
-    cc_arg_t theItem,
-    FcTreeNode *theNewSubTree
+    cc_vars_FcTree *tree,
+    cc_arg_t item,
+    FcTreeNode *newSubtree
     )
 {
-    int aCmpResult;
-    FcTreeNode *aSubTree = theTree->root;
+    int cmpResult;
+    FcTreeNode *subtree = tree->root;
 
-    if (&theTree->sentinel == aSubTree) {
-        theTree->root = theNewSubTree;
+    if (&tree->sentinel == subtree) {
+        tree->root = newSubtree;
     } else {
         for (;;) {
-            aCmpResult = (theTree->cmpMethod)(theItem, aSubTree->item);
-            if (aCmpResult > 0) {
-                if (&theTree->sentinel == aSubTree->right) {
-                    aSubTree->right = theNewSubTree;
+            cmpResult = (tree->cmpMethod)(item, subtree->item);
+            if (cmpResult > 0) {
+                if (&tree->sentinel == subtree->right) {
+                    subtree->right = newSubtree;
                     break;
                 } else {
-                    aSubTree = aSubTree->right;
+                    subtree = subtree->right;
                 }
-            } else if (aCmpResult < 0) {
-                if (&theTree->sentinel == aSubTree->left) {
-                    aSubTree->left = theNewSubTree;
+            } else if (cmpResult < 0) {
+                if (&tree->sentinel == subtree->left) {
+                    subtree->left = newSubtree;
                     break;
                 } else {
-                    aSubTree = aSubTree->left;
+                    subtree = subtree->left;
                 }
             } else {
                 // found
-                return aSubTree;
+                return subtree;
             }
         }
     }
 
-    theNewSubTree->item   = theItem;
-    theNewSubTree->left   = &theTree->sentinel;
-    theNewSubTree->right  = &theTree->sentinel;
-    theNewSubTree->parent = aSubTree;
+    newSubtree->item   = item;
+    newSubtree->left   = &tree->sentinel;
+    newSubtree->right  = &tree->sentinel;
+    newSubtree->parent = subtree;
 
-    return theNewSubTree;    
+    return newSubtree;    
 }
 
 
-static inline FcTreeNode *TreeInsert(cc_vars_FcTree *theTree, cc_arg_t theItem, FcTreeNode *theNewSubTree)
+static inline FcTreeNode *TreeInsert(cc_vars_FcTree *tree, cc_arg_t item, FcTreeNode *newSubtree)
 {
-    FcTreeNode *anUncle;
+    FcTreeNode *uncle;
 
-    FcTreeNode *aSubTree = TreeUnbalancedInsert(theTree, theItem, theNewSubTree);
-    if (aSubTree != theNewSubTree) {
-        return aSubTree;
+    FcTreeNode *subtree = TreeUnbalancedInsert(tree, item, newSubtree);
+    if (subtree != newSubtree) {
+        return subtree;
     }
 
-    aSubTree->color = FC_TREE_NODE_RED;
-    while (aSubTree != theTree->root && FC_TREE_NODE_RED == aSubTree->parent->color) {
-        if (aSubTree->parent == aSubTree->parent->parent->left) {
-            anUncle = aSubTree->parent->parent->right;
-            if (FC_TREE_NODE_RED == anUncle->color) {
-                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
-                anUncle->color                  = FC_TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
-                aSubTree = aSubTree->parent->parent;
+    subtree->color = FC_TREE_NODE_RED;
+    while (subtree != tree->root && FC_TREE_NODE_RED == subtree->parent->color) {
+        if (subtree->parent == subtree->parent->parent->left) {
+            uncle = subtree->parent->parent->right;
+            if (FC_TREE_NODE_RED == uncle->color) {
+                subtree->parent->color         = FC_TREE_NODE_BLACK;
+                uncle->color                   = FC_TREE_NODE_BLACK;
+                subtree->parent->parent->color = FC_TREE_NODE_RED;
+                subtree = subtree->parent->parent;
             } else {
-                if (aSubTree == aSubTree->parent->right) {
-                    aSubTree = aSubTree->parent;
-                    TreeLeftRotate(theTree, aSubTree);
+                if (subtree == subtree->parent->right) {
+                    subtree = subtree->parent;
+                    TreeLeftRotate(tree, subtree);
                 }               
-                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
-                TreeRightRotate(theTree, aSubTree->parent->parent);
+                subtree->parent->color         = FC_TREE_NODE_BLACK;
+                subtree->parent->parent->color = FC_TREE_NODE_RED;
+                TreeRightRotate(tree, subtree->parent->parent);
             }
         } else {
-            anUncle = aSubTree->parent->parent->left;
-            if (FC_TREE_NODE_RED == anUncle->color) {
-                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
-                anUncle->color                  = FC_TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
-                aSubTree = aSubTree->parent->parent;
+            uncle = subtree->parent->parent->left;
+            if (FC_TREE_NODE_RED == uncle->color) {
+                subtree->parent->color         = FC_TREE_NODE_BLACK;
+                uncle->color                   = FC_TREE_NODE_BLACK;
+                subtree->parent->parent->color = FC_TREE_NODE_RED;
+                subtree = subtree->parent->parent;
             } else {
-                if (aSubTree == aSubTree->parent->left) {
-                    aSubTree = aSubTree->parent;
-                    TreeRightRotate(theTree, aSubTree);
+                if (subtree == subtree->parent->left) {
+                    subtree = subtree->parent;
+                    TreeRightRotate(tree, subtree);
                 }               
-                aSubTree->parent->color         = FC_TREE_NODE_BLACK;
-                aSubTree->parent->parent->color = FC_TREE_NODE_RED;
-                TreeLeftRotate(theTree, aSubTree->parent->parent);
+                subtree->parent->color         = FC_TREE_NODE_BLACK;
+                subtree->parent->parent->color = FC_TREE_NODE_RED;
+                TreeLeftRotate(tree, subtree->parent->parent);
             }           
         }
     }
-    theTree->root->color = FC_TREE_NODE_BLACK;
+    tree->root->color = FC_TREE_NODE_BLACK;
 
-    return theNewSubTree;
+    return newSubtree;
 }
 
 
 cc_begin_method(FcTree, insert)
-    FcTreeNode *aNewSubTree, *aSubTree;
+    FcTreeNode *newSubtree, *subtree;
     FcCheckArgc(1);
 
-    aNewSubTree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
-    if (!aNewSubTree) {
-        return cc_msg(my, "error", by_str("out of memory allocating list node"));
+    newSubtree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
+    if (!newSubtree) {
+        return cc_msg(my, "error", by_str("out of memory allocating tree node"));
     }
 
-    aSubTree = TreeInsert(my, argv[0], aNewSubTree);
-    if (aSubTree != aNewSubTree) {
-        free(aNewSubTree);
+    subtree = TreeInsert(my, argv[0], newSubtree);
+    if (subtree != newSubtree) {
+        free(newSubtree);
     }
 
-    return aSubTree->item;
+    return subtree->item;
 cc_end_method
 
 
-static inline void TreeRemoveFixup(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+static inline void TreeRemoveFixup(cc_vars_FcTree *tree, FcTreeNode *subtree)
 {
-    FcTreeNode *aSibling;
+    FcTreeNode *sibling;
 
-    while (theSubTree != theTree->root && FC_TREE_NODE_BLACK == theSubTree->color) {
-        if (theSubTree == theSubTree->parent->left) {
-            aSibling = theSubTree->parent->right;
-            if (FC_TREE_NODE_RED == aSibling->color) {
-                aSibling->color             = FC_TREE_NODE_BLACK;
-                theSubTree->parent->color   = FC_TREE_NODE_RED;
-                TreeLeftRotate(theTree, theSubTree->parent);
-                aSibling = theSubTree->parent->right;
+    while (subtree != tree->root && FC_TREE_NODE_BLACK == subtree->color) {
+        if (subtree == subtree->parent->left) {
+            sibling = subtree->parent->right;
+            if (FC_TREE_NODE_RED == sibling->color) {
+                sibling->color            = FC_TREE_NODE_BLACK;
+                subtree->parent->color    = FC_TREE_NODE_RED;
+                TreeLeftRotate(tree, subtree->parent);
+                sibling = subtree->parent->right;
             }
-            if (   FC_TREE_NODE_BLACK == aSibling->left->color
-                && FC_TREE_NODE_BLACK == aSibling->right->color)
+            if (   FC_TREE_NODE_BLACK == sibling->left->color
+                && FC_TREE_NODE_BLACK == sibling->right->color)
             {
-                aSibling->color = FC_TREE_NODE_RED;
-                theSubTree = theSubTree->parent;
+                sibling->color = FC_TREE_NODE_RED;
+                subtree = subtree->parent;
             } else {
-                if (FC_TREE_NODE_BLACK == aSibling->right->color) {
-                    aSibling->left->color   = FC_TREE_NODE_BLACK;
-                    aSibling->color         = FC_TREE_NODE_RED;
-                    TreeRightRotate(theTree, aSibling);
-                    aSibling = theSubTree->parent->right;
+                if (FC_TREE_NODE_BLACK == sibling->right->color) {
+                    sibling->left->color  = FC_TREE_NODE_BLACK;
+                    sibling->color        = FC_TREE_NODE_RED;
+                    TreeRightRotate(tree, sibling);
+                    sibling = subtree->parent->right;
                 }
-                aSibling->color = theSubTree->parent->color;
-                theSubTree->parent->color   = FC_TREE_NODE_BLACK;
-                aSibling->right->color      = FC_TREE_NODE_BLACK;
-                TreeLeftRotate(theTree, theSubTree->parent);
+                sibling->color = subtree->parent->color;
+                subtree->parent->color    = FC_TREE_NODE_BLACK;
+                sibling->right->color     = FC_TREE_NODE_BLACK;
+                TreeLeftRotate(tree, subtree->parent);
 
                 break;
             }
         }
         else
         {
-            aSibling = theSubTree->parent->left;
-            if (FC_TREE_NODE_RED == aSibling->color) {
-                aSibling->color             = FC_TREE_NODE_BLACK;
-                theSubTree->parent->color   = FC_TREE_NODE_RED;
-                TreeRightRotate(theTree, theSubTree->parent);
-                aSibling = theSubTree->parent->left;
+            sibling = subtree->parent->left;
+            if (FC_TREE_NODE_RED == sibling->color) {
+                sibling->color            = FC_TREE_NODE_BLACK;
+                subtree->parent->color    = FC_TREE_NODE_RED;
+                TreeRightRotate(tree, subtree->parent);
+                sibling = subtree->parent->left;
             }
-            if (   FC_TREE_NODE_BLACK == aSibling->right->color 
-                && FC_TREE_NODE_BLACK == aSibling->left->color)
+            if (   FC_TREE_NODE_BLACK == sibling->right->color 
+                && FC_TREE_NODE_BLACK == sibling->left->color)
             {
-                aSibling->color = FC_TREE_NODE_RED;
-                theSubTree = theSubTree->parent;
+                sibling->color = FC_TREE_NODE_RED;
+                subtree = subtree->parent;
             } else {
-                if (FC_TREE_NODE_BLACK == aSibling->left->color) {
-                    aSibling->right->color  = FC_TREE_NODE_BLACK;
-                    aSibling->color         = FC_TREE_NODE_RED;
-                    TreeLeftRotate(theTree, aSibling);
-                    aSibling = theSubTree->parent->left;
+                if (FC_TREE_NODE_BLACK == sibling->left->color) {
+                    sibling->right->color = FC_TREE_NODE_BLACK;
+                    sibling->color        = FC_TREE_NODE_RED;
+                    TreeLeftRotate(tree, sibling);
+                    sibling = subtree->parent->left;
                 }
-                aSibling->color = theSubTree->parent->color;
-                theSubTree->parent->color   = FC_TREE_NODE_BLACK;
-                aSibling->left->color       = FC_TREE_NODE_BLACK;
-                TreeRightRotate(theTree, theSubTree->parent);
+                sibling->color = subtree->parent->color;
+                subtree->parent->color    = FC_TREE_NODE_BLACK;
+                sibling->left->color      = FC_TREE_NODE_BLACK;
+                TreeRightRotate(tree, subtree->parent);
 
                 break;
             }
         }
     }
-    theSubTree->color = FC_TREE_NODE_BLACK;
+    subtree->color = FC_TREE_NODE_BLACK;
 }
 
 
-FcTreeNode *TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
+FcTreeNode *TreeRemoveNode(cc_vars_FcTree *tree, FcTreeNode *subtree)
 {
-    FcTreeNode *aChild, *aRemovedNode;
+    FcTreeNode *child, *removedNode;
 
-    if (&theTree->sentinel == theSubTree->left) {
+    if (&tree->sentinel == subtree->left) {
         //
         // promote right child
         //
-        aRemovedNode = theSubTree;
-        aChild = aRemovedNode->right;
-    } else if (&theTree->sentinel == theSubTree->right) {
+        removedNode = subtree;
+        child = removedNode->right;
+    } else if (&tree->sentinel == subtree->right) {
         //
         // promote left child
         //
-        aRemovedNode = theSubTree;
-        aChild = aRemovedNode->left;
+        removedNode = subtree;
+        child = removedNode->left;
     } else {
         //
         // the node containing the deleted item has two children;
@@ -494,44 +494,44 @@ FcTreeNode *TreeRemoveNode(cc_vars_FcTree *theTree, FcTreeNode *theSubTree)
         // remove the successor's node and replace the deleted item
         // with its successor
         //
-        aRemovedNode = theSubTree->right;
-        while (aRemovedNode->left != &theTree->sentinel) {
-            aRemovedNode = aRemovedNode->left;
+        removedNode = subtree->right;
+        while (removedNode->left != &tree->sentinel) {
+            removedNode = removedNode->left;
         }
-        theSubTree->item = aRemovedNode->item;
-        aChild = aRemovedNode->right;
+        subtree->item = removedNode->item;
+        child = removedNode->right;
     }
 
-    aChild->parent = aRemovedNode->parent;
-    if (aRemovedNode->parent == &theTree->sentinel) {
-        theTree->root = aChild;
-    } else if (aRemovedNode->parent->left == aRemovedNode) {
-        aRemovedNode->parent->left  = aChild;
+    child->parent = removedNode->parent;
+    if (removedNode->parent == &tree->sentinel) {
+        tree->root = child;
+    } else if (removedNode->parent->left == removedNode) {
+        removedNode->parent->left  = child;
     } else {
-        aRemovedNode->parent->right = aChild;
+        removedNode->parent->right = child;
     }
 
-    if (FC_TREE_NODE_BLACK == aRemovedNode->color) {
-        TreeRemoveFixup(theTree, aChild);
+    if (FC_TREE_NODE_BLACK == removedNode->color) {
+        TreeRemoveFixup(tree, child);
     }
 
-    return aRemovedNode;
+    return removedNode;
 }
 
 
 cc_begin_method(FcTree, remove)
     cc_arg_t rc;
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindEqual(my, argv[0]);
-    rc = aTreeNode->item;
-    if (&my->sentinel != aTreeNode) {
+    node = TreeFindEqual(my, argv[0]);
+    rc = node->item;
+    if (&my->sentinel != node) {
         //
         // an optimization removes the successor rather than replacing it;
         // consequently, a different node may be removed from the tree
         //
-        aTreeNode = TreeRemoveNode(my, aTreeNode);
-        free(aTreeNode);
+        node = TreeRemoveNode(my, node);
+        free(node);
     }
     return rc;
 cc_end_method
@@ -566,173 +566,173 @@ cc_class(FcTree,
 
 
 cc_begin_method(FcTreeCursor, findEqual)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindEqual(my->tree, argv[0]);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    node = TreeFindEqual(my->tree, argv[0]);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, findGreater)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindGreater(my->tree, argv[0]);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    node = TreeFindGreater(my->tree, argv[0]);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, findLesser)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindLesser(my->tree, argv[0]);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    node = TreeFindLesser(my->tree, argv[0]);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, findLesserOrEqual)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindLesserOrEqual(my->tree, argv[0]);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    node = TreeFindLesserOrEqual(my->tree, argv[0]);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, findGreaterOrEqual)
-    FcTreeNode *aTreeNode;
+    FcTreeNode *node;
     FcCheckArgc(1);
-    aTreeNode = TreeFindGreaterOrEqual(my->tree, argv[0]);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    node = TreeFindGreaterOrEqual(my->tree, argv[0]);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
-static inline FcTreeNode *TreeMinimum(cc_vars_FcTree *theTree)
+static inline FcTreeNode *TreeMinimum(cc_vars_FcTree *tree)
 {
-    FcTreeNode *aMinimumNode = &theTree->sentinel;
-    FcTreeNode *aTreeNode = theTree->root;
+    FcTreeNode *minimumNode = &tree->sentinel;
+    FcTreeNode *node = tree->root;
 
     // find the left-most node of the tree
     //
-    while (aTreeNode != &theTree->sentinel) {
-        aMinimumNode = aTreeNode;
-        aTreeNode = aTreeNode->left;
+    while (node != &tree->sentinel) {
+        minimumNode = node;
+        node = node->left;
     }
 
-    return aMinimumNode;
+    return minimumNode;
 }
 
 
-static inline FcTreeNode *TreeMaximum(cc_vars_FcTree *theTree)
+static inline FcTreeNode *TreeMaximum(cc_vars_FcTree *tree)
 {
-    FcTreeNode *aMaximumNode = &theTree->sentinel;
-    FcTreeNode *aTreeNode = theTree->root;
+    FcTreeNode *maximumNode = &tree->sentinel;
+    FcTreeNode *node = tree->root;
 
     // find the right-most node of the tree
     //
-    while (aTreeNode != &theTree->sentinel) {
-        aMaximumNode = aTreeNode;
-        aTreeNode = aTreeNode->right;
+    while (node != &tree->sentinel) {
+        maximumNode = node;
+        node = node->right;
     }
 
-    return aMaximumNode;
+    return maximumNode;
 }
 
 
-static inline FcTreeNode *TreeSuccessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNode)
+static inline FcTreeNode *TreeSuccessor(cc_vars_FcTree *tree, FcTreeNode *node)
 {
-    if (&theTree->sentinel != theTreeNode) {
+    if (&tree->sentinel != node) {
 
         // if the tree has a right subtree,
         // then the successor is in the right subtree
         //
-        if (theTreeNode->right != &theTree->sentinel) {
-            theTreeNode = theTreeNode->right;
-            while (theTreeNode->left != &theTree->sentinel)
-                theTreeNode = theTreeNode->left;
+        if (node->right != &tree->sentinel) {
+            node = node->right;
+            while (node->left != &tree->sentinel)
+                node = node->left;
 
         } else {
-            FcTreeNode *anAncestor;
+            FcTreeNode *ancestor;
 
             // otherwise, search up the tree until an ancestor right
             // of the child is found (if any)
             //
-            while (&theTree->sentinel != (anAncestor = theTreeNode->parent)) {
-                if (anAncestor->left == theTreeNode)
+            while (&tree->sentinel != (ancestor = node->parent)) {
+                if (ancestor->left == node)
                     break;
 
-                theTreeNode = anAncestor;
+                node = ancestor;
             }
 
-            return anAncestor;
+            return ancestor;
         }
     }
 
-    return theTreeNode;
+    return node;
 }
 
 
-static inline FcTreeNode *TreePredecessor(cc_vars_FcTree *theTree, FcTreeNode *theTreeNode)
+static inline FcTreeNode *TreePredecessor(cc_vars_FcTree *tree, FcTreeNode *node)
 {
-    if (&theTree->sentinel != theTreeNode) {
+    if (&tree->sentinel != node) {
 
         // if the tree has a left subtree,
         // then the predecessor is in the left subtree
         //
-        if (theTreeNode->left != &theTree->sentinel) {
-            theTreeNode = theTreeNode->left;
-            while (theTreeNode->right != &theTree->sentinel)
-                theTreeNode = theTreeNode->right;
+        if (node->left != &tree->sentinel) {
+            node = node->left;
+            while (node->right != &tree->sentinel)
+                node = node->right;
 
         } else {
-            FcTreeNode *anAncestor;
+            FcTreeNode *ancestor;
 
             // otherwise, search up the tree until an ancestor left
             // of the child is found (if any)
             //
-            while (&theTree->sentinel != (anAncestor = theTreeNode->parent)) {
-                if (anAncestor->right == theTreeNode)
+            while (&tree->sentinel != (ancestor = node->parent)) {
+                if (ancestor->right == node)
                     break;
 
-                theTreeNode = anAncestor;
+                node = ancestor;
             }
 
-            return anAncestor;
+            return ancestor;
         }
     }
 
-    return theTreeNode;
+    return node;
 }
 
 
 cc_begin_method(FcTreeCursor, first)
-    FcTreeNode *aTreeNode = TreeMinimum(my->tree);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    FcTreeNode *node = TreeMinimum(my->tree);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, last)
-    FcTreeNode *aTreeNode = TreeMaximum(my->tree);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    FcTreeNode *node = TreeMaximum(my->tree);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, next)
-    FcTreeNode *aTreeNode = TreeSuccessor(my->tree, my->curr);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    FcTreeNode *node = TreeSuccessor(my->tree, my->curr);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
 cc_begin_method(FcTreeCursor, previous)
-    FcTreeNode *aTreeNode = TreePredecessor(my->tree, my->curr);
-    my->curr = aTreeNode;
-    return aTreeNode->item;
+    FcTreeNode *node = TreePredecessor(my->tree, my->curr);
+    my->curr = node;
+    return node->item;
 cc_end_method
 
 
