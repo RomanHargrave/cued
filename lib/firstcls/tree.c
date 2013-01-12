@@ -67,6 +67,7 @@ static void FcTreeWalk(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
 
 cc_begin_method(FcTree, empty)
     FcEmptyHow how = FcEmptyNone;
+    FcCheckArgcRange(0, 1);
     if (1 == argc) {
         how = (FcEmptyHow) as_int(argv[0]);
     }

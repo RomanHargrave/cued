@@ -151,6 +151,7 @@ cc_end_method
 cc_begin_method(FcList, empty)
     FcListNode *curr, *next;
     FcEmptyHow how = FcEmptyNone;
+    FcCheckArgcRange(0, 1);
     if (1 == argc) {
         how = (FcEmptyHow) as_int(argv[0]);
     }
