@@ -85,6 +85,7 @@ cc_category(Foo, Blastme,
 cc_vars_Foo fooVector[5];
 
 #define NELEMS(vector) (sizeof(vector) / sizeof(vector[0]))
+#define SNELEMS(vector) ((ssize_t) NELEMS(vector))
 
 //#define TREE_NODES 1000000
 #define TREE_NODES 1000
@@ -218,11 +219,11 @@ int main(int argc, char *argv[])
 
 
     // vector init
-    cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(NELEMS(fooVector)));
+    cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(SNELEMS(fooVector)));
     cc_msg(&fooVector[4], "test", by_int(5));
 
     t = as_obj(cc_msg(&FcTree, "new"));
-    for (i = 0;  i < NELEMS(fooVector);  ++i) {
+    for (i = 0;  i < SNELEMS(fooVector);  ++i) {
         fooVector[i].bar = i;
         cc_msg(t, "insert", by_obj(&fooVector[i]));
     }
