@@ -56,6 +56,14 @@ cc_begin_method(Foo, forward)
 cc_end_method
 
 
+cc_begin_method(Foo, compare)
+    int rc;
+    cc_vars_Foo *key = (cc_vars_Foo *) as_obj(argv[0]);
+    rc = my->bar - key->bar;
+    return by_int(rc);
+cc_end_method
+
+
 cc_class_object(Foo)
 
 
@@ -65,6 +73,7 @@ cc_class(Foo,
     cc_method("blow", testFoo),
     cc_method("blarf", testFoo),
     cc_method("forward", forwardFoo),
+    cc_method("compare", compareFoo),
     )
 
 cc_category(Foo, Blastme,
@@ -94,6 +103,7 @@ int main(int argc, char *argv[])
     const char *item;
     cc_obj list, cursor, f, t;
     cc_arg_t foo, rc;
+    int i;
 
     char test[5] = { 't', 'e', 's', 't', 0 };
 
@@ -211,13 +221,21 @@ int main(int argc, char *argv[])
     cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(NELEMS(fooVector)));
     cc_msg(&fooVector[4], "test", by_int(5));
 
+    t = as_obj(cc_msg(&FcTree, "new"));
+    for (i = 0;  i < NELEMS(fooVector);  ++i) {
+        fooVector[i].bar = i;
+        cc_msg(t, "insert", by_obj(&fooVector[i]));
+    }
+    cc_msg(t, "apply", by_str("test"), by_int(0xABCDEF));
+    cc_msg(t, "free");
+
 
     // test tree
     //
 
     // C++ needs the cast to void (ugh)
     t = as_obj(cc_msg(&FcTree, "new", by_ptr((void *) int_cmp)));
-    int i, n[TREE_NODES];
+    int n[TREE_NODES];
 //    for (i = TREE_NODES - 1;  i >= 0;  --i) {
     for (i = 0;  i < TREE_NODES;  ++i) {
 //        n[i] = rand();

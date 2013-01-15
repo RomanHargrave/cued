@@ -43,13 +43,13 @@ cc_begin_method(FcTree, isEmpty)
 cc_end_method
 
 
-static void FcTreeWalk(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
+static void FcTreeEmpty(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
 {
     if (&tree->sentinel == node)
         return;
 
-    FcTreeWalk(tree, node->left,  how);
-    FcTreeWalk(tree, node->right, how);
+    FcTreeEmpty(tree, node->left,  how);
+    FcTreeEmpty(tree, node->right, how);
 
     switch (how) {
         case FcEmptyNone:
@@ -71,8 +71,29 @@ cc_begin_method(FcTree, empty)
     if (1 == argc) {
         how = (FcEmptyHow) as_int(argv[0]);
     }
-    FcTreeWalk(my, my->root, how);
+    FcTreeEmpty(my, my->root, how);
     return cc_msg(my, "init");
+cc_end_method
+
+
+static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, const char *msg, int argc, cc_arg_t *argv)
+{
+    if (&tree->sentinel == node)
+        return;
+
+    FcTreeApply(tree, node->left,  msg, argc, argv);
+    _cc_send(as_obj(node->item),   msg, argc, argv);
+    FcTreeApply(tree, node->right, msg, argc, argv);
+}
+
+
+cc_begin_method(FcTree, apply)
+    if (argc < 1) {
+        return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg),
+                      by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
+    }
+    FcTreeApply(my, my->root, as_str(argv[0]), argc - 1, &argv[1]);
+    return by_obj(my);
 cc_end_method
 
 
@@ -561,7 +582,8 @@ cc_class(FcTree,
     cc_method("cursor",             cursorFcTree),
     cc_method("remove",             removeFcTree),
 
-    // TODO:  apply for list and tree
+    // TODO:  apply for list
+    cc_method("apply",              applyFcTree),
     )
 
 
