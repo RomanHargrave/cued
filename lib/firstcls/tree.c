@@ -30,7 +30,7 @@
 cc_begin_method(FcTree, init)
     cc_msg_super("init");
     FcCheckArgcRange(0, 1);
-    my->cmpMethod = argc ? (FcCompare) as_ptr(argv[0]) : FcObjCompare;
+    my->cmpMethod = argc ? (FcCompareFn) as_ptr(argv[0]) : FcObjCompare;
     my->root = &my->sentinel;
     return by_obj(my);
 cc_end_method
@@ -76,14 +76,18 @@ cc_begin_method(FcTree, empty)
 cc_end_method
 
 
-static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, const char *msg, int argc, cc_arg_t *argv)
+static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, FcApplyFn applyfn, const char *msg, int argc, cc_arg_t *argv)
 {
     if (&tree->sentinel == node)
         return;
 
-    FcTreeApply(tree, node->left,  msg, argc, argv);
-    _cc_send(as_obj(node->item),   msg, argc, argv);
-    FcTreeApply(tree, node->right, msg, argc, argv);
+    FcTreeApply(tree, node->left,  applyfn, msg, argc, argv);
+    if (msg) {
+        _cc_send(as_obj(node->item),        msg, argc, argv);
+    } else {
+        applyfn(node->item,                      argc, argv);
+    }
+    FcTreeApply(tree, node->right, applyfn, msg, argc, argv);
 }
 
 
@@ -92,7 +96,10 @@ cc_begin_method(FcTree, apply)
         return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg),
                       by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
     }
-    FcTreeApply(my, my->root, as_str(argv[0]), argc - 1, &argv[1]);
+    FcTreeApply(my, my->root,
+                is_ptr(argv[0]) ? (FcApplyFn) as_ptr(argv[0]) : NULL,
+                is_str(argv[0]) ?             as_str(argv[0]) : NULL,
+                argc - 1, &argv[1]);
     return by_obj(my);
 cc_end_method
 

@@ -19,9 +19,12 @@ typedef enum _FcEmptyHow {
 extern cc_arg_t _FcErrorArgc(cc_obj my, const char *msg, int argc, int minArgc, int maxArgc);
 
 
-typedef int (*FcCompare)(cc_arg_t item, cc_arg_t key);
+typedef int (*FcCompareFn)(cc_arg_t item, cc_arg_t key);
 
 extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
+
+
+typedef int (*FcApplyFn)(cc_arg_t item, int argc, cc_arg_t *argv);
 
 
 extern cc_arg_t FcContainerFree(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
@@ -54,7 +57,7 @@ typedef struct _FcTreeNode {
 class(FcTree, Root,
 `    FcTreeNode sentinel;'
 `    FcTreeNode *root;'
-`    FcCompare cmpMethod;')
+`    FcCompareFn cmpMethod;')
 
 class(FcTreeCursor, Root,
 `    cc_vars_FcTree *tree;'
