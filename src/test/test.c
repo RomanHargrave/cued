@@ -99,6 +99,12 @@ int int_cmp(cc_arg_t item, cc_arg_t key)
 }
 
 
+void applyStr(cc_arg_t item, int argc, cc_arg_t *argv)
+{
+    printf("applied string is %s\n", as_str(item));
+}
+
+
 int main(int argc, char *argv[])
 {
     const char *item;
@@ -196,6 +202,9 @@ int main(int argc, char *argv[])
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
+
+    // apply
+    cc_msg(list, "apply", by_ptr((void *) applyStr));
 
 
     // copy
