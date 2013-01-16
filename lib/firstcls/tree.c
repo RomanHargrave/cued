@@ -588,8 +588,6 @@ cc_class(FcTree,
     cc_method("findGreaterOrEqual", findGreaterOrEqualFcTree),
     cc_method("cursor",             cursorFcTree),
     cc_method("remove",             removeFcTree),
-
-    // TODO:  apply for list
     cc_method("apply",              applyFcTree),
     )
 
