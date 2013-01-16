@@ -185,9 +185,9 @@ cc_begin_method(FcList, apply)
     applyMsg = is_str(argv[0]) ?             as_str(argv[0]) : NULL;
     for (node = my->head.next;  node != &my->head;  node = node->next) {
         if (applyMsg) {
-            _cc_send(as_obj(node->item), applyMsg, argc, argv);
+            _cc_send(as_obj(node->item), applyMsg, argc - 1, &argv[1]);
         } else {
-            applyFn(        node->item,            argc, argv);
+            applyFn(        node->item,            argc - 1, &argv[1]);
         }
     }
     return by_obj(my);
