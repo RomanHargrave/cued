@@ -173,6 +173,27 @@ cc_begin_method(FcList, cursor)
 cc_end_method
 
 
+cc_begin_method(FcList, apply)
+    FcListNode *node;
+    FcApplyFn applyFn;
+    const char *applyMsg;
+    if (argc < 1) {
+        return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg),
+                      by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
+    }
+    applyFn  = is_ptr(argv[0]) ? (FcApplyFn) as_ptr(argv[0]) : NULL;
+    applyMsg = is_str(argv[0]) ?             as_str(argv[0]) : NULL;
+    for (node = my->head.next;  node != &my->head;  node = node->next) {
+        if (applyMsg) {
+            _cc_send(as_obj(node->item), applyMsg, argc, argv);
+        } else {
+            applyFn(        node->item,            argc, argv);
+        }
+    }
+    return by_obj(my);
+cc_end_method
+
+
 cc_class_object(FcList)
 
 
@@ -185,6 +206,7 @@ cc_class(FcList,
     cc_method("removeAffix",    removeAffixFcList),
     cc_method("cursor",         cursorFcList),
     cc_method("empty",          emptyFcList),
+    cc_method("apply",          applyFcList),
     cc_method("free",           FcContainerFree)
     )
 

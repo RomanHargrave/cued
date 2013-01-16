@@ -76,18 +76,18 @@ cc_begin_method(FcTree, empty)
 cc_end_method
 
 
-static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, FcApplyFn applyfn, const char *msg, int argc, cc_arg_t *argv)
+static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, FcApplyFn applyFn, const char *msg, int argc, cc_arg_t *argv)
 {
     if (&tree->sentinel == node)
         return;
 
-    FcTreeApply(tree, node->left,  applyfn, msg, argc, argv);
+    FcTreeApply(tree, node->left,  applyFn, msg, argc, argv);
     if (msg) {
         _cc_send(as_obj(node->item),        msg, argc, argv);
     } else {
-        applyfn(node->item,                      argc, argv);
+        applyFn(        node->item,              argc, argv);
     }
-    FcTreeApply(tree, node->right, applyfn, msg, argc, argv);
+    FcTreeApply(tree, node->right, applyFn, msg, argc, argv);
 }
 
 
