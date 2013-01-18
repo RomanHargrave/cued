@@ -1,3 +1,6 @@
+// TODO:  should take int to terminate apply?
+
+
 cc_begin_method(FcTreeCursor, remove)
     // hmm, remove sometimes finds the successor for you;  is it worth optimizing?
     FcTreeNode *next = TreeSuccessor(my->tree, my->curr);

@@ -24,7 +24,6 @@ typedef int (*FcCompareFn)(cc_arg_t item, cc_arg_t key);
 extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
 
 
-// TODO:  should take int to terminate apply?
 typedef void (*FcApplyFn)(cc_arg_t item, int argc, cc_arg_t *argv);
 
 

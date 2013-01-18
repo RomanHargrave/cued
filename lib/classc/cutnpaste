@@ -9,7 +9,7 @@ cc_class(Root,
 
 
 // TODO:  should this use sizeof(cc_class_object), even though size is unused?
-// should we set to -1, ha ha ?
+// should we set to -1, ha ha ?  yes, that's what we did
 //
 
 cc_class_object MetaRoot = {
