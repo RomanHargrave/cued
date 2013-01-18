@@ -142,9 +142,9 @@ static FcTreeNode *TreeFindGreater(cc_vars_FcTree *tree, cc_arg_t key)
     while (node != &tree->sentinel) {
         cmpResult = (tree->cmpMethod)(node->item, key);
         if (cmpResult < 0) {
-            greaterNode = node;
             node = node->right;
         } else if (cmpResult > 0) {
+            greaterNode = node;
             node = node->left;
         } else {
             // if the data items are equal, check for a greater descendant
@@ -173,9 +173,9 @@ static FcTreeNode *TreeFindLesser(cc_vars_FcTree *tree, cc_arg_t key)
     while (node != &tree->sentinel) {
         cmpResult = (tree->cmpMethod)(node->item, key);
         if (cmpResult < 0) {
+            lesserNode = node;
             node = node->right;
         } else if (cmpResult > 0) {
-            lesserNode = node;
             node = node->left;
         } else {
             if (node->left != &tree->sentinel) {
@@ -200,9 +200,9 @@ static FcTreeNode *TreeFindLesserOrEqual(cc_vars_FcTree *tree, cc_arg_t key)
     while (node != &tree->sentinel) {
         cmpResult = (tree->cmpMethod)(node->item, key);
         if (cmpResult < 0) {
+            lesserNode = node;
             node = node->right;
         } else if (cmpResult > 0) {
-            lesserNode = node;
             node = node->left;
         } else {
             return node;
@@ -222,9 +222,9 @@ static FcTreeNode *TreeFindGreaterOrEqual(cc_vars_FcTree *tree, cc_arg_t key)
     while (node != &tree->sentinel) {
         cmpResult = (tree->cmpMethod)(node->item, key);
         if (cmpResult < 0) {
-            greaterNode = node;
             node = node->right;
         } else if (cmpResult > 0) {
+            greaterNode = node;
             node = node->left;
         } else {
             return node;

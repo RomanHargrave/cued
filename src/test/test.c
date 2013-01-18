@@ -91,9 +91,22 @@ cc_category(Foo, Blastme,
 //#define TREE_NODES 10000
 #define TREE_NODES 1000
 
+#define TEST_NUM (TREE_NODES / 2)
+
 int int_cmp(cc_arg_t item, cc_arg_t key)
 {
     return as_int(item) - as_int(key);
+}
+
+void findTest(cc_obj t, const char *msg, int i)
+{
+    cc_arg_t item;
+    item = cc_msg(t, msg, by_int(i));
+    if (cc_is_null(item)) {
+        printf("%s(%d) returns NULL\n", msg, i);
+    } else {
+        printf("%s(%d) returns %d\n",   msg, i, as_int(item));
+    }
 }
 
 void unitTestTree()
@@ -142,6 +155,22 @@ void unitTestTree()
     }
 
 
+    findTest(t, "findEqual", TEST_NUM);
+    findTest(t, "findGreater", TEST_NUM);
+    findTest(t, "findLesser", TEST_NUM);
+    findTest(t, "findLesserOrEqual", TEST_NUM);
+    findTest(t, "findGreaterOrEqual", TEST_NUM);
+
+    cc_msg(t, "remove", by_int(TEST_NUM));
+    printf("removed TEST_NUM\n");
+
+    findTest(t, "findEqual", TEST_NUM);
+    findTest(t, "findGreater", TEST_NUM);
+    findTest(t, "findLesser", TEST_NUM);
+    findTest(t, "findLesserOrEqual", TEST_NUM);
+    findTest(t, "findGreaterOrEqual", TEST_NUM);
+
+
 #if 0
     // enumerate tree
     //
@@ -149,14 +178,14 @@ void unitTestTree()
     rc = cc_msg(cursor, "last");
     for ( i = 1; ; ) {
         rc = cc_msg(cursor, "current");
-        printf("%d\n", as_int(rc));
+        printf("%d ", as_int(rc));
         rc = cc_msg(cursor, "previous");
         if (cc_is_null(rc)) {
             break;
         }
         ++i;
     }
-    printf("tree has %d nodes\n", i);
+    printf("\ntree has %d nodes\n", i);
 #endif
 
 
