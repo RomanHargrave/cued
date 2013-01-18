@@ -51,7 +51,7 @@ cc_end_method
 
 
 cc_begin_method(Foo, forward)
-    printf("forward handler called with message %s!!!\n", msg);
+    printf("forward handler called with message \"%s\"\n", msg);
     return by_obj(my);
 cc_end_method
 
@@ -70,91 +70,173 @@ cc_class_object(Foo)
 cc_class(Foo,
     cc_method("setBar", setBarFoo),
     cc_method("test", testFoo),
-    cc_method("blow", testFoo),
-    cc_method("blarf", testFoo),
     cc_method("forward", forwardFoo),
     cc_method("compare", compareFoo),
     )
 
 cc_category(Foo, Blastme,
     cc_method("blacker", testFoo),
-    cc_method("doh", testFoo),
     )
 
 
-cc_vars_Foo fooVector[5];
+#include "firstcls.h"
+
+
+// tree tests
+//
 
 #define NELEMS(vector) (sizeof(vector) / sizeof(vector[0]))
 #define SNELEMS(vector) ((ssize_t) NELEMS(vector))
 
-//#define TREE_NODES 1000000
+//#define TREE_NODES 10000
 #define TREE_NODES 1000
-
-#include "firstcls.h"
-
 
 int int_cmp(cc_arg_t item, cc_arg_t key)
 {
     return as_int(item) - as_int(key);
 }
 
-
-void applyStr(cc_arg_t item, int argc, cc_arg_t *argv)
+void unitTestTree()
 {
-    printf("applied string is %s\n", as_str(item));
+    int i, j;
+    cc_vars_Foo fooVector[5];
+    cc_arg_t rc;
+    cc_obj t, cursor;
+    FcTreeNode *node;
+    int n[TREE_NODES];
+
+
+    printf("\n\n*** TREE TESTS ***\n");
+
+
+    // vector init
+    cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(SNELEMS(fooVector)));
+    //cc_msg(&fooVector[4], "test", by_int(5));
+
+    t = as_obj(cc_msg(&FcTree, "new"));
+    for (i = 0;  i < SNELEMS(fooVector);  ++i) {
+        fooVector[i].bar = i;
+        cc_msg(t, "insert", by_obj(&fooVector[i]));
+    }
+    cc_msg(t, "apply", by_str("test"), by_int(0xABCDEF));
+    cc_msg(t, "free");
+
+
+    // C++ needs the cast to void (ugh)
+    t = as_obj(cc_msg(&FcTree, "new", by_ptr((void *) int_cmp)));
+    cursor = as_obj(cc_msg(t, "cursor"));
+
+    for (i = 0;  i < TREE_NODES;  ++i) {
+
+        // insert randomly
+        // n[i] = rand();
+
+        // insert pathologically
+        //
+        n[i] = i;
+
+        rc = cc_msg(t, "insert", by_int(n[i]));
+        if (as_int(rc) != n[i]) {
+            abort();
+        }
+    }
+
+
+#if 0
+    // enumerate tree
+    //
+
+    rc = cc_msg(cursor, "last");
+    for ( i = 1; ; ) {
+        rc = cc_msg(cursor, "current");
+        printf("%d\n", as_int(rc));
+        rc = cc_msg(cursor, "previous");
+        if (cc_is_null(rc)) {
+            break;
+        }
+        ++i;
+    }
+    printf("tree has %d nodes\n", i);
+#endif
+
+
+    // check depths
+    //
+
+    node = ((cc_vars_FcTree *) t)->root;
+    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
+        node = node->left;
+    }
+    printf("left depth is %d\n", i);
+
+    node = ((cc_vars_FcTree *) t)->root;
+    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
+        node = node->right;
+    }
+    printf("right depth is %d\n", i);
+
+
+    // remove (pathologically)
+    //
+
+    for (i = 0;  i < TREE_NODES * 95/100;  ++i) {
+        cc_msg(t, "remove", by_int(n[i]));
+    }
+
+
+    // check depths
+    //
+
+    node = ((cc_vars_FcTree *) t)->root;
+    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
+        node = node->left;
+    }
+    printf("left depth is %d\n", i);
+
+    node = ((cc_vars_FcTree *) t)->root;
+    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
+        node = node->right;
+    }
+    printf("right depth is %d\n", i);
+
+
+    printf("random remove");
+    for (j = 0;  ;  ++j) {
+        i = rand() % TREE_NODES;
+        cc_msg(t, "remove", by_int(n[i]));
+        if (!(j % 1000)) {
+            printf(".");
+        }
+        rc = cc_msg(t, "isEmpty");
+        if (as_int(rc)) {
+            printf("tree is empty\n");
+            break;
+        }
+    }
+
+
+    cc_msg(t,       "free");
+    cc_msg(cursor,  "free");
+
+    //cc_msg(t, "init", by_ptr(NULL), by_ptr(NULL));
 }
 
 
-int main(int argc, char *argv[])
+// list tests
+//
+
+void applyStr(cc_arg_t item, int argc, cc_arg_t *argv)
 {
+    printf("apply:  string is %s\n", as_str(item));
+}
+
+void unitTestList()
+{
+    cc_obj list, cursor, cursor2;
     const char *item;
-    cc_obj list, cursor, f, t;
-    cc_arg_t foo, rc;
-    int i;
-
-    char test[5] = { 't', 'e', 's', 't', 0 };
-
-    printf("sizeof(cc_arg_t) == %zu\n", sizeof(cc_arg_t));
-    printf("sizeof(cc_class_object) == %zu\n", sizeof(cc_class_object));
-    printf("sizeof(Foo) == %zu\n", sizeof(Foo));
-
-    f = as_obj(cc_msg(&Foo, "new"));
-
-    // call a method to set a variable
-    cc_msg(f, "setBar", by_int(34));
-
-    // iterate with argc/argv
-    cc_msg(f, test, by_int(1), by_int(2), by_obj(f));
-
-    // argv[0] access without arguments
-    cc_msg(f, test);
-
-    // category
-    cc_msg(f, "blacker", by_int(1));
-
-    // message forwarding
-    cc_msg(f, "not found");
-
-    // free an object
-    cc_msg(f, "free");
-
-    // class name
-    printf("foo's name is %s\n", Foo.name);
 
 
-    //cc_arg_t a;
-    //int n;
-
-    // warning: ISO C forbids casts to union type
-    //a = (cc_arg_t) n;
-
-    // error: aggregate value used where an integer was expected
-    //n = (int) a;
-
-    // error: incompatible types in assignment
-    //n = a;
-
-    //n = a.i;
+    printf("\n\n*** LIST TESTS ***\n");
 
 
     // list
@@ -176,6 +258,8 @@ int main(int argc, char *argv[])
         printf("list is no longer empty\n");
     }
 
+    printf("after adding doh and bleh\n");
+
     // enumerate
     cursor = as_obj(cc_msg(list, "cursor"));
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
@@ -187,7 +271,7 @@ int main(int argc, char *argv[])
     // delete with cursor
     cc_msg(cursor, "remove");
 
-    printf("after remove:\n");
+    printf("after first, remove:\n");
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
@@ -196,9 +280,9 @@ int main(int argc, char *argv[])
     cc_msg(cursor, "prefix", by_str("foo"));
     cc_msg(cursor, "affix", by_str("bar"), by_str("baz"));
     cc_msg(cursor, "previous");
-    printf("current is %s\n", as_str(cc_msg(cursor, "current")));
+    printf("after:  first, prefix foo, affix bar & baz, previous;  current is %s\n",
+        as_str(cc_msg(cursor, "current")));
 
-    printf("from the top:\n");
     for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
@@ -208,123 +292,80 @@ int main(int argc, char *argv[])
 
 
     // copy
-    cursor = as_obj(cc_msg(cursor, "copy"));
+    cursor2 = as_obj(cc_msg(cursor, "copy"));
     printf("after copy:\n");
-    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
+    for (item = as_str(cc_msg(cursor2, "first"));  item;  item = as_str(cc_msg(cursor2, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
 
-    cc_msg(cursor, "free");
+    cc_msg(cursor,  "free");
+    cc_msg(cursor2, "free");
+    cc_msg(list,    "free");
+}
 
-    cc_msg(list, "free");
-    //cc_msg(list, "empty");
+
+int main(int argc, char *argv[])
+{
+    cc_obj foo;
+    cc_arg_t str;
+
+    char test[5] = { 't', 'e', 's', 't', 0 };
+
+    printf("\n*** ELEMENTARY TESTS ***\n");
+
+    printf("sizeof(cc_arg_t) == %zu\n", sizeof(cc_arg_t));
+    printf("sizeof(cc_class_object) == %zu\n", sizeof(cc_class_object));
+    printf("sizeof(Foo) == %zu\n", sizeof(Foo));
+
+
+    foo = as_obj(cc_msg(&Foo, "new"));
+
+    // call a method to set a variable
+    cc_msg(foo, "setBar", by_int(34));
+
+    // iterate with argc/argv
+    cc_msg(foo, test, by_int(1), by_int(2), by_obj(foo));
+
+    // argv[0] access without arguments
+    cc_msg(foo, test);
+
+    // category
+    cc_msg(foo, "blacker", by_int(1));
+
+    // message forwarding
+    cc_msg(foo, "not found");
+
+    // free an object
+    cc_msg(foo, "free");
+
+
+    // class name
+    printf("Foo's name is \"%s\"\n", Foo.name);
+
+
+    //cc_arg_t a;
+    //int n;
+
+    // warning: ISO C forbids casts to union type
+    //a = (cc_arg_t) n;
+
+    // error: aggregate value used where an integer was expected
+    //n = (int) a;
+
+    // error: incompatible types in assignment
+    //n = a;
+
+    //n = a.i;
 
 
     // by/is
-    foo = by_str("foo");
-    if (is_str(foo)) {
-        printf("is_str(foo) returns true\n");
+    str = by_str("foo");
+    if (is_str(str)) {
+        printf("is_str(str) returns true\n");
     }
 
-
-    // vector init
-    cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(SNELEMS(fooVector)));
-    cc_msg(&fooVector[4], "test", by_int(5));
-
-    t = as_obj(cc_msg(&FcTree, "new"));
-    for (i = 0;  i < SNELEMS(fooVector);  ++i) {
-        fooVector[i].bar = i;
-        cc_msg(t, "insert", by_obj(&fooVector[i]));
-    }
-    cc_msg(t, "apply", by_str("test"), by_int(0xABCDEF));
-    cc_msg(t, "free");
-
-
-    // test tree
-    //
-
-    // C++ needs the cast to void (ugh)
-    t = as_obj(cc_msg(&FcTree, "new", by_ptr((void *) int_cmp)));
-    int n[TREE_NODES];
-//    for (i = TREE_NODES - 1;  i >= 0;  --i) {
-    for (i = 0;  i < TREE_NODES;  ++i) {
-//        n[i] = rand();
-        n[i] = i;
-        rc = cc_msg(t, "insert", by_int(n[i]));
-        if (as_int(rc) != n[i]) {
-            printf("doh\n");
-        }
-    }
-
-    // enumerate tree
-    //
-
-#if 0
-    cursor = as_obj(cc_msg(t, "cursor"));
-    rc = cc_msg(cursor, "first");
-    for ( i = 1; ; ) {
-        rc = cc_msg(cursor, "current");
-        printf("%d\n", as_int(rc));
-        rc = cc_msg(cursor, "next");
-        if (cc_is_null(rc)) {
-            break;
-        }
-        ++i;
-    }
-    printf("tree has %d nodes\n", i);
-#endif
-
-    FcTreeNode *node;
-
-    node = ((cc_vars_FcTree *) t)->root;
-    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
-        node = node->left;
-    }
-    printf("left depth is %d\n", i);
-
-    node = ((cc_vars_FcTree *) t)->root;
-    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
-        node = node->right;
-    }
-    printf("right depth is %d\n", i);
-
-#if 1
-    for (i = 0;  i < TREE_NODES * 5/6;  ++i) {
-        cc_msg(t, "remove", by_int(n[i]));
-    }
-#else
-    for (i = TREE_NODES - 1;  i > TREE_NODES / 2;  --i) {
-        cc_msg(t, "remove", by_int(n[i]));
-    }
-#endif
-
-    node = ((cc_vars_FcTree *) t)->root;
-    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
-        node = node->left;
-    }
-    printf("left depth is %d\n", i);
-
-    node = ((cc_vars_FcTree *) t)->root;
-    for (i = 0;  node != &((cc_vars_FcTree *) t)->sentinel;  ++i) {
-        node = node->right;
-    }
-    printf("right depth is %d\n", i);
-
-#if 1
-    for (;;) {
-        i = rand() % TREE_NODES;
-        cc_msg(t, "remove", by_int(n[i]));
-        rc = cc_msg(t, "isEmpty");
-        if (as_int(rc)) {
-            printf("tree is empty\n");
-            break;
-        }
-    }
-#endif
-
-    cc_msg(t, "free");
-
-    //cc_msg(t, "init", by_ptr(NULL), by_ptr(NULL));
+    unitTestList();
+    unitTestTree();
 
     return (EXIT_SUCCESS);
 }
