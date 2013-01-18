@@ -200,6 +200,9 @@ void unitTestTree()
     printf("right depth is %d\n", i);
 
 
+    // clean up
+    //
+
     printf("random remove");
     for (j = 0;  ;  ++j) {
         i = rand() % TREE_NODES;

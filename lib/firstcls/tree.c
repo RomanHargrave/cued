@@ -87,6 +87,14 @@ static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, FcApplyFn applyF
     } else {
         applyFn(        node->item,              argc, argv);
     }
+
+    // what happens if apply deletes the node?  are we better off if we save node->right
+    // before calling apply for the node?  what happens when we delete the successor
+    // rather than the node itself?   node->right could be the successor;
+    // for now, disallow removing nodes during an apply;  if it's really necessary,
+    // get rid of the optimization where we delete the successor, by instead replacing
+    // the deleted node by the successor?  but then what about rotations during a remove?
+    //
     FcTreeApply(tree, node->right, applyFn, msg, argc, argv);
 }
 
