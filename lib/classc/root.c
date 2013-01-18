@@ -76,6 +76,8 @@ cc_begin_meta_method(MetaRoot, initVector)
 
         obj = (cc_vars_Root *) ((char *) obj + my->size);
     }
+
+    // TODO:  is this what we want to return here?  why not by_obj(my) ?
     return cc_null;
 cc_end_method
 
