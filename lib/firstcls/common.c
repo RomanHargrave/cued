@@ -19,6 +19,8 @@
 
 #include "firstcls.h"
 
+#include <stdio.h>
+
 
 int FcObjCompare(cc_arg_t item, cc_arg_t key)
 {

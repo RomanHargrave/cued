@@ -19,6 +19,8 @@
 
 #include "firstcls.h"
 
+#include <stdio.h>
+
 
 // FC_TREE_NODE_BLACK must be zero unless code is added to initialize
 // the sentinel's color

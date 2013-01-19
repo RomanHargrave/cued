@@ -19,6 +19,8 @@
 
 #include "firstcls.h"
 
+#include <stdio.h>
+
 
 cc_begin_method(FcList, init)
     cc_msg_super("init");

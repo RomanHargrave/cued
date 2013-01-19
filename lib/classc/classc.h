@@ -21,7 +21,6 @@
 #define CLASSC_H_INCLUDED
 
 #include <stdlib.h> // size_t
-#include <stdio.h>
 
 
 typedef void *cc_obj;

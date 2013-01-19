@@ -64,4 +64,9 @@ class(FcTreeCursor, Root,
 `    FcTreeNode *curr;')
 
 
+class(FcString, Root,
+`   char *buffer;'
+`   int length;')
+
+
 unguard_h

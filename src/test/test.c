@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 
 cc_begin_method(Foo, test)
@@ -82,6 +83,36 @@ cc_category(Foo, Blastme,
 #include "firstcls.h"
 
 
+// string tests
+//
+
+void unitTestString()
+{
+    cc_obj s1, s2, s3, s4;
+
+    printf("\n\n*** STRING TESTS ***\n");
+
+    s1 = as_obj(cc_msg(&FcString, "new", by_str("foo")));
+    cc_msg(s1, "writeln");
+
+    s2 = as_obj(cc_msg(s1, "copy"));
+    cc_msg(s2, "writeln", by_ptr(stdout));
+
+    s3 = as_obj(cc_msg(&FcString, "new", by_obj(s1)));
+    cc_msg(s3, "write");
+    printf("\n");
+
+    s4 = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_int(strlen("bark"))));
+    cc_msg(s4, "write", by_int(STDOUT_FILENO));
+    printf("\n");
+
+    cc_msg(s1, "free");
+    cc_msg(s2, "free");
+    cc_msg(s3, "free");
+    cc_msg(s4, "free");
+}
+
+
 // tree tests
 //
 
@@ -89,7 +120,7 @@ cc_category(Foo, Blastme,
 #define SNELEMS(vector) ((ssize_t) NELEMS(vector))
 
 //#define TREE_NODES 10000
-#define TREE_NODES 1000
+#define TREE_NODES 100
 
 #define TEST_NUM (TREE_NODES / 2)
 
@@ -398,6 +429,7 @@ int main(int argc, char *argv[])
 
     unitTestList();
     unitTestTree();
+    unitTestString();
 
     return (EXIT_SUCCESS);
 }
