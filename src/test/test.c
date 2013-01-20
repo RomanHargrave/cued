@@ -106,6 +106,9 @@ void unitTestString()
     cc_msg(s4, "write", by_int(STDOUT_FILENO));
     printf("\n");
 
+    cc_msg(s4, "concat", by_str("collar"));
+    cc_msg(s4, "writeln");    
+
     cc_msg(s1, "free");
     cc_msg(s2, "free");
     cc_msg(s3, "free");
