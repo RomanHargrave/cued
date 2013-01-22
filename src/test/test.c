@@ -88,7 +88,7 @@ cc_category(Foo, Blastme,
 
 void unitTestString()
 {
-    cc_obj s1, s2, s3, s4;
+    cc_obj s1, s2, s3, s4, s5;
 
     printf("\n\n*** STRING TESTS ***\n");
 
@@ -107,12 +107,16 @@ void unitTestString()
     printf("\n");
 
     cc_msg(s4, "concat", by_str("collar"));
-    cc_msg(s4, "writeln");    
+    cc_msg(s4, "writeln");
+
+    s5 = as_obj(cc_msg(s4, "sub", by_int(2), by_int(3)));
+    cc_msg(s5, "writeln");
 
     cc_msg(s1, "free");
     cc_msg(s2, "free");
     cc_msg(s3, "free");
     cc_msg(s4, "free");
+    cc_msg(s5, "free");
 }
 
 

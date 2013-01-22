@@ -93,6 +93,23 @@ cc_begin_method(FcString, copy)
 cc_end_method
 
 
+cc_begin_method(FcString, sub)
+    int begin, end;
+    FcCheckArgcRange(1, 2);
+    begin = as_int(argv[0]);
+    if (argc > 1) {
+        end = as_int(argv[1]);
+    } else {
+        end = my->length;
+    }
+    if (begin < 1 || end < 1 || begin > my->length || end > my->length || begin > end) {
+        return cc_null;
+    } else {
+        return cc_msg(my->isa, "new", by_str(&my->buffer[ begin - 1 ]), by_int(end - begin + 1));
+    }
+cc_end_method
+
+
 cc_begin_method(FcString, buffer)
     return by_str(my->buffer);
 cc_end_method
@@ -154,4 +171,5 @@ cc_class(FcString,
     cc_method("write",   writeFcString),
     cc_method("writeln", writeFcString),
     cc_method("free",    freeFcString),
+    cc_method("sub",     subFcString),
     )
