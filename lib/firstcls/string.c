@@ -26,9 +26,9 @@
 
 cc_begin_method(FcString, concat)
     const char *str;
-    char *buffer;
+    char *buf;
     cc_obj obj;
-    int length = 0;
+    int len = 0;
 
     if (!strcmp(msg, "init")) {
         cc_msg_super("init");
@@ -46,14 +46,14 @@ cc_begin_method(FcString, concat)
                     //
                     // no length passed
                     //
-                    length = strlen(str);
+                    len = strlen(str);
                     break;
                 case 2:
                 default:
                     //
                     // passed a length
                     //
-                    length = as_int(argv[1]);
+                    len = as_int(argv[1]);
                     break;
             }
 
@@ -61,26 +61,26 @@ cc_begin_method(FcString, concat)
             //
             // passed an object that hopefully replies to length and buffer
             //
-            obj    = as_obj(argv[0]);
-            length = as_int(cc_msg(obj, "length"));
-            str    = as_str(cc_msg(obj, "buffer"));
+            obj = as_obj(argv[0]);
+            len = as_int(cc_msg(obj, "length"));
+            str = as_str(cc_msg(obj, "buffer"));
         }
 
         //
         // copy the source string
         //
-        if (length) {
-            buffer = (char *) realloc(my->buffer, my->length + length + 1);
-            if (!buffer) {
+        if (len) {
+            buf = (char *) realloc(my->buffer, my->length + len + 1);
+            if (!buf) {
                 return cc_msg(my, "error", by_str("out of memory allocating string buffer"));
             }
-            memcpy(buffer + my->length, str, length);
+            memcpy(buf + my->length, str, len);
 
-            my->buffer  = buffer;
-            my->length += length;
+            my->buffer  = buf;
+            my->length += len;
 
             // null terminate
-            buffer[ my->length ] = 0;
+            buf[ my->length ] = 0;
         }
     }
 
@@ -159,6 +159,22 @@ cc_begin_method(FcString, free)
 cc_end_method
 
 
+cc_begin_method(FcString, compare)
+    cc_obj obj;
+    const char *str;
+    int len, rc;
+    FcCheckArgc(1);
+    obj = as_obj(argv[0]);
+    str = as_str(cc_msg(obj, "buffer"));
+    len = as_int(cc_msg(obj, "length"));
+    rc = memcmp(my->buffer, str, my->length < len ? my->length : len);
+    if (!rc && my->length != len) {
+        rc = (my->length > len) ? 1 : -1;
+    }
+    return by_int(rc);
+cc_end_method
+
+
 cc_class_object(FcString)
 
 cc_class(FcString,
@@ -172,4 +188,5 @@ cc_class(FcString,
     cc_method("writeln", writeFcString),
     cc_method("free",    freeFcString),
     cc_method("sub",     subFcString),
+    cc_method("compare", compareFcString),
     )

@@ -82,49 +82,59 @@ cc_category(Foo, Blastme,
 
 #include "firstcls.h"
 
+#define NELEMS(vector) (sizeof(vector) / sizeof(vector[0]))
+#define SNELEMS(vector) ((ssize_t) NELEMS(vector))
+
 
 // string tests
 //
 
 void unitTestString()
 {
-    cc_obj s1, s2, s3, s4, s5;
-
+    cc_obj s[5];
+    cc_obj t;
+    int i;
+ 
     printf("\n\n*** STRING TESTS ***\n");
 
-    s1 = as_obj(cc_msg(&FcString, "new", by_str("foo")));
-    cc_msg(s1, "writeln");
+    s[0] = as_obj(cc_msg(&FcString, "new", by_str("foo")));
+    cc_msg(s[0], "writeln");
 
-    s2 = as_obj(cc_msg(s1, "copy"));
-    cc_msg(s2, "writeln", by_ptr(stdout));
+    s[1] = as_obj(cc_msg(s[0], "copy"));
+    cc_msg(s[1], "writeln", by_ptr(stdout));
 
-    s3 = as_obj(cc_msg(&FcString, "new", by_obj(s1)));
-    cc_msg(s3, "write");
+    s[2] = as_obj(cc_msg(&FcString, "new", by_obj(s[0])));
+    cc_msg(s[2], "write");
     printf("\n");
 
-    s4 = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_int(strlen("bark"))));
-    cc_msg(s4, "write", by_int(STDOUT_FILENO));
+    s[3] = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_int(strlen("bark"))));
+    cc_msg(s[3], "write", by_int(STDOUT_FILENO));
     printf("\n");
 
-    cc_msg(s4, "concat", by_str("collar"));
-    cc_msg(s4, "writeln");
+    cc_msg(s[3], "concat", by_str("collar"));
+    cc_msg(s[3], "writeln");
 
-    s5 = as_obj(cc_msg(s4, "sub", by_int(2), by_int(3)));
-    cc_msg(s5, "writeln");
+    s[4] = as_obj(cc_msg(s[3], "sub", by_int(2), by_int(3)));
+    cc_msg(s[4], "writeln");
 
-    cc_msg(s1, "free");
-    cc_msg(s2, "free");
-    cc_msg(s3, "free");
-    cc_msg(s4, "free");
-    cc_msg(s5, "free");
+    // test compare
+    t = as_obj(cc_msg(&FcTree, "new"));
+    for (i = 0;  i < SNELEMS(s);  ++i) {
+        cc_msg(t, "insert", by_obj(s[i]));
+    }
+
+    printf("walk tree:\n");
+    cc_msg(t, "apply", by_str("writeln"));
+
+    for (i = 0;  i < SNELEMS(s);  ++i) {
+        cc_msg(s[i], "free");
+    }
+    cc_msg(t, "free");
 }
 
 
 // tree tests
 //
-
-#define NELEMS(vector) (sizeof(vector) / sizeof(vector[0]))
-#define SNELEMS(vector) ((ssize_t) NELEMS(vector))
 
 //#define TREE_NODES 10000
 #define TREE_NODES 100
