@@ -114,7 +114,7 @@ void unitTestString()
     cc_msg(s[3], "concat", by_str("collar"));
     cc_msg(s[3], "writeln");
 
-    s[4] = as_obj(cc_msg(s[3], "sub", by_int(2), by_int(3)));
+    s[4] = as_obj(cc_msg(s[3], "sub", by_int(1), by_int(4)));
     cc_msg(s[4], "writeln");
 
     // test compare

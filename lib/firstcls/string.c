@@ -102,7 +102,7 @@ cc_begin_method(FcString, sub)
     } else {
         end = my->length;
     }
-    if (begin < 1 || end < 1 || begin > my->length || end > my->length || begin > end) {
+    if (begin < 1 || begin > my->length || begin > end || end > my->length  || end < 1) {
         return cc_null;
     } else {
         return cc_msg(my->isa, "new", by_str(&my->buffer[ begin - 1 ]), by_int(end - begin + 1));
@@ -167,9 +167,9 @@ cc_begin_method(FcString, compare)
     obj = as_obj(argv[0]);
     str = as_str(cc_msg(obj, "buffer"));
     len = as_int(cc_msg(obj, "length"));
-    rc = memcmp(my->buffer, str, my->length < len ? my->length : len);
+    rc = memcmp(my->buffer, str, (my->length < len) ? my->length : len);
     if (!rc && my->length != len) {
-        rc = (my->length > len) ? 1 : -1;
+        rc = (my->length < len) ? -1 : 1;
     }
     return by_int(rc);
 cc_end_method
