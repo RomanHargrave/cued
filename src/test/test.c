@@ -107,6 +107,9 @@ void unitTestString()
     cc_msg(s[2], "write");
     printf("\n");
 
+    cc_msg(s[2], "setChar", by_int(1), by_char('b'));
+    printf("char is %c\n", as_char(cc_msg(s[2], "getChar", by_int(1))));
+
     s[3] = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_int(strlen("bark"))));
     cc_msg(s[3], "write", by_int(STDOUT_FILENO));
     printf("\n");

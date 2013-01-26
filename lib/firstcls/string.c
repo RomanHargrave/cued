@@ -172,6 +172,31 @@ cc_begin_method(FcString, compare)
 cc_end_method
 
 
+cc_begin_method(FcString, getChar)
+    int index;
+    FcCheckArgc(1);
+    index = as_int(argv[0]);
+    if (index < 1 || index > my->length) {
+        return cc_null;
+    }
+    return by_char(my->buffer[ index - 1 ]);
+cc_end_method
+
+
+cc_begin_method(FcString, setChar)
+    int index;
+    char c;
+    FcCheckArgc(2);
+    index = as_int(argv[0]);
+    c = as_char(argv[1]);
+    if (index < 1 || index > my->length) {
+        return cc_null;
+    }
+    my->buffer [ index - 1 ] = c;
+    return by_ptr(my);
+cc_end_method
+
+
 cc_class_object(FcString)
 
 cc_class(FcString,
@@ -186,4 +211,6 @@ cc_class(FcString,
     cc_method("free",    freeFcString),
     cc_method("sub",     subFcString),
     cc_method("compare", compareFcString),
+    cc_method("getChar", getCharFcString),
+    cc_method("setChar", setCharFcString),
     )
