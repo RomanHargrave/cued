@@ -97,11 +97,7 @@ cc_begin_method(FcString, sub)
     int begin, end;
     FcCheckArgcRange(1, 2);
     begin = as_int(argv[0]);
-    if (argc > 1) {
-        end = as_int(argv[1]);
-    } else {
-        end = my->length;
-    }
+    end = (argc > 1) ? as_int(argv[1]) : my->length;
     if (begin < 1 || begin > my->length || begin > end || end > my->length  || end < 1) {
         return cc_null;
     } else {
