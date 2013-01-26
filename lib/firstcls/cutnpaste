@@ -1,3 +1,11 @@
+#if 0
+    len = as_int(cc_msg(obj, "length"));
+    rc = memcmp(my->buffer, str, (my->length < len) ? my->length : len);
+    if (!rc && my->length != len) {
+        rc = (my->length < len) ? -1 : 1;
+    }
+#endif
+
     if (argc < 1) {
         return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg),
                       by_str("\" for class \""), by_str(my->isa->name), by_str("\""));

@@ -159,18 +159,10 @@ cc_end_method
 cc_begin_method(FcString, compare)
     cc_obj obj;
     const char *str;
-    //int len
     int rc;
     FcCheckArgc(1);
     obj = as_obj(argv[0]);
     str = as_str(cc_msg(obj, "buffer"));
-#if 0
-    len = as_int(cc_msg(obj, "length"));
-    rc = memcmp(my->buffer, str, (my->length < len) ? my->length : len);
-    if (!rc && my->length != len) {
-        rc = (my->length < len) ? -1 : 1;
-    }
-#endif
     rc = strcoll(my->buffer, str);
     return by_int(rc);
 cc_end_method
@@ -196,7 +188,7 @@ cc_begin_method(FcString, setChar)
     if (index < 1 || index > my->length) {
         return cc_null;
     }
-    my->buffer [ index - 1 ] = c;
+    my->buffer[ index - 1 ] = c;
     return by_ptr(my);
 cc_end_method
 
