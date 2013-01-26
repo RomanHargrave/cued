@@ -20,6 +20,7 @@
 #include "firstcls.h"
 
 #include <stdio.h>
+#include <limits.h> // INT_MAX
 
 
 cc_begin_method(FcList, init)
@@ -177,10 +178,7 @@ cc_begin_method(FcList, apply)
     FcListNode *node;
     FcApplyFn applyFn;
     const char *applyMsg;
-    if (argc < 1) {
-        return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg),
-                      by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
-    }
+    FcCheckArgcRange(1, INT_MAX);
     applyFn  = is_ptr(argv[0]) ? (FcApplyFn) as_ptr(argv[0]) : NULL;
     applyMsg = is_str(argv[0]) ?             as_str(argv[0]) : NULL;
     for (node = my->head.next;  node != &my->head;  node = node->next) {
