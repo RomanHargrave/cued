@@ -111,24 +111,38 @@ void unitTestString()
     cc_msg(s[3], "write", by_int(STDOUT_FILENO));
     printf("\n");
 
+    printf("concat:\n");
     cc_msg(s[3], "concat", by_str("collar"));
     cc_msg(s[3], "writeln");
 
+    printf("substring:\n");
     s[4] = as_obj(cc_msg(s[3], "sub", by_int(1), by_int(4)));
     cc_msg(s[4], "writeln");
 
     // test compare
     t = as_obj(cc_msg(&FcTree, "new"));
+
+    // TODO:  need an apply for this
+    cc_msg(t, "insert", by_obj(s[0]), by_obj(s[1]), by_obj(s[2]), by_obj(s[3]), by_obj(s[4]));
+    //_cc_send(t, "insert", SNELEMS(s), s);
+#if 0
     for (i = 0;  i < SNELEMS(s);  ++i) {
         cc_msg(t, "insert", by_obj(s[i]));
     }
+#endif
 
     printf("walk tree:\n");
     cc_msg(t, "apply", by_str("writeln"));
 
+    // TODO:  need some kind of apply for this too
+#if 1
     for (i = 0;  i < SNELEMS(s);  ++i) {
         cc_msg(s[i], "free");
     }
+#endif
+
+    // this only gets some of the strings (those in the tree, not the duplicates)
+    //cc_msg(t, "free", by_int(FcEmptyFreeObject));
     cc_msg(t, "free");
 }
 
@@ -151,9 +165,9 @@ void findTest(cc_obj t, const char *msg, int i)
     cc_arg_t item;
     item = cc_msg(t, msg, by_int(i));
     if (cc_is_null(item)) {
-        printf("%s(%d) returns NULL\n", msg, i);
+        printf("%s(%d) returns cc_null\n", msg, i);
     } else {
-        printf("%s(%d) returns %d\n",   msg, i, as_int(item));
+        printf("%s(%d) returns %d\n",      msg, i, as_int(item));
     }
 }
 
@@ -210,7 +224,10 @@ void unitTestTree()
     findTest(t, "findGreaterOrEqual", TEST_NUM);
 
     cc_msg(t, "remove", by_int(TEST_NUM));
-    printf("removed TEST_NUM\n");
+    printf("removed %d\n", TEST_NUM);
+
+    cc_msg(t, "remove", by_int(TEST_NUM - 1));
+    printf("removed %d\n", TEST_NUM - 1);
 
     findTest(t, "findEqual", TEST_NUM);
     findTest(t, "findGreater", TEST_NUM);
@@ -281,10 +298,10 @@ void unitTestTree()
     //
 
     printf("random remove");
-    for (j = 0;  ;  ++j) {
-        i = rand() % TREE_NODES;
-        cc_msg(t, "remove", by_int(n[i]));
-        if (!(j % 1000)) {
+    for (i = 0;  ;  ++i) {
+        j = rand() % TREE_NODES;
+        cc_msg(t, "remove", by_int(n[j]));
+        if (!(i % 1000)) {
             printf(".");
         }
         rc = cc_msg(t, "isEmpty");

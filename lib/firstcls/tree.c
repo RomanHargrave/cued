@@ -102,6 +102,7 @@ static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, FcApplyFn applyF
 
 
 cc_begin_method(FcTree, apply)
+    // TODO:  abstract this here and in list
     if (argc < 1) {
         return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg),
                       by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
@@ -423,19 +424,19 @@ static inline FcTreeNode *TreeInsert(cc_vars_FcTree *tree, cc_arg_t item, FcTree
 
 
 cc_begin_method(FcTree, insert)
-    FcTreeNode *newSubtree, *subtree;
-    FcCheckArgc(1);
+    FcTreeNode *newSubtree;
+    FcTreeNode *subtree = &my->sentinel;
+    for (int i = 0;  i < argc;  ++i) {
+        newSubtree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
+        if (!newSubtree) {
+            return cc_msg(my, "error", by_str("out of memory allocating tree node"));
+        }
 
-    newSubtree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
-    if (!newSubtree) {
-        return cc_msg(my, "error", by_str("out of memory allocating tree node"));
+        subtree = TreeInsert(my, argv[i], newSubtree);
+        if (subtree != newSubtree) {
+            free(newSubtree);
+        }
     }
-
-    subtree = TreeInsert(my, argv[0], newSubtree);
-    if (subtree != newSubtree) {
-        free(newSubtree);
-    }
-
     return subtree->item;
 cc_end_method
 
@@ -558,18 +559,19 @@ FcTreeNode *TreeRemoveNode(cc_vars_FcTree *tree, FcTreeNode *subtree)
 
 
 cc_begin_method(FcTree, remove)
-    cc_arg_t rc;
+    cc_arg_t rc = cc_null;
     FcTreeNode *node;
-    FcCheckArgc(1);
-    node = TreeFindEqual(my, argv[0]);
-    rc = node->item;
-    if (&my->sentinel != node) {
-        //
-        // an optimization removes the successor rather than replacing it;
-        // consequently, a different node may be removed from the tree
-        //
-        node = TreeRemoveNode(my, node);
-        free(node);
+    for (int i = 0;  i < argc;  ++i) {
+        node = TreeFindEqual(my, argv[i]);
+        rc = node->item;
+        if (&my->sentinel != node) {
+            //
+            // an optimization removes the successor rather than replacing it;
+            // consequently, a different node may be removed from the tree
+            //
+            node = TreeRemoveNode(my, node);
+            free(node);
+        }
     }
     return rc;
 cc_end_method
