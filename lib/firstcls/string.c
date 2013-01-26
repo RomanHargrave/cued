@@ -154,6 +154,7 @@ cc_end_method
 
 
 cc_begin_method(FcString, free)
+    //printf("free buffer %s\n", my->buffer);
     free(my->buffer);
     return cc_msg_super("free");
 cc_end_method

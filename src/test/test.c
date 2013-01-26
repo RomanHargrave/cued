@@ -134,16 +134,16 @@ void unitTestString()
     printf("walk tree:\n");
     cc_msg(t, "apply", by_str("writeln"));
 
+    // this only gets some of the strings (those in the tree, not the duplicates)
+    //cc_msg(t, "free", by_int(FcEmptyFreeObject));
+    cc_msg(t, "free");
+
     // TODO:  need some kind of apply for this too
 #if 1
     for (i = 0;  i < SNELEMS(s);  ++i) {
         cc_msg(s[i], "free");
     }
 #endif
-
-    // this only gets some of the strings (those in the tree, not the duplicates)
-    //cc_msg(t, "free", by_int(FcEmptyFreeObject));
-    cc_msg(t, "free");
 }
 
 

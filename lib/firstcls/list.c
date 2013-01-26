@@ -146,11 +146,9 @@ cc_end_method
 
 cc_begin_method(FcList, empty)
     FcListNode *curr, *next;
-    FcEmptyHow how = FcEmptyNone;
+    FcEmptyHow how;
     FcCheckArgcRange(0, 1);
-    if (1 == argc) {
-        how = (FcEmptyHow) as_int(argv[0]);
-    }
+    how = argc ? (FcEmptyHow) as_int(argv[0]) : FcEmptyNone;
     for (curr = my->head.next;  curr != &my->head;  curr = next) {
         next = curr->next;
         switch (how) {

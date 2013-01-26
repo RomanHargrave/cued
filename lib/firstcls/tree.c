@@ -68,11 +68,9 @@ static void FcTreeEmpty(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
 
 
 cc_begin_method(FcTree, empty)
-    FcEmptyHow how = FcEmptyNone;
+    FcEmptyHow how;
     FcCheckArgcRange(0, 1);
-    if (1 == argc) {
-        how = (FcEmptyHow) as_int(argv[0]);
-    }
+    how = argc ? (FcEmptyHow) as_int(argv[0]) : FcEmptyNone;
     FcTreeEmpty(my, my->root, how);
     return cc_msg(my, "init");
 cc_end_method
