@@ -193,20 +193,54 @@ cc_begin_method(FcString, setChar)
 cc_end_method
 
 
+cc_begin_method(FcString, findChar)
+    char *addr;
+    int index, start;
+    char c;
+    FcCheckArgcRange(1, 2);
+    c = as_char(argv[0]);
+    start = (argc > 1) ? as_int(argv[1]) : 1;
+    if (start < 1 || start > my->length) {
+        return cc_null;
+    }
+    addr = (char *) memchr(my->buffer + start - 1, c, my->length);
+    index = addr ? ( addr - my->buffer + 1 ) : 0;
+    return by_int(index);
+cc_end_method
+
+
+cc_begin_method(FcString, findCharRev)
+    char *addr;
+    int index, start;
+    char c;
+    FcCheckArgcRange(1, 2);
+    c = as_char(argv[0]);
+    start = (argc > 1) ? as_int(argv[1]) : my->length;
+    if (start < 1 || start > my->length) {
+        return cc_null;
+    }
+    addr = (char *) memrchr(my->buffer, c, start);
+    index = addr ? ( addr - my->buffer + 1 ) : 0;
+    return by_int(index);
+cc_end_method
+
+
 cc_class_object(FcString)
 
 cc_class(FcString,
-    cc_method("init",    concatFcString),
-    cc_method("buffer",  bufferFcString),
-    cc_method("length",  lengthFcString),
-    cc_method("copy",    copyFcString),
-    cc_method("isEmpty", isEmptyFcString),
-    cc_method("concat",  concatFcString),
-    cc_method("write",   writeFcString),
-    cc_method("writeln", writeFcString),
-    cc_method("free",    freeFcString),
-    cc_method("sub",     subFcString),
-    cc_method("compare", compareFcString),
-    cc_method("getChar", getCharFcString),
-    cc_method("setChar", setCharFcString),
+    cc_method("init",           concatFcString),
+    cc_method("buffer",         bufferFcString),
+    cc_method("length",         lengthFcString),
+    cc_method("copy",           copyFcString),
+    cc_method("isEmpty",        isEmptyFcString),
+    cc_method("concat",         concatFcString),
+    cc_method("write",          writeFcString),
+    cc_method("writeln",        writeFcString),
+    cc_method("free",           freeFcString),
+    cc_method("sub",            subFcString),
+    cc_method("compare",        compareFcString),
+    cc_method("getChar",        getCharFcString),
+    cc_method("setChar",        setCharFcString),
+    cc_method("findChar",       findCharFcString),
+    cc_method("findCharRev",    findCharRevFcString),
     )

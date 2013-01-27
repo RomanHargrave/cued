@@ -91,7 +91,7 @@ cc_category(Foo, Blastme,
 
 void unitTestString()
 {
-    cc_obj s[5];
+    cc_obj s[5], s2;
     cc_obj t;
     int i;
  
@@ -125,7 +125,6 @@ void unitTestString()
     // test compare
     t = as_obj(cc_msg(&FcTree, "new"));
 
-    // TODO:  need an apply for this
     cc_msg(t, "insert", by_obj(s[0]), by_obj(s[1]), by_obj(s[2]), by_obj(s[3]), by_obj(s[4]));
     //_cc_send(t, "insert", SNELEMS(s), s);
 #if 0
@@ -141,12 +140,50 @@ void unitTestString()
     //cc_msg(t, "free", by_int(FcEmptyFreeObject));
     cc_msg(t, "free");
 
-    // TODO:  need some kind of apply for this too
 #if 1
     for (i = 0;  i < SNELEMS(s);  ++i) {
         cc_msg(s[i], "free");
     }
 #endif
+
+    s2 = as_obj(cc_msg(&FcString, "new", by_str("/foo/bar/")));
+    i = as_int(cc_msg(s2, "findChar", by_char('/')));
+    printf("first index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    
+    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i + 1)));
+    printf("second index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i)));
+    printf("second index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i + 1)));
+    printf("third index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i)));
+    printf("third index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+
+    i = as_int(cc_msg(s2, "findCharRev", by_char('/')));
+    printf("last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i - 1)));
+    printf("second to last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i)));
+    printf("second to last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i - 1)));
+    printf("third to last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+
+    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(10)));
+    printf("bad index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(0)));
+    printf("bad index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+
+
+    cc_msg(s2, "free");
 }
 
 
