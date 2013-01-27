@@ -183,6 +183,10 @@ void unitTestString()
     printf("bad index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
 
 
+    i = as_int(cc_msg(s2, "find", by_str("foo")));
+    printf("index of foo is %d\n", i);
+
+
     cc_msg(s2, "free");
 }
 

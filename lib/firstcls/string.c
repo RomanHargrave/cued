@@ -66,6 +66,8 @@ cc_begin_method(FcString, concat)
             str = as_str(cc_msg(obj, "buffer"));
         }
 
+        // TODO:  invalid type here
+
         //
         // copy the source string
         //
@@ -95,6 +97,7 @@ cc_end_method
 
 cc_begin_method(FcString, sub)
     int begin, end;
+
     FcCheckArgcRange(1, 2);
     begin = as_int(argv[0]);
     end = (argc > 1) ? as_int(argv[1]) : my->length;
@@ -160,21 +163,25 @@ cc_begin_method(FcString, compare)
     cc_obj obj;
     const char *str;
     int rc;
+
     FcCheckArgc(1);
     obj = as_obj(argv[0]);
     str = as_str(cc_msg(obj, "buffer"));
     rc = strcoll(my->buffer, str);
+
     return by_int(rc);
 cc_end_method
 
 
 cc_begin_method(FcString, getChar)
     int index;
+
     FcCheckArgc(1);
     index = as_int(argv[0]);
     if (index < 1 || index > my->length) {
         return cc_null;
     }
+
     return by_char(my->buffer[ index - 1 ]);
 cc_end_method
 
@@ -182,6 +189,7 @@ cc_end_method
 cc_begin_method(FcString, setChar)
     int index;
     char c;
+
     FcCheckArgc(2);
     index = as_int(argv[0]);
     c = as_char(argv[1]);
@@ -189,6 +197,7 @@ cc_begin_method(FcString, setChar)
         return cc_null;
     }
     my->buffer[ index - 1 ] = c;
+
     return by_ptr(my);
 cc_end_method
 
@@ -197,6 +206,7 @@ cc_begin_method(FcString, findChar)
     char *addr;
     int index, start;
     char c;
+
     FcCheckArgcRange(1, 2);
     c = as_char(argv[0]);
     start = (argc > 1) ? as_int(argv[1]) : 1;
@@ -205,6 +215,7 @@ cc_begin_method(FcString, findChar)
     }
     addr = (char *) memchr(my->buffer + start - 1, c, my->length);
     index = addr ? ( addr - my->buffer + 1 ) : 0;
+
     return by_int(index);
 cc_end_method
 
@@ -213,6 +224,7 @@ cc_begin_method(FcString, findCharRev)
     char *addr;
     int index, start;
     char c;
+
     FcCheckArgcRange(1, 2);
     c = as_char(argv[0]);
     start = (argc > 1) ? as_int(argv[1]) : my->length;
@@ -221,6 +233,33 @@ cc_begin_method(FcString, findCharRev)
     }
     addr = (char *) memrchr(my->buffer, c, start);
     index = addr ? ( addr - my->buffer + 1 ) : 0;
+
+    return by_int(index);
+cc_end_method
+
+
+cc_begin_method(FcString, find)
+    cc_obj obj;
+    const char *str;
+    char *addr;
+    int len, index;
+
+    FcCheckArgc(1);
+    if (is_obj(argv[0])) {
+        obj = as_obj(argv[0]);
+        str = as_str(cc_msg(obj, "buffer"));
+        len = as_int(cc_msg(obj, "length"));
+    } else if (is_str(argv[0])) {
+        str = as_str(argv[0]);
+        len = strlen(str);
+    } else {
+        // TODO:  abstract some of this construct msg, for class...
+        return cc_msg(my, "error", by_str("invalid type passed to \""), by_str(msg), 
+                      by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
+    }
+    addr = (char *) memmem(my->buffer, my->length, str, len);
+    index = addr ? ( addr - my->buffer + 1 ) : 0;
+
     return by_int(index);
 cc_end_method
 
@@ -243,4 +282,5 @@ cc_class(FcString,
     cc_method("setChar",        setCharFcString),
     cc_method("findChar",       findCharFcString),
     cc_method("findCharRev",    findCharRevFcString),
+    cc_method("find",           findFcString),
     )
