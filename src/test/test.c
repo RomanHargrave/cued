@@ -19,6 +19,10 @@
 
 #include "ob.h"
 
+#include "firstcls.h"
+
+#include "macros.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -78,12 +82,6 @@ cc_class(Foo,
 cc_category(Foo, Blastme,
     cc_method("blacker", testFoo),
     )
-
-
-#include "firstcls.h"
-
-#define NELEMS(vector) (sizeof(vector) / sizeof(vector[0]))
-#define SNELEMS(vector) ((ssize_t) NELEMS(vector))
 
 
 // string tests
@@ -187,6 +185,10 @@ void unitTestString()
     printf("index of foo is %d\n", i);
 
 
+    // test error handling
+    //cc_msg(s2, "concat", by_double(8.0));
+
+
     cc_msg(s2, "free");
 }
 
@@ -278,6 +280,9 @@ void unitTestTree()
     findTest(t, "findLesser", TEST_NUM);
     findTest(t, "findLesserOrEqual", TEST_NUM);
     findTest(t, "findGreaterOrEqual", TEST_NUM);
+
+    // test error handling
+    //cc_msg(t, "findEqual", by_int(1), by_int(1));
 
 
 #if 0
