@@ -61,6 +61,7 @@ cc_begin_meta_method(MetaRoot, initVector)
     //
     initMethod = cc_lookup_method(my, "init");
     if (!initMethod) {
+        // is this even possible?  isn't this an internal error?
         return cc_msg(my, "error", by_str("initVector called for class \""),
                       by_str(my->name), by_str("\" which lacks init method"));
     }
@@ -107,7 +108,7 @@ cc_end_method
 // this method gets used for MetaRoot too which works fine because my is not referenced
 cc_begin_method(Root, error)
     int i;
-    fprintf(stderr, "fatal:  ");
+    fprintf(stderr, "fatal: ");
     for (i = 0;  i < argc;  ++i) {
         fprintf(stderr, "%s", as_str(argv[i]));
     }
