@@ -23,6 +23,7 @@ src/sfcat/sfcat
 src/sfcmp/sfcmp
 src/test/object
 src/test/ob.h
+lib/common/libcommon.a
 lib/classc/libclassc.a
 lib/firstcls/libfirstcls.a
 lib/firstcls/firstcls.h

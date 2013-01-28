@@ -159,8 +159,12 @@ AS_IF([test "x$enable_dmalloc_naive" = "xyes"], [
 
 
 # Static library shared by various binaries.
+LIBCOMMON_LIBS='$(top_builddir)/lib/common/libcommon.a'
+LIBCOMMON_CPPFLAGS='-I$(top_srcdir)/lib/common'
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
 LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
+AC_SUBST([LIBCOMMON_LIBS])
+AC_SUBST([LIBCOMMON_CPPFLAGS])
 AC_SUBST([LIBCUED_LIBS])
 AC_SUBST([LIBCUED_CPPFLAGS])
 
@@ -169,6 +173,7 @@ AC_SUBST([LIBCUED_CPPFLAGS])
 # is ignored during make maintainer-clean
 AC_CONFIG_FILES([Makefile
                  lib/Makefile
+                 lib/common/Makefile
                  lib/cued/Makefile
                  src/Makefile
                  src/cued/Makefile
