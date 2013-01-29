@@ -230,3 +230,25 @@ void *memrchr(const void *p, int c, size_t n)
 }
 
 #endif // CUED_HAVE_MEMRCHR
+
+
+#ifndef CUED_HAVE_MEMMEM
+
+void *memmem(const void *str, size_t str_len, const void *sub, size_t sub_len)
+{
+    const char *cstr = (const char *) str;
+    const char *csub = (const char *) sub;
+    int n;
+
+    if (sub_len <= str_len) {
+        for (n = str_len - sub_len;  n >= 0;  --n) {
+            if (!memcmp(&cstr[n], csub, sub_len)) {
+                return (void *) &cstr[n];
+            }
+        }
+    }
+
+    return NULL;
+}
+
+#endif // CUED_HAVE_MEMMEM

@@ -114,6 +114,11 @@ AC_CHECK_FUNC([memrchr],
     [AC_DEFINE([HAVE_MEMRCHR], [], [Define this if libc has the 'memrchr' function])])
 
 
+# Check for memmem in libc.
+AC_CHECK_FUNC([memmem],
+    [AC_DEFINE([HAVE_MEMMEM], [], [Define this if libc has the 'memmem' function])])
+
+
 # Check for non-standard C runtime behavior.
 AC_MSG_CHECKING([for assignable stdout])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <stdio.h>], [stdout = stderr;])], [

@@ -25,12 +25,12 @@
 #endif
 
 // _GNU_SOURCE must be defined before including any other headers
-#ifdef CUED_HAVE_MEMRCHR
+#if defined(CUED_HAVE_MEMRCHR) || defined(CUED_HAVE_MEMMEM)
 #   ifndef __cplusplus
 #       define _GNU_SOURCE // memrchr, memmem
 #   endif // __cplusplus
 #   include <string.h>
-#endif // CUED_HAVE_MEMRCHR
+#endif
 
 #include <sys/types.h> // mode_t
 #include <stdio.h> // FILE *
@@ -48,6 +48,9 @@ extern int rfc3339time(char *buf, int bufferSize);
 
 #ifndef CUED_HAVE_MEMRCHR
 extern void *memrchr(const void *p, int c, size_t n);
+#endif
+#ifndef CUED_HAVE_MEMMEM
+extern void *memmem(const void *str, size_t str_len, const void *sub, size_t sub_len);
 #endif
 
 
