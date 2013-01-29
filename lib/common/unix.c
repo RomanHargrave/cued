@@ -212,3 +212,21 @@ int rfc3339time(char *buf, int bufferSize)
 
     return 0;
 }
+
+
+#ifndef CUED_HAVE_MEMRCHR
+
+void *memrchr(const void *p, int c, size_t n)
+{
+    const char *s = (const char *) p;
+
+    while (n--) {
+        if (c == s[n]) {
+            return (void *) &s[n];
+        }
+    }
+
+    return NULL;
+}
+
+#endif // CUED_HAVE_MEMRCHR

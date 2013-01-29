@@ -20,6 +20,18 @@
 #ifndef UNIX_H_INCLUDED
 #define UNIX_H_INCLUDED
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_MEMRCHR
+#endif
+
+// _GNU_SOURCE must be defined before including any other headers
+#ifdef CUED_HAVE_MEMRCHR
+#   ifndef __cplusplus
+#       define _GNU_SOURCE // memrchr, memmem
+#   endif // __cplusplus
+#   include <string.h>
+#endif // CUED_HAVE_MEMRCHR
+
 #include <sys/types.h> // mode_t
 #include <stdio.h> // FILE *
 #include <fcntl.h> // mode: O_*
@@ -33,6 +45,10 @@ extern int strtol2(const char *str, char **endptr, int base, ssize_t *val);
 extern FILE *fopen2(const char *pathname, int flags, mode_t mode);
 extern int mkdirp(char *pathname);
 extern int rfc3339time(char *buf, int bufferSize);
+
+#ifndef CUED_HAVE_MEMRCHR
+extern void *memrchr(const void *p, int c, size_t n);
+#endif
 
 
 #endif // UNIX_H_INCLUDED

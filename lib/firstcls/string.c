@@ -17,6 +17,9 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// _GNU_SOURCE must be defined by unix.h before including any other headers
+#include "unix.h" // memrchr
+
 #include "firstcls.h"
 
 #include <stdio.h>  // fwrite
