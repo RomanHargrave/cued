@@ -240,11 +240,9 @@ void *memmem(const void *str, size_t str_len, const void *sub, size_t sub_len)
     const char *csub = (const char *) sub;
     int n;
 
-    if (sub_len <= str_len) {
-        for (n = str_len - sub_len;  n >= 0;  --n) {
-            if (!memcmp(&cstr[n], csub, sub_len)) {
-                return (void *) &cstr[n];
-            }
+    for (n = str_len - sub_len;  n >= 0;  --n) {
+        if (!memcmp(&cstr[n], csub, sub_len)) {
+            return (void *) &cstr[n];
         }
     }
 
