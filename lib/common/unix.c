@@ -241,7 +241,7 @@ void *memmem(const void *str, size_t str_len, const void *sub, size_t sub_len)
     ssize_t n;
 
     for (n = str_len - sub_len;  n >= 0;  --n) {
-        if (!memcmp(&cstr[n], csub, sub_len)) {
+        if (cstr[n] == csub[0] && !memcmp(&cstr[n], csub, sub_len)) {
             return (void *) &cstr[n];
         }
     }
