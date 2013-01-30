@@ -180,9 +180,11 @@ void unitTestString()
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(0)));
     printf("bad index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
 
-
     i = as_int(cc_msg(s2, "find", by_str("foo")));
     printf("index of foo is %d\n", i);
+
+    i = as_int(cc_msg(s2, "find", by_str("this is a test designed")));
+    printf("index of this is a test... is %d\n", i);
 
 
     // test error handling

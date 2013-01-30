@@ -113,7 +113,6 @@ unset SAVE_LDFLAGS
 AC_CHECK_FUNC([memrchr],
     [AC_DEFINE([HAVE_MEMRCHR], [], [Define this if libc has the 'memrchr' function])])
 
-
 # Check for memmem in libc.
 AC_CHECK_FUNC([memmem],
     [AC_DEFINE([HAVE_MEMMEM], [], [Define this if libc has the 'memmem' function])])
