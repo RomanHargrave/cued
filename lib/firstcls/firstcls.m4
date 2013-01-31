@@ -65,8 +65,8 @@ class(FcTreeCursor, Root,
 
 
 class(FcString, Root,
-`   char *buffer;'
-`   int length;')
+`    char *buffer;'
+`    int length;')
 
 
 unguard_h

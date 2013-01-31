@@ -67,9 +67,10 @@ cc_begin_method(FcString, concat)
             obj = as_obj(argv[0]);
             len = as_int(cc_msg(obj, "length"));
             str = as_str(cc_msg(obj, "buffer"));
+        } else {
+            return cc_msg(my, "error", by_str("invalid type passed to \""), by_str(msg), 
+                          by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
         }
-
-        // TODO:  invalid type here
 
         //
         // copy the source string
@@ -267,6 +268,29 @@ cc_begin_method(FcString, find)
 cc_end_method
 
 
+// TODO:  setSub and ssize_t for string length?
+
+cc_begin_method(FcString, attach)
+    char *buf;
+    int length;
+
+    FcCheckArgcRange(1, 2);
+    buf = (char *) as_str(argv[0]);
+    length = (argc > 1) ? as_int(argv[1]) : strlen(buf);
+    my->length = length;
+    my->buffer = buf;
+
+    return by_obj(my);
+cc_end_method
+
+
+cc_begin_method(FcString, detach)
+    my->length = 0;
+    my->buffer = NULL;
+    return by_obj(my);
+cc_end_method
+
+
 cc_class_object(FcString)
 
 cc_class(FcString,
@@ -286,4 +310,6 @@ cc_class(FcString,
     cc_method("findChar",       findCharFcString),
     cc_method("findCharRev",    findCharRevFcString),
     cc_method("find",           findFcString),
+    cc_method("attach",         attachFcString),
+    cc_method("detach",         detachFcString),
     )
