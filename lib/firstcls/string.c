@@ -277,16 +277,17 @@ cc_begin_method(FcString, attach)
     FcCheckArgcRange(1, 2);
     buf = (char *) as_str(argv[0]);
     length = (argc > 1) ? as_int(argv[1]) : strlen(buf);
-    my->length = length;
     my->buffer = buf;
+    my->length = length;
 
     return by_obj(my);
 cc_end_method
 
 
 cc_begin_method(FcString, detach)
-    my->length = 0;
     my->buffer = NULL;
+    my->length = 0;
+
     return by_obj(my);
 cc_end_method
 
