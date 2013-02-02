@@ -20,18 +20,6 @@
 #ifndef DLIST_H_INCLUDED
 #define DLIST_H_INCLUDED
 
-/*  define INLINE appropriately
-*/
-#ifndef INLINE
-#if defined(__cplusplus) || defined (__GNUC__)
-#define INLINE inline
-#elif defined(_MSC_VER)
-#define INLINE __inline
-#else
-#define INLINE
-#endif
-#endif
-
 
 #define DLIST_DECLARE(name) \
 		d_list_node_t name = { &name, &name };
@@ -47,19 +35,19 @@ typedef struct _d_list_node_t {
 } d_list_node_t, d_list_head_t;
 
 
-static INLINE
+static inline
 void dListInitHead(d_list_head_t *listHead)
 {
 	listHead->next = listHead->prev = listHead;
 }
 
-static INLINE
+static inline
 int dListIsEmpty(d_list_head_t *listHead)
 {
 	return (listHead->next == listHead);
 }
 
-static INLINE
+static inline
 void dListInsertHead(d_list_head_t *listHead, d_list_node_t *listNode)
 {
 	d_list_node_t *next = listHead->next;
@@ -70,7 +58,7 @@ void dListInsertHead(d_list_head_t *listHead, d_list_node_t *listNode)
 	listNode->prev = listHead;	
 }
 
-static INLINE
+static inline
 void dListInsertTail(d_list_head_t *listHead, d_list_node_t *listNode)
 {
 	d_list_node_t *prev = listHead->prev;
@@ -81,7 +69,7 @@ void dListInsertTail(d_list_head_t *listHead, d_list_node_t *listNode)
 	listNode->next = listHead;
 }
 
-static INLINE
+static inline
 void dListRemoveNode(d_list_node_t *listNode)
 {
 	d_list_node_t *next = listNode->next;
@@ -91,7 +79,7 @@ void dListRemoveNode(d_list_node_t *listNode)
 	prev->next = next;
 }
 
-static INLINE
+static inline
 d_list_node_t *dListRemoveHead(d_list_head_t *listHead)
 {
 	d_list_node_t *victim = listHead->next;
@@ -101,7 +89,7 @@ d_list_node_t *dListRemoveHead(d_list_head_t *listHead)
 	return victim;
 }
 
-static INLINE
+static inline
 d_list_node_t *dListRemoveTail(d_list_head_t *listHead)
 {
 	d_list_node_t *victim = listHead->prev;
