@@ -92,7 +92,7 @@ typedef size_t ptr_as_int_t;
 /*  utility functions
 */
 
-INLINE
+static inline
 void allocAbend(const char *theMessage)
 {
     fprintf(stderr, "%s\n", theMessage);
@@ -107,7 +107,7 @@ void allocAbend(const char *theMessage)
 **  a whole power of two.  The author has yet to encounter a platform
 **  whose required alignment is not a whole power of two.
 */
-INLINE
+static inline
 size_t coerceBlockSize(size_t theBlockSize, size_t theBlockAlignment)
 {
     return (theBlockSize + (theBlockAlignment - 1)) & ~(theBlockAlignment - 1);
@@ -123,13 +123,13 @@ size_t coerceBlockSize(size_t theBlockSize, size_t theBlockAlignment)
 
 #include <windows.h>
 
-INLINE
+static inline
 ptr_as_int_t allocLargeChunk(size_t theSize)
 {
     return (ptr_as_int_t) VirtualAlloc(0, theSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 }
 
-INLINE
+static inline
 void freeChunk(ptr_as_int_t theChunk, size_t theSize)
 {
     /*  TODO:  VirtualAlloc retains the size of the region created;
@@ -156,7 +156,7 @@ void freeChunk(ptr_as_int_t theChunk, size_t theSize)
 #define SMALL_PAGE_SIZE sysconf(_SC_PAGESIZE)
 #endif
 
-INLINE
+static inline
 ptr_as_int_t allocLargeChunk(size_t theSize)
 {
     ptr_as_int_t aChunk;
@@ -171,7 +171,7 @@ ptr_as_int_t allocLargeChunk(size_t theSize)
     return aChunk;
 }
 
-INLINE
+static inline
 void freeChunk(ptr_as_int_t theChunk, size_t theSize)
 {
     if (munmap((void *) theChunk, theSize))
@@ -239,19 +239,19 @@ void *libc_malloc(size_t theBlockSize)
 }
 
 
-INLINE
+static inline
 void *getBlkPtrFrmDbgHdrPtr(debug_header_t *theBlock)
 {
     return (void *) ((ptr_as_int_t) theBlock + sizeof(debug_header_t));
 }
 
-INLINE
+static inline
 debug_header_t *getDbgHdrPtrFrmBlkPtr(void *theBlock)
 {
     return (debug_header_t *) ((ptr_as_int_t) theBlock - sizeof(debug_header_t));
 }
 
-INLINE
+static inline
 debug_trailer_t *getDbgTrlrPtrFrmHdrPtr(debug_header_t *theBlock)
 {
     return (debug_trailer_t *) ((ptr_as_int_t) getBlkPtrFrmDbgHdrPtr(theBlock) + theBlock->userLength);
@@ -263,7 +263,7 @@ static unsigned int allocCallCtr;
 void checkAllBlocks();
 
 
-INLINE
+static inline
 void *dalloc(size_t theUserBlockSize)
 {
     debug_header_t *aBlock;

@@ -29,7 +29,7 @@
 #define QSC_BIT(c)  (((c) >> QSC_SHIFT) & 0x01)
 
 
-inline
+static inline
 void pwsc_set_bit(uint8_t *v, int n)
 {
     int b, c;

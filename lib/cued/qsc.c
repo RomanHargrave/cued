@@ -136,7 +136,7 @@ typedef enum _qsc_ctl_flag_t {
 // if a nibble is 4 bits, then a nabble must be 6 bits
 // nabble is to nibble as weeble is to wobble
 //
-inline
+static inline
 uint8_t NABBLE(uint8_t *v, int n)
 {
     int byte = n * 3 / 4;
@@ -282,7 +282,7 @@ int qsc_get_isrc(qsc_buffer_t *p, char *isrc)
 }
 
 
-inline
+static inline
 int bcd_to_int(uint8_t bcd, int *native)
 {
     uint8_t nibble;
@@ -305,7 +305,7 @@ int bcd_to_int(uint8_t bcd, int *native)
 }
 
 
-inline
+static inline
 int int_to_bcd(int native, uint8_t *bcd)
 {
     if (native > 99) {
@@ -451,7 +451,7 @@ static crc16_t crc_table[]= {
 };
 
 
-inline
+static inline
 crc16_t crc_ccitt(crc16_t old_crc, uint8_t new_byte)
 {
     // modified for CCITT from Robert Solovay's public domain version of crc16
