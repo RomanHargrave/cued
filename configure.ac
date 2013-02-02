@@ -136,8 +136,11 @@ AC_SUBST([AM_CFLAGS])
 AM_CONDITIONAL([GCC], [test "$GCC" = yes])
 
 if test "$GCC" = yes; then
-    AM_CFLAGS="-Wall -Wstrict-aliasing=3 -Wformat=2 ${AM_CFLAGS}"
-    if test "x$CC" = "xg++"; then
+    AM_CFLAGS="-Wall -Wformat=2 ${AM_CFLAGS}"
+    if test "x$CC" != "xclang" && test "x$CC" != "xclang++"; then
+        AM_CFLAGS="-Wstrict-aliasing=3 ${AM_CFLAGS}"
+    fi
+    if test "x$CC" = "xg++" || test "x$CC" = "xclang++"; then
         AM_CFLAGS="-std=gnu++98 ${AM_CFLAGS}"
     else
         AM_CFLAGS="-std=gnu99 ${AM_CFLAGS}"

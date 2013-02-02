@@ -475,7 +475,7 @@ int main(int argc, char *argv[])
     cc_msg(foo, test, by_int(1), by_int(2), by_obj(foo));
 
     // argv[0] access without arguments
-    cc_msg(foo, test);
+    //cc_msg(foo, test);
 
     // category
     cc_msg(foo, "blacker", by_int(1));
