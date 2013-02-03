@@ -117,12 +117,20 @@ AC_CHECK_FUNC([memrchr],
 AC_CHECK_FUNC([memmem],
     [AC_DEFINE([HAVE_MEMMEM], [], [Define this if libc has the 'memmem' function])])
 
-
 # Check for non-standard C runtime behavior.
 AC_MSG_CHECKING([for assignable stdout])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <stdio.h>], [stdout = stderr;])], [
     AC_MSG_RESULT(yes)
     AC_DEFINE([HAVE_ASSIGNABLE_STDOUT], [], [Define this if stdout can be assigned])
+], [
+    AC_MSG_RESULT(no)
+])
+
+# Check for missing const qualifier in struct option (for Solaris.)
+AC_MSG_CHECKING([for const qualifier in struct option])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <getopt.h>], [struct option o; const char *foo = "foo"; o.name = foo;])], [
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_CONST_OPTION], [], [Define this if struct option has the const qualifier])
 ], [
     AC_MSG_RESULT(no)
 ])

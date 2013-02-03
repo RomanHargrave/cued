@@ -17,6 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_CONST_OPTION
+#endif
+
 #include "unix.h"
 #include "macros.h"
 #include "opt.h"
@@ -112,7 +116,11 @@ opt_result_t opt_parse_args(int argc, char *const argv[])
 
     // set options array for getopt_long
     for (i = 0;  i < numLongOpts;  ++i) {
-        opts[i].name = longOpts[i].opt;
+#ifdef CUED_HAVE_CONST_OPTION
+        opts[i].name =          longOpts[i].opt;
+#else
+        opts[i].name = (char *) longOpts[i].opt;
+#endif
         switch (longOpts[i].mode) {
 
             case OPT_NONE:
