@@ -146,10 +146,7 @@ typedef struct _rip_context_t {
     // cued_read_audio variables
     //
 
-    union {
-        uint8_t *mmcBuf;
-        int16_t *mmcBuf16;
-    };
+    uint8_t *mmcBuf;
     long allocatedSectors;
 
 #ifdef CUED_HAVE_PARANOIA

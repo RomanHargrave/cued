@@ -493,7 +493,7 @@ void cued_rip_to_file(rip_context_t *rip)
             }
 
             memset(rip->mmcBuf, 0x00, sizeof(audio_buffer_t));
-            pbuf = rip->mmcBuf16;
+            pbuf = (int16_t *) rip->mmcBuf;
 
         } else {
 
@@ -514,7 +514,7 @@ void cued_rip_to_file(rip_context_t *rip)
 
             } else {
                 if (DRIVER_OP_SUCCESS == cued_read_audio(rip, currSector, 1, NULL, rip->retries)) {
-                    pbuf = rip->mmcBuf16;
+                    pbuf = (int16_t *) rip->mmcBuf;
                 } else {
                     continue;
                 }
