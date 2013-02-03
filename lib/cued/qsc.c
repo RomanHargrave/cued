@@ -93,8 +93,10 @@ typedef struct _qsc_read_cd {
                         qsc_mode_1 mode_1;
                         qsc_mode_2 mode_2;
                         qsc_mode_3 mode_3;
-                    };
-                };
+
+                    } mode_u;
+
+                } ctl_mode;
 
                 uint8_t crc_data[10];
 
@@ -102,20 +104,24 @@ typedef struct _qsc_read_cd {
 
                     uint8_t unused[8];
                     uint8_t absolute_frame;
-                };
-            };
+
+                } unused;
+
+            } crc_u;
 
             uint8_t crc_msb;
             uint8_t crc_lsb;
             uint8_t pad[3];
             uint8_t zero_psc;
-        };
+
+        } data;
 
         // for compatibility between qsc_buffer_t and qsc_read_cd_t pointers
         // (ISO C aliasing rules)
         //
         qsc_buffer_t buf;
-    };
+
+    } opaque_u;
 
 } qsc_read_cd_t;
 
@@ -185,7 +191,7 @@ uint8_t NABBLE(uint8_t *v, int n)
 int qsc_has_pre_emphasis(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
-    int ctl = CTL_MASK(qsc->ctl_adr);
+    int ctl = CTL_MASK(qsc->opaque_u.data.crc_u.ctl_mode.ctl_adr);
 
     return (qsc_ctl_flag_audio_pre_emphasis & ctl);
 }
@@ -194,7 +200,7 @@ int qsc_has_pre_emphasis(qsc_buffer_t *p)
 int qsc_has_copy_permitted(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
-    int ctl = CTL_MASK(qsc->ctl_adr);
+    int ctl = CTL_MASK(qsc->opaque_u.data.crc_u.ctl_mode.ctl_adr);
 
     return (qsc_ctl_flag_copy_permitted & ctl);
 }
@@ -203,7 +209,7 @@ int qsc_has_copy_permitted(qsc_buffer_t *p)
 int qsc_has_four_channels(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
-    int ctl = CTL_MASK(qsc->ctl_adr);
+    int ctl = CTL_MASK(qsc->opaque_u.data.crc_u.ctl_mode.ctl_adr);
 
     return (qsc_ctl_flag_audio_four_channel & ctl);
 }
@@ -217,7 +223,7 @@ int qsc_get_mcn(qsc_buffer_t *p, char *mcn)
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
     for (i = 0;  i < MCN_LEN;  ++i) {
-        nibble = NIBBLE(qsc->mode_2.mcn, i);
+        nibble = NIBBLE(qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_2.mcn, i);
         if (nibble <= 9) {
             mcn[i] = QSC_BCD_TO_ASCII(nibble);
         } else {
@@ -255,7 +261,7 @@ int qsc_get_isrc(qsc_buffer_t *p, char *isrc)
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
     for (i = 0;  i < ISRC_COUNTRY_OWNER_LEN;  ++i) {
-        nabble = NABBLE(qsc->mode_3.country_owner, i);
+        nabble = NABBLE(qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_3.country_owner, i);
         if (nabble <= 9) {
             isrc[i] = QSC_BCD_TO_ASCII(nabble);
         } else if (nabble >= 0x11 && nabble <= 0x2A) {
@@ -267,7 +273,7 @@ int qsc_get_isrc(qsc_buffer_t *p, char *isrc)
 
     // year (2 digit) and serial number (5 digit)
     for (i = 0;  i < ISRC_YEAR_SERIAL_NO_LEN;  ++i) {
-        nibble = NIBBLE(qsc->mode_3.year_serial_no, i);
+        nibble = NIBBLE(qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_3.year_serial_no, i);
         if (nibble <= 9) {
             isrc[ i + ISRC_COUNTRY_OWNER_LEN ] = QSC_BCD_TO_ASCII(nibble);
         } else {
@@ -403,10 +409,10 @@ int qsc_get_index(qsc_buffer_t *p, qsc_index_t *index)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
-    if (   bcd_to_int(     qsc->mode_1.track,    &index->track)
-        || bcd_to_int(     qsc->mode_1.index,    &index->index)
-        || qsc_msf_to_lsn(&qsc->mode_1.relative, &index->relativeLsn)
-        || qsc_msf_to_lsn(&qsc->mode_1.absolute, &index->absoluteLsn))
+    if (   bcd_to_int(     qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_1.track,    &index->track)
+        || bcd_to_int(     qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_1.index,    &index->index)
+        || qsc_msf_to_lsn(&qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_1.relative, &index->relativeLsn)
+        || qsc_msf_to_lsn(&qsc->opaque_u.data.crc_u.ctl_mode.mode_u.mode_1.absolute, &index->absoluteLsn))
     {
         return -1;
     }
@@ -478,7 +484,7 @@ int qsc_check_crc(qsc_buffer_t *p)
 
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
-    crc = qsc_crc_data(qsc->crc_data, sizeof(qsc->crc_data));
+    crc = qsc_crc_data(qsc->opaque_u.data.crc_u.crc_data, sizeof(qsc->opaque_u.data.crc_u.crc_data));
 
 #ifdef DEBUG_CRC
     printf("crc_msb is %d;  crc_lsb is %d;  crc[0] is %d;  crc[1] is %d\n"
@@ -488,8 +494,8 @@ int qsc_check_crc(qsc_buffer_t *p)
         , crc & 0xFF);
 #endif
 
-    if (   CRC_MASK(qsc->crc_msb) == ((crc >> 8) & 0xFF)
-        && CRC_MASK(qsc->crc_lsb) == ((crc & 0xFF)))
+    if (   CRC_MASK(qsc->opaque_u.data.crc_msb) == ((crc >> 8) & 0xFF)
+        && CRC_MASK(qsc->opaque_u.data.crc_lsb) == ((crc & 0xFF)))
     {
         return 0;
     } else {
@@ -502,14 +508,14 @@ int qsc_get_psc(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
 
-    return PSC_MASK(qsc->zero_psc) ? 1 : 0;
+    return PSC_MASK(qsc->opaque_u.data.zero_psc) ? 1 : 0;
 }
 
 
 qsc_mode_t qsc_get_mode(qsc_buffer_t *p)
 {
     qsc_read_cd_t *qsc = (qsc_read_cd_t *) p;
-    int adr = ADR_MASK(qsc->ctl_adr);
+    int adr = ADR_MASK(qsc->opaque_u.data.crc_u.ctl_mode.ctl_adr);
 
     if (adr >= QSC_MODE_MIN && adr <= QSC_MODE_MAX) {
         return (qsc_mode_t) adr;
