@@ -34,7 +34,7 @@ cc_begin_method(FcString, concat)
     int len = 0;
 
     if (!strcmp(msg, "init")) {
-        cc_msg_super("init");
+        cc_msg_super0("init");
     }
 
     if (argc) {
@@ -65,8 +65,8 @@ cc_begin_method(FcString, concat)
             // passed an object that hopefully replies to length and buffer
             //
             obj = as_obj(argv[0]);
-            len = as_int(cc_msg(obj, "length"));
-            str = as_str(cc_msg(obj, "buffer"));
+            len = as_int(cc_msg0(obj, "length"));
+            str = as_str(cc_msg0(obj, "buffer"));
         } else {
             return cc_msg(my, "error", by_str("invalid type passed to \""), by_str(msg), 
                           by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
@@ -159,7 +159,7 @@ cc_end_method
 cc_begin_method(FcString, free)
     //printf("free buffer %s\n", my->buffer);
     free(my->buffer);
-    return cc_msg_super("free");
+    return cc_msg_super0("free");
 cc_end_method
 
 
@@ -170,7 +170,7 @@ cc_begin_method(FcString, compare)
 
     FcCheckArgc(1);
     obj = as_obj(argv[0]);
-    str = as_str(cc_msg(obj, "buffer"));
+    str = as_str(cc_msg0(obj, "buffer"));
     rc = strcoll(my->buffer, str);
 
     return by_int(rc);
@@ -251,8 +251,8 @@ cc_begin_method(FcString, find)
     FcCheckArgc(1);
     if (is_obj(argv[0])) {
         obj = as_obj(argv[0]);
-        str = as_str(cc_msg(obj, "buffer"));
-        len = as_int(cc_msg(obj, "length"));
+        str = as_str(cc_msg0(obj, "buffer"));
+        len = as_int(cc_msg0(obj, "length"));
     } else if (is_str(argv[0])) {
         str = as_str(argv[0]);
         len = strlen(str);

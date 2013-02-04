@@ -41,5 +41,5 @@ cc_arg_t _FcErrorArgc(cc_obj my, const char *msg, int argc, int minArgc, int max
 cc_arg_t FcContainerFree(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
 {
     _cc_send(my, "empty", argc, argv);
-    return cc_msg_super("free");
+    return cc_msg_super0("free");
 }

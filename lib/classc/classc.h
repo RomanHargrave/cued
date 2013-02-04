@@ -155,6 +155,9 @@ extern cc_arg_t cc_null;
 #define is_float(n)     is(f,   (n))
 #define is_double(n)    is(d,   (n))
 
+#define cc_msg0(obj, msg) (_cc_send(obj, msg, 0, NULL))
+#define cc_msg_super0(msg) (_cc_send_super(my, msg, 0, NULL))
+
 #if defined(__GNUC__)
 #define cc_msg(obj, msg, ...) ({ \
     cc_arg_t _cc_tmp_args[] = { __VA_ARGS__ }; \
@@ -196,7 +199,7 @@ static void prefix##Constructor(void) \
     _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
 }
 
-#define cc_destruct_methods(cls, ...) \
+#define cc_destruct_methods(cls) \
 static void cls##Destructor(void) __attribute__((destructor)); \
 static void cls##Destructor(void) \
 { \
@@ -215,8 +218,7 @@ cc_class_object cls = { \
     NULL \
     };
 
-#define cc_class_object(cls, ...) \
-cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
+#define cc_class_object(cls) \
 cc_destruct_methods(Meta##cls) \
 cc_class_object Meta##cls = { \
     NULL, \
@@ -226,6 +228,10 @@ cc_class_object Meta##cls = { \
     0, \
     NULL \
     };
+
+#define cc_class_object_with_methods(cls, ...) \
+cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
+cc_class_object(cls)
 
 #define cc_category(cls, cat, ...) \
 cc_construct_methods(cls, cls##cat, __VA_ARGS__)

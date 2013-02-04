@@ -24,7 +24,7 @@
 
 
 cc_begin_method(FcList, init)
-    cc_msg_super("init");
+    cc_msg_super0("init");
     my->head.next = my->head.prev = &my->head;
     return by_obj(my);
 cc_end_method
@@ -157,7 +157,7 @@ cc_begin_method(FcList, empty)
                 //printf("delete %s\n", as_str(curr->item));
                 break;
             case FcEmptyFreeObject:
-                cc_msg(as_obj(curr->item), "free");
+                cc_msg0(as_obj(curr->item), "free");
                 break;
             case FcEmptyFreePointer:
                 free(as_ptr(curr->item));
@@ -165,7 +165,7 @@ cc_begin_method(FcList, empty)
         }
         free(curr);
     }
-    return cc_msg(my, "init");
+    return cc_msg0(my, "init");
 cc_end_method
 
 
@@ -274,7 +274,7 @@ cc_begin_method(FcListCursor, affix)
 cc_end_method
 
 cc_begin_method(FcListCursor, init)
-    cc_msg_super("init");
+    cc_msg_super0("init");
     FcCheckArgc(1);
     my->list = (cc_vars_FcList *) as_obj(argv[0]);
     my->curr = &my->list->head;

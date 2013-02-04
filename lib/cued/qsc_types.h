@@ -21,12 +21,12 @@
 #define QSC_TYPES_H_INCLUDED
 
 #include <sys/types.h>
+#include <stdint.h>
 
 
 typedef unsigned short crc16_t;
 
 #ifndef __CDIO_H__
-typedef unsigned char uint8_t;
 typedef struct msf_s msf_t;
 typedef int32_t lsn_t;
 #endif // __CDIO_H__

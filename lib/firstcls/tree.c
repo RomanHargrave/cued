@@ -31,7 +31,7 @@
 
 
 cc_begin_method(FcTree, init)
-    cc_msg_super("init");
+    cc_msg_super0("init");
     FcCheckArgcRange(0, 1);
     my->cmpMethod = argc ? (FcCompareFn) as_ptr(argv[0]) : FcObjCompare;
     my->root = &my->sentinel;
@@ -58,7 +58,7 @@ static void FcTreeEmpty(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
         case FcEmptyNone:
             break;
         case FcEmptyFreeObject:
-            cc_msg(as_obj(node->item), "free");
+            cc_msg0(as_obj(node->item), "free");
             break;
         case FcEmptyFreePointer:
             free(as_ptr(node->item));
@@ -73,7 +73,7 @@ cc_begin_method(FcTree, empty)
     FcCheckArgcRange(0, 1);
     how = argc ? (FcEmptyHow) as_int(argv[0]) : FcEmptyNone;
     FcTreeEmpty(my, my->root, how);
-    return cc_msg(my, "init");
+    return cc_msg0(my, "init");
 cc_end_method
 
 
@@ -777,7 +777,7 @@ cc_end_method
 
 
 cc_begin_method(FcTreeCursor, init)
-    cc_msg_super("init");
+    cc_msg_super0("init");
     FcCheckArgc(1);
     my->tree = (cc_vars_FcTree *) as_obj(argv[0]);
     my->curr = &my->tree->sentinel;

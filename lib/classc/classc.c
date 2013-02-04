@@ -160,7 +160,7 @@ static cc_method_fp _cc_lookup_method_internal(cc_class_object *cls, const char 
 // cannot specify in C++ that the function should be inline for this module and extern in other modules
 // (although one can make an extern function as a wrapper that calls the inline version of the function)
 //
-#ifndef __cplusplus
+#if !defined(__cplusplus) && !defined(__SunOS)
 inline
 #endif
 cc_method_fp cc_lookup_method(cc_class_object *cls, const char *msg)

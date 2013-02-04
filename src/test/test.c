@@ -96,13 +96,13 @@ void unitTestString()
     printf("\n\n*** STRING TESTS ***\n");
 
     s[0] = as_obj(cc_msg(&FcString, "new", by_str("foo")));
-    cc_msg(s[0], "writeln");
+    cc_msg0(s[0], "writeln");
 
-    s[1] = as_obj(cc_msg(s[0], "copy"));
+    s[1] = as_obj(cc_msg0(s[0], "copy"));
     cc_msg(s[1], "writeln", by_ptr(stdout));
 
     s[2] = as_obj(cc_msg(&FcString, "new", by_obj(s[0])));
-    cc_msg(s[2], "write");
+    cc_msg0(s[2], "write");
     printf("\n");
 
     cc_msg(s[2], "setChar", by_int(1), by_char('b'));
@@ -114,14 +114,14 @@ void unitTestString()
 
     printf("concat:\n");
     cc_msg(s[3], "concat", by_str("collar"));
-    cc_msg(s[3], "writeln");
+    cc_msg0(s[3], "writeln");
 
     printf("substring:\n");
     s[4] = as_obj(cc_msg(s[3], "sub", by_int(1), by_int(4)));
-    cc_msg(s[4], "writeln");
+    cc_msg0(s[4], "writeln");
 
     // test compare
-    t = as_obj(cc_msg(&FcTree, "new"));
+    t = as_obj(cc_msg0(&FcTree, "new"));
 
     cc_msg(t, "insert", by_obj(s[0]), by_obj(s[1]), by_obj(s[2]), by_obj(s[3]), by_obj(s[4]));
     //_cc_send(t, "insert", SNELEMS(s), s);
@@ -136,49 +136,49 @@ void unitTestString()
 
     // this only gets some of the strings (those in the tree, not the duplicates)
     //cc_msg(t, "free", by_int(FcEmptyFreeObject));
-    cc_msg(t, "free");
+    cc_msg0(t, "free");
 
 #if 1
     for (i = 0;  i < SNELEMS(s);  ++i) {
-        cc_msg(s[i], "free");
+        cc_msg0(s[i], "free");
     }
 #endif
 
     s2 = as_obj(cc_msg(&FcString, "new", by_str("/foo/bar/")));
     i = as_int(cc_msg(s2, "findChar", by_char('/')));
-    printf("first index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("first index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
     
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i + 1)));
-    printf("second index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("second index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i)));
-    printf("second index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("second index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i + 1)));
-    printf("third index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("third index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i)));
-    printf("third index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("third index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
 
     i = as_int(cc_msg(s2, "findCharRev", by_char('/')));
-    printf("last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i - 1)));
-    printf("second to last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("second to last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i)));
-    printf("second to last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("second to last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i - 1)));
-    printf("third to last index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("third to last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
 
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(10)));
-    printf("bad index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("bad index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(0)));
-    printf("bad index of %s is %d\n", as_str(cc_msg(s2, "buffer")), i);
+    printf("bad index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
 
     i = as_int(cc_msg(s2, "find", by_str("foo")));
     printf("index of foo is %d\n", i);
@@ -191,7 +191,7 @@ void unitTestString()
     //cc_msg(s2, "concat", by_double(8.0));
 
 
-    cc_msg(s2, "free");
+    cc_msg0(s2, "free");
 }
 
 
@@ -236,18 +236,18 @@ void unitTestTree()
     cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(SNELEMS(fooVector)));
     //cc_msg(&fooVector[4], "test", by_int(5));
 
-    t = as_obj(cc_msg(&FcTree, "new"));
+    t = as_obj(cc_msg0(&FcTree, "new"));
     for (i = 0;  i < SNELEMS(fooVector);  ++i) {
         fooVector[i].bar = i;
         cc_msg(t, "insert", by_obj(&fooVector[i]));
     }
     cc_msg(t, "apply", by_str("test"), by_int(0xABCDEF));
-    cc_msg(t, "free");
+    cc_msg0(t, "free");
 
 
     // C++ needs the cast to void (ugh)
     t = as_obj(cc_msg(&FcTree, "new", by_ptr((void *) int_cmp)));
-    cursor = as_obj(cc_msg(t, "cursor"));
+    cursor = as_obj(cc_msg0(t, "cursor"));
 
     for (i = 0;  i < TREE_NODES;  ++i) {
 
@@ -355,7 +355,7 @@ void unitTestTree()
         if (!(i % 1000)) {
             printf(".");
         }
-        rc = cc_msg(t, "isEmpty");
+        rc = cc_msg0(t, "isEmpty");
         if (as_int(rc)) {
             printf("tree is empty\n");
             break;
@@ -363,8 +363,8 @@ void unitTestTree()
     }
 
 
-    cc_msg(t,       "free");
-    cc_msg(cursor,  "free");
+    cc_msg0(t,       "free");
+    cc_msg0(cursor,  "free");
 
     //cc_msg(t, "init", by_ptr(NULL), by_ptr(NULL));
 }
@@ -390,10 +390,10 @@ void unitTestList()
     // list
     //
 
-    list = as_obj(cc_msg(&FcList, "new"));
+    list = as_obj(cc_msg0(&FcList, "new"));
 
     // empty?
-    if (as_int(cc_msg(list, "isEmpty"))) {
+    if (as_int(cc_msg0(list, "isEmpty"))) {
         printf("list starts out as empty\n");
     }
 
@@ -402,36 +402,36 @@ void unitTestList()
     cc_msg(list, "affix", by_str("doh"), by_str("bleh"));
 
     // empty?
-    if (!as_int(cc_msg(list, "isEmpty"))) {
+    if (!as_int(cc_msg0(list, "isEmpty"))) {
         printf("list is no longer empty\n");
     }
 
     printf("after adding doh and bleh\n");
 
     // enumerate
-    cursor = as_obj(cc_msg(list, "cursor"));
-    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
-        printf("item in list is \"%s\";  current is %s\n", item, as_str(cc_msg(cursor, "current")));
+    cursor = as_obj(cc_msg0(list, "cursor"));
+    for (item = as_str(cc_msg0(cursor, "first"));  item;  item = as_str(cc_msg0(cursor, "next"))) {
+        printf("item in list is \"%s\";  current is %s\n", item, as_str(cc_msg0(cursor, "current")));
     }
 
-    cc_msg(cursor, "first");
+    cc_msg0(cursor, "first");
 
     // delete with cursor
-    cc_msg(cursor, "remove");
+    cc_msg0(cursor, "remove");
 
     printf("after first, remove:\n");
-    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
+    for (item = as_str(cc_msg0(cursor, "first"));  item;  item = as_str(cc_msg0(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
 
-    cc_msg(cursor, "first");
+    cc_msg0(cursor, "first");
     cc_msg(cursor, "prefix", by_str("foo"));
     cc_msg(cursor, "affix", by_str("bar"), by_str("baz"));
-    cc_msg(cursor, "previous");
+    cc_msg0(cursor, "previous");
     printf("after:  first, prefix foo, affix bar & baz, previous;  current is %s\n",
-        as_str(cc_msg(cursor, "current")));
+        as_str(cc_msg0(cursor, "current")));
 
-    for (item = as_str(cc_msg(cursor, "first"));  item;  item = as_str(cc_msg(cursor, "next"))) {
+    for (item = as_str(cc_msg0(cursor, "first"));  item;  item = as_str(cc_msg0(cursor, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
 
@@ -440,15 +440,15 @@ void unitTestList()
 
 
     // copy
-    cursor2 = as_obj(cc_msg(cursor, "copy"));
+    cursor2 = as_obj(cc_msg0(cursor, "copy"));
     printf("after copy:\n");
-    for (item = as_str(cc_msg(cursor2, "first"));  item;  item = as_str(cc_msg(cursor2, "next"))) {
+    for (item = as_str(cc_msg0(cursor2, "first"));  item;  item = as_str(cc_msg0(cursor2, "next"))) {
         printf("item in list is \"%s\"\n", item);
     }
 
-    cc_msg(cursor,  "free");
-    cc_msg(cursor2, "free");
-    cc_msg(list,    "free");
+    cc_msg0(cursor,  "free");
+    cc_msg0(cursor2, "free");
+    cc_msg0(list,    "free");
 }
 
 
@@ -466,7 +466,7 @@ int main(int argc, char *argv[])
     printf("sizeof(Foo) == %zu\n", sizeof(Foo));
 
 
-    foo = as_obj(cc_msg(&Foo, "new"));
+    foo = as_obj(cc_msg0(&Foo, "new"));
 
     // call a method to set a variable
     cc_msg(foo, "setBar", by_int(34));
@@ -481,10 +481,10 @@ int main(int argc, char *argv[])
     cc_msg(foo, "blacker", by_int(1));
 
     // message forwarding
-    cc_msg(foo, "not found");
+    cc_msg0(foo, "not found");
 
     // free an object
-    cc_msg(foo, "free");
+    cc_msg0(foo, "free");
 
 
     // class name
