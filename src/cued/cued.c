@@ -26,7 +26,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_PARANOIA
+#include "cued_config.h" // CUED_HAVE_PARANOIA, CUED_PATH_MAX
 #endif
 #include "unix.h"
 #include "macros.h"
@@ -214,7 +214,7 @@ int main(int argc, char *const argv[])
     PIT(const char, devName);
     int i;
     track_t tracks, discFirstTrack, discLastTrack;
-    char fileNameBuffer[PATH_MAX];
+    char fileNameBuffer[CUED_PATH_MAX];
 
     // this should be first
     cdio2_set_log_handler();

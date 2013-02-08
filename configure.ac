@@ -139,9 +139,10 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <getopt.h>], [struct option o; cons
 AC_MSG_CHECKING([for PATH_MAX in limits.h])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <limits.h>], [int x = PATH_MAX;])], [
     AC_MSG_RESULT(yes)
+    AC_DEFINE([PATH_MAX], [PATH_MAX])
 ], [
     AC_MSG_RESULT(no)
-    AC_DEFINE([PATH_MAX], [8192], [Define this if limits.h lacks a definition for PATH_MAX])
+    AC_DEFINE([PATH_MAX], [8192], [Define this to be the maximum path length])
 ])
 
 
