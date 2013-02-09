@@ -1,3 +1,7 @@
+#define as(x, y) ((cc_type_##x == (y).t || cc_type_any == (y).t) ? ((y).u.x) : ( \
+        fprintf(stderr, "fatal:  expected type \"%s\", but received type \"%s\" at line %d in file \"%s\"\n", \
+        cc_type_names[cc_type_##x], cc_type_names[(y).t], __LINE__, __FILE__), abort(), 0))
+
 #define cc_Root_isa NULL
 
 cc_class(Root,

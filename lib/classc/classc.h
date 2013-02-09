@@ -80,7 +80,13 @@ extern const char *cc_type_names[];
 
 extern cc_arg_t cc_null;
 
+#if defined(__GNUC__)
+#define cc_is_null(x) ({ cc_arg_t _cc_tmp_arg = (x);  _cc_tmp_arg.t == cc_type_any && !_cc_tmp_arg.u.ull; })
+#else
+// because cc_is_null uses x twice it is not safe when x is a non-idempotent operation
+#warning "cc_is_null is not safe for this compiler"
 #define cc_is_null(x) ((x).t == cc_type_any && !(x).u.ull)
+#endif
 
 #ifdef __cplusplus
 #define by(x, y) ({ cc_arg_t _cc_tmp_arg;  _cc_tmp_arg.u.x = (y);  _cc_tmp_arg.t = cc_type_##x;  _cc_tmp_arg; })
@@ -115,6 +121,7 @@ extern cc_arg_t cc_null;
     } \
     _cc_tmp_rc.u.x; })
 #else
+// this would not be safe either
 #warning "Type checking is not implemented for this compiler"
 #define as(x, y) ((y).u.x)
 #endif
@@ -155,7 +162,8 @@ extern cc_arg_t cc_null;
 #define is_float(n)     is(f,   (n))
 #define is_double(n)    is(d,   (n))
 
-#define cc_msg0(obj, msg) (_cc_send(obj, msg, 0, NULL))
+// for compilers that do not support empty arrays
+#define cc_msg0(obj, msg)  (_cc_send(     obj, msg, 0, NULL))
 #define cc_msg_super0(msg) (_cc_send_super(my, msg, 0, NULL))
 
 #if defined(__GNUC__)
@@ -164,6 +172,7 @@ extern cc_arg_t cc_null;
     _cc_send(obj, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
 })
 #else
+// not safe either
 #define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
 #endif
 
@@ -173,6 +182,7 @@ extern cc_arg_t cc_null;
     _cc_send_super(my, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
 })
 #else
+// not safe either
 #define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
 #endif
 
