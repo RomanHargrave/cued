@@ -78,15 +78,8 @@ typedef struct _cc_arg_t {
 
 extern const char *cc_type_names[];
 
-extern cc_arg_t cc_null;
-
-#if defined(__GNUC__)
 #define cc_is_null(x) ({ cc_arg_t _cc_tmp_arg = (x);  _cc_tmp_arg.t == cc_type_any && !_cc_tmp_arg.u.ull; })
-#else
-// because cc_is_null uses x twice it is not safe when x is a non-idempotent operation
-#warning "cc_is_null is not safe for this compiler"
-#define cc_is_null(x) ((x).t == cc_type_any && !(x).u.ull)
-#endif
+extern cc_arg_t cc_null;
 
 #ifdef __cplusplus
 #define by(x, y) ({ cc_arg_t _cc_tmp_arg;  _cc_tmp_arg.u.x = (y);  _cc_tmp_arg.t = cc_type_##x;  _cc_tmp_arg; })
@@ -111,7 +104,6 @@ extern cc_arg_t cc_null;
 #define by_float(n)     by(f,   (n))
 #define by_double(n)    by(d,   (n))
 
-#if defined(__GNUC__)
 #define as(x, y) ({ \
     cc_arg_t _cc_tmp_rc = (y); \
     if (cc_type_##x != _cc_tmp_rc.t && cc_type_any != _cc_tmp_rc.t) { \
@@ -120,11 +112,6 @@ extern cc_arg_t cc_null;
         abort(); \
     } \
     _cc_tmp_rc.u.x; })
-#else
-// this would not be safe either
-#warning "Type checking is not implemented for this compiler"
-#define as(x, y) ((y).u.x)
-#endif
 
 #define as_obj(p)       as(o,   (p))
 #define as_ptr(x)       as(p,   (x))
@@ -162,29 +149,20 @@ extern cc_arg_t cc_null;
 #define is_float(n)     is(f,   (n))
 #define is_double(n)    is(d,   (n))
 
-// for compilers that do not support empty arrays
+
+// for compilers that do not support empty arrays (Solaris)
 #define cc_msg0(obj, msg)  (_cc_send(     obj, msg, 0, NULL))
 #define cc_msg_super0(msg) (_cc_send_super(my, msg, 0, NULL))
 
-#if defined(__GNUC__)
 #define cc_msg(obj, msg, ...) ({ \
     cc_arg_t _cc_tmp_args[] = { __VA_ARGS__ }; \
     _cc_send(obj, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
 })
-#else
-// not safe either
-#define cc_msg(obj, msg, ...)  _cc_send      ( obj, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
-#endif
 
-#if defined(__GNUC__)
 #define cc_msg_super(msg, ...) ({ \
     cc_arg_t _cc_tmp_args[] = { __VA_ARGS__ }; \
     _cc_send_super(my, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
 })
-#else
-// not safe either
-#define cc_msg_super(msg, ...) _cc_send_super(  my, msg, sizeof((struct _cc_arg_t[]) { __VA_ARGS__ }) / sizeof(struct _cc_arg_t), (struct _cc_arg_t[]) { __VA_ARGS__ } )
-#endif
 
 extern cc_arg_t _cc_send      (cc_obj my, const char *msg, int argc, cc_arg_t *argv);
 extern cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
