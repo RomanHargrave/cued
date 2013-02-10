@@ -21,6 +21,11 @@
 #include "cued_config.h" // CUED_OVERLOAD_LIBC
 #endif
 
+// need this for RTLD_NEXT
+#if defined(CUED_OVERLOAD_LIBC) && !defined(USE_WHOLE_PAGES) && !defined(__cplusplus)
+#define _GNU_SOURCE
+#endif
+
 // allow for insanities such as -D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)'
 #ifdef malloc
 #undef malloc
@@ -185,9 +190,6 @@ void freeChunk(ptr_as_int_t theChunk, size_t theSize)
 
 #if defined(CUED_OVERLOAD_LIBC) && !defined(USE_WHOLE_PAGES)
 
-#ifndef __cplusplus
-#define __USE_GNU
-#endif
 #include <dlfcn.h>
 
 typedef void *(*malloc_fn_t)(size_t);

@@ -17,17 +17,13 @@
 
 #define USE_BOYER
 
-#if !defined(USE_BOYER) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif
-
 #ifdef __cplusplus
 #define __STDC_LIMIT_MACROS
 #endif
 
+#include "unix.h" // _GNU_SOURCE must be defined by unix.h before including any other headers
 #include "opt.h"
 #include "macros.h"
-#include "unix.h"
 
 #include <stdio.h>
 #include <stdlib.h>
