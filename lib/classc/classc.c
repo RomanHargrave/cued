@@ -76,19 +76,11 @@ const char *cc_type_names[] = {
 cc_arg_t cc_null = { { 0 }, cc_type_any };
 
 
-// if constant string folding is enabled, then compare string pointers before executing
-// strcmp intrinsically
-//
-#if defined(__GNUC__) && defined(__OPTIMIZE__)
-
+// the optimizer enables constant string folding, which enables this optimization
 static inline int strcmp2(const char *a, const char *b)
 {
     return (a == b) ? 0 : strcmp(a, b);
 }
-
-#else
-#define strcmp2 strcmp
-#endif
 
 
 static int _cc_compare_names(const cc_method_name *a, const cc_method_name *b)
@@ -157,12 +149,7 @@ static cc_method_fp _cc_lookup_method_internal(cc_class_object *cls, const char 
 }
 
 
-// cannot specify in C++ that the function should be inline for this module and extern in other modules
-// (although one can make an extern function as a wrapper that calls the inline version of the function)
-//
-#if !defined(__cplusplus) && !defined(__SunOS)
-inline
-#endif
+// this should be inline, but Solaris studio does not like it
 cc_method_fp cc_lookup_method(cc_class_object *cls, const char *msg)
 {
     cc_method_fp method = _cc_lookup_method_internal(cls, msg);
