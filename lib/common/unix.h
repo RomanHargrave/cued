@@ -26,9 +26,9 @@
 
 // _GNU_SOURCE must be defined before including any other headers
 #if defined(CUED_HAVE_MEMRCHR) || defined(CUED_HAVE_MEMMEM)
-#   ifndef __cplusplus
+#   ifndef _GNU_SOURCE // already defined for g++
 #       define _GNU_SOURCE // memrchr, memmem
-#   endif // __cplusplus
+#   endif // _GNU_SOURCE
 #   include <string.h>
 #endif
 

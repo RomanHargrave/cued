@@ -22,7 +22,7 @@
 #endif
 
 // need this for RTLD_NEXT
-#if defined(CUED_OVERLOAD_LIBC) && !defined(USE_WHOLE_PAGES) && !defined(__cplusplus)
+#if defined(CUED_OVERLOAD_LIBC) && !defined(USE_WHOLE_PAGES) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
 #endif
 
