@@ -438,6 +438,9 @@ void unitTestList()
     // apply
     cc_msg(list, "apply", by_ptr((void *) applyStr));
 
+    // test error handling
+    //cc_msg0(list, "apply");
+
 
     // copy
     cursor2 = as_obj(cc_msg0(cursor, "copy"));
@@ -515,6 +518,13 @@ int main(int argc, char *argv[])
     unitTestList();
     unitTestTree();
     unitTestString();
+
+
+    // test error handling
+    //foo = as_obj(cc_msg0(&Root, "new"));
+    //cc_msg0(foo, "bar");
+    //_cc_send_super(foo, "bar", 0, NULL);
+    
 
     return (EXIT_SUCCESS);
 }

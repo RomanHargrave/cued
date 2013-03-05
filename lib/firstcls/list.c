@@ -89,7 +89,7 @@ cc_begin_method(FcList, prefix)
     // push onto list from right to left so that order will be same as given
     for (i = argc - 1;  i >= 0;  --i) {
         if (!insertBefore(my->head.next, argv[i])) {
-            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+            return cc_error(by_str("out of memory allocating list node"));
         }
     }
 
@@ -101,7 +101,7 @@ cc_begin_method(FcList, affix)
     int i;
     for (i = 0;  i < argc;  ++i) {
         if (!insertAfter(my->head.prev, argv[i])) {
-            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+            return cc_error(by_str("out of memory allocating list node"));
         }
     }
     return by_obj(my);
@@ -121,8 +121,10 @@ static inline void removeNode(cc_vars_FcList *my, FcListNode *node)
     if (&my->head != node) {
         free(node);
     } else {
-        // this does not have to be fatal:  could comment this line and continue
-        cc_msg(my, "error", by_str("attempt to remove item from empty list"));
+        // this does not have to be fatal:  could comment these lines and continue
+        const char *msg = "unknown";
+        cc_error(by_str("attempt to remove item from empty list"));
+        //cc_msg(my, "error", by_str("attempt to remove item from empty list"));
     }
 }
 
@@ -250,7 +252,7 @@ cc_begin_method(FcListCursor, prefix)
     int i;
     for (i = 0;  i < argc;  ++i) {
         if (!insertBefore(curr, argv[i])) {
-            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+            return cc_error(by_str("out of memory allocating list node"));
         }
     }
     return by_obj(my);
@@ -264,7 +266,7 @@ cc_begin_method(FcListCursor, affix)
         // insert by order given...
         curr = insertAfter(curr, argv[i]);
         if (!curr) {
-            return cc_msg(my, "error", by_str("out of memory allocating list node"));
+            return cc_error(by_str("out of memory allocating list node"));
         }
 
         // ...and point to item after new item

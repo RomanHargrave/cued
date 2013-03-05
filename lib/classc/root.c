@@ -28,8 +28,7 @@ cc_begin_meta_method(MetaRoot, new)
     if (obj) {
         return _cc_send(obj, "init", argc, argv);
     } else {
-        return cc_msg(my, "error", by_str("alloc method did not return instance for class \""),
-                      by_str(my->name), by_str("\""));
+        return cc_error(by_str("alloc method did not return instance"));
     }
 cc_end_method
 
@@ -40,8 +39,7 @@ cc_begin_meta_method(MetaRoot, alloc)
         obj->isa = my;
         return by_obj(obj);
     } else {
-        return cc_msg(my, "error", by_str("out of memory allocating object of class \""),
-                      by_str(my->name), by_str("\""));
+        return cc_error(by_str("out of memory allocating instance"));
     }
 cc_end_method
 
@@ -52,8 +50,7 @@ cc_begin_meta_method(MetaRoot, initVector)
     int i, nelems;
 
     if (argc < 2) {
-        return cc_msg(my, "error", by_str("too few arguments to \""), by_str(msg), by_str("\" for class \""),
-                      by_str(my->name), by_str("\""));
+        return cc_error(by_str("too few arguments"));
     }
 
     // some optimization for vector init: look up the method only once (optimize for large vector);
@@ -61,9 +58,9 @@ cc_begin_meta_method(MetaRoot, initVector)
     //
     initMethod = cc_lookup_method(my, "init");
     if (!initMethod) {
-        // is this even possible?  isn't this an internal error?
-        return cc_msg(my, "error", by_str("initVector called for class \""),
-                      by_str(my->name), by_str("\" which lacks init method"));
+        // is this even possible?  isn't this an internal error?  unless you try to replace Root,
+        // don't implement alloc, and use MetaRoot as the new Root's meta class....
+        return cc_error(by_str("class lacks init method"));
     }
 
     // it's a pointer until initVector runs, so it should be passed as a pointer, not an object

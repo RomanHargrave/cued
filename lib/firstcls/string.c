@@ -68,8 +68,7 @@ cc_begin_method(FcString, concat)
             len = as_int(cc_msg0(obj, "length"));
             str = as_str(cc_msg0(obj, "buffer"));
         } else {
-            return cc_msg(my, "error", by_str("invalid type passed to \""), by_str(msg), 
-                          by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
+            return cc_error(by_str("invalid type"));
         }
 
         //
@@ -78,7 +77,7 @@ cc_begin_method(FcString, concat)
         if (len) {
             buf = (char *) realloc(my->buffer, my->length + len + 1);
             if (!buf) {
-                return cc_msg(my, "error", by_str("out of memory allocating string buffer"));
+                return cc_error(by_str("out of memory allocating string buffer"));
             }
             memcpy(buf + my->length, str, len);
 
@@ -257,9 +256,7 @@ cc_begin_method(FcString, find)
         str = as_str(argv[0]);
         len = strlen(str);
     } else {
-        // TODO:  abstract some of this construct msg, for class...
-        return cc_msg(my, "error", by_str("invalid type passed to \""), by_str(msg), 
-                      by_str("\" for class \""), by_str(my->isa->name), by_str("\""));
+        return cc_error(by_str("invalid type"));
     }
     addr = (char *) memmem(my->buffer, my->length, str, len);
     index = addr ? ( addr - my->buffer + 1 ) : 0;

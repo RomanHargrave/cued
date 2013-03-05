@@ -424,7 +424,7 @@ cc_begin_method(FcTree, insert)
     for (int i = 0;  i < argc;  ++i) {
         newSubtree = (FcTreeNode *) malloc(sizeof(FcTreeNode));
         if (!newSubtree) {
-            return cc_msg(my, "error", by_str("out of memory allocating tree node"));
+            return cc_error(by_str("out of memory allocating tree node"));
         }
 
         subtree = TreeInsert(my, argv[i], newSubtree);

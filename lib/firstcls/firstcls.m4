@@ -11,12 +11,13 @@ typedef enum _FcEmptyHow {
 } FcEmptyHow;
 
 
-#define FcCheckArgc(n) (((n) == argc) ? cc_null : _FcErrorArgc(my, msg, argc, (n), (n)))
+#define FcCheckArgc(n) (((n) == argc) ? cc_null : _FcErrorArgc(my, msg, argc, (n)))
 
 #define FcCheckArgcRange(n1, n2) ((argc >= (n1) && argc <= (n2)) ? cc_null : \
-                                  _FcErrorArgc(my, msg, argc, (n1), (n2)))
+                                  _FcErrorArgc(my, msg, argc, (n1)))
 
-extern cc_arg_t _FcErrorArgc(cc_obj my, const char *msg, int argc, int minArgc, int maxArgc);
+#define _FcErrorArgc(my, msg, argc, minArgc) \
+        cc_error(by_str("too "), argc < minArgc ? by_str("few") : by_str("many"), by_str(" arguments"))
 
 
 typedef int (*FcCompareFn)(cc_arg_t item, cc_arg_t key);

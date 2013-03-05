@@ -19,6 +19,9 @@
 
 #include "classc.h"
 
+// SNELEMS is the only external dependency of classc
+#include <macros.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -164,20 +167,19 @@ cc_method_fp cc_lookup_method(cc_class_object *cls, const char *msg)
 
 static inline cc_arg_t _cc_send_msg_internal(
     cc_class_object *cls,
-    cc_vars_Root *obj,
+    cc_vars_Root *my,
     const char *msg,
     int argc,
     cc_arg_t *argv)
 {
     cc_method_fp method = cc_lookup_method(cls, msg);
     if (method) {
-        return method(obj, msg, argc, argv);
+        return method(my, msg, argc, argv);
     }
 
     // handle method not found;  don't get stuck in a recursive loop if "error" is not implemented
     if (strcmp2("error", msg)) {
-        return cc_msg(obj, "error", by_str("could not send message \""), by_str(msg),
-                      by_str("\" to class \""), by_str(cls->name), by_str("\""));
+        return cc_error(by_str("no such method"));
     }
 
     // this is the case where "error" is not implemented
@@ -199,9 +201,30 @@ cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
     cc_class_object *supercls = obj->isa->supercls;
 
     if (!supercls) {
-        return cc_msg(obj, "error", by_str("cannot send message to super class of class \""),
-                      by_str(obj->isa->name), by_str("\""));
+        return cc_error(by_str("no super class to receive message"));
     }
 
     return _cc_send_msg_internal(supercls, obj, msg, argc, argv);
+}
+
+
+cc_arg_t _cc_error(cc_obj my, const char *msg, const char *fileName, int lineno, int argc, cc_arg_t *argv)
+{
+    cc_class_object *cls = ((cc_vars_Root *) my)->isa;
+    const char *name = cls ? cls->name : ((cc_class_object *) my)->name;
+
+    char linestr[12];
+    snprintf(linestr, sizeof(linestr), "%d", lineno);
+
+    cc_arg_t appendArgs[] = {
+        by_str(" (class: "), by_str(name), by_str(", method: "), by_str(msg),
+        by_str(", file: "), by_str(fileName), by_str(", line: "), by_str(linestr), by_str(")")
+    };
+
+    cc_arg_t errArgs[ argc + SNELEMS(appendArgs) ];
+
+    memcpy(errArgs,        argv,       argc * sizeof(cc_arg_t));
+    memcpy(errArgs + argc, appendArgs, sizeof(appendArgs));
+
+    return _cc_send(my, "error", SNELEMS(errArgs), errArgs);
 }

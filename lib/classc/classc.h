@@ -164,8 +164,14 @@ extern cc_arg_t cc_null;
     _cc_send_super(my, msg, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
 })
 
+#define cc_error(...) ({ \
+    cc_arg_t _cc_tmp_args[] = { __VA_ARGS__ }; \
+    _cc_error(my, msg, __FILE__, __LINE__, sizeof(_cc_tmp_args) / sizeof(cc_arg_t), _cc_tmp_args); \
+})
+
 extern cc_arg_t _cc_send      (cc_obj my, const char *msg, int argc, cc_arg_t *argv);
 extern cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
+extern cc_arg_t _cc_error     (cc_obj my, const char *msg, const char *fileName, int lineno, int argc, cc_arg_t *argv);
 
 
 typedef struct _cc_class_object cc_class_object;
