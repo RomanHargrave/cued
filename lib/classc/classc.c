@@ -208,7 +208,7 @@ cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
 }
 
 
-cc_arg_t _cc_error(cc_obj my, const char *msg, const char *fileName, int lineno, int argc, cc_arg_t *argv)
+cc_arg_t _cc_error(cc_obj my, const char *msg, int argc, cc_arg_t *argv, const char *fileName, int lineno)
 {
     cc_class_object *cls = ((cc_vars_Root *) my)->isa;
     const char *name = cls ? cls->name : ((cc_class_object *) my)->name;
