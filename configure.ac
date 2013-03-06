@@ -135,6 +135,15 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <getopt.h>], [struct option o; cons
     AC_MSG_RESULT(no)
 ])
 
+# Check for variable length arrays (missing in Solaris Studio C++ compiler.)
+AC_MSG_CHECKING([for variable length arrays])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [ int a = 5;  int b @<:@ a @:>@; ])], [
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_VAR_ARRAY], [], [Define this if compiler implements variable length arrays])
+], [
+    AC_MSG_RESULT(no)
+])
+
 # Check for PATH_MAX in limits.h.
 AC_MSG_CHECKING([for PATH_MAX in limits.h])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <limits.h>], [int x = PATH_MAX;])], [

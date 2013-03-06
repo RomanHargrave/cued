@@ -521,9 +521,9 @@ int main(int argc, char *argv[])
 
 
     // test error handling
-    //foo = as_obj(cc_msg0(&Root, "new"));
+    foo = as_obj(cc_msg0(&Root, "new"));
     //cc_msg0(foo, "bar");
-    //_cc_send_super(foo, "bar", 0, NULL);
+    _cc_send_super(foo, "bar", 0, NULL);
     
 
     return (EXIT_SUCCESS);

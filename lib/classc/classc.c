@@ -17,6 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_VAR_ARRAY
+#endif
+
 #include "classc.h"
 
 // SNELEMS is the only external dependency of classc
@@ -24,6 +28,10 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#ifndef CUED_HAVE_VAR_ARRAY
+#include <alloca.h>
+#endif
 
 
 const char *cc_type_names[] = {
@@ -221,10 +229,14 @@ cc_arg_t _cc_error(cc_obj my, const char *msg, int argc, cc_arg_t *argv, const c
         by_str(", file: "), by_str(fileName), by_str(", line: "), by_str(linestr), by_str(")")
     };
 
+#ifdef CUED_HAVE_VAR_ARRAY
     cc_arg_t errArgs[ argc + SNELEMS(appendArgs) ];
+#else
+    cc_arg_t *errArgs = (cc_arg_t *) alloca(argc * sizeof(cc_arg_t) + sizeof(appendArgs));
+#endif
 
     memcpy(errArgs,        argv,       argc * sizeof(cc_arg_t));
     memcpy(errArgs + argc, appendArgs, sizeof(appendArgs));
 
-    return _cc_send(my, "error", SNELEMS(errArgs), errArgs);
+    return _cc_send(my, "error", argc + SNELEMS(appendArgs), errArgs);
 }
