@@ -20,7 +20,8 @@
 #ifndef CLASSC_H_INCLUDED
 #define CLASSC_H_INCLUDED
 
-#include <stdlib.h> // ssize_t
+#include <stdlib.h> // abort
+#include <unistd.h> // ssize_t on BSD family
 
 
 typedef void *cc_obj;
