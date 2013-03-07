@@ -43,7 +43,9 @@ typedef enum _cc_type_t {
     cc_type_ull,
     cc_type_c,
     cc_type_f,
-    cc_type_d
+    cc_type_d,
+    cc_type_sst,
+    cc_type_st
 
 } cc_type_t;
 
@@ -70,6 +72,9 @@ typedef struct _cc_arg_t {
 
         float f;
         double d;
+
+        ssize_t sst;
+        size_t st;
     } u;
 
     cc_type_t t;
@@ -103,6 +108,8 @@ extern cc_arg_t cc_null;
 #define by_char(x)      by(c,   (x))
 #define by_float(n)     by(f,   (n))
 #define by_double(n)    by(d,   (n))
+#define by_ssize_t(n)   by(sst, (n))
+#define by_size_t(n)    by(st,  (n))
 
 #define as(x, y) ({ \
     cc_arg_t _cc_tmp_rc = (y); \
@@ -129,6 +136,8 @@ extern cc_arg_t cc_null;
 #define as_char(x)      as(c,   (x))
 #define as_float(n)     as(f,   (n))
 #define as_double(n)    as(d,   (n))
+#define as_ssize_t(n)   as(sst, (n))
+#define as_size_t(n)    as(st,  (n))
 
 #define is(x, y) ((cc_type_##x == (y).t) ? 1 : 0)
 
@@ -148,6 +157,8 @@ extern cc_arg_t cc_null;
 #define is_char(x)      is(c,   (x))
 #define is_float(n)     is(f,   (n))
 #define is_double(n)    is(d,   (n))
+#define is_ssize_t(n)   is(sst, (n))
+#define is_size_t(n)    is(st,  (n))
 
 
 // for compilers that do not support empty arrays (Solaris)

@@ -91,7 +91,7 @@ void unitTestString()
 {
     cc_obj s[5], s2;
     cc_obj t;
-    int i;
+    ssize_t i;
  
     printf("\n\n*** STRING TESTS ***\n");
 
@@ -105,10 +105,10 @@ void unitTestString()
     cc_msg0(s[2], "write");
     printf("\n");
 
-    cc_msg(s[2], "setChar", by_int(1), by_char('b'));
-    printf("char is %c\n", as_char(cc_msg(s[2], "getChar", by_int(1))));
+    cc_msg(s[2], "setChar", by_ssize_t(1), by_char('b'));
+    printf("char is %c\n", as_char(cc_msg(s[2], "getChar", by_ssize_t(1))));
 
-    s[3] = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_int(strlen("bark"))));
+    s[3] = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_ssize_t(strlen("bark"))));
     cc_msg(s[3], "write", by_int(STDOUT_FILENO));
     printf("\n");
 
@@ -117,7 +117,7 @@ void unitTestString()
     cc_msg0(s[3], "writeln");
 
     printf("substring:\n");
-    s[4] = as_obj(cc_msg(s[3], "sub", by_int(1), by_int(4)));
+    s[4] = as_obj(cc_msg(s[3], "sub", by_ssize_t(1), by_ssize_t(4)));
     cc_msg0(s[4], "writeln");
 
     // test compare
@@ -145,46 +145,46 @@ void unitTestString()
 #endif
 
     s2 = as_obj(cc_msg(&FcString, "new", by_str("/foo/bar/")));
-    i = as_int(cc_msg(s2, "findChar", by_char('/')));
-    printf("first index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/')));
+    printf("first index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
     
-    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i + 1)));
-    printf("second index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/'), by_ssize_t(i + 1)));
+    printf("second index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
-    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i)));
-    printf("second index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/'), by_ssize_t(i)));
+    printf("second index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
-    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i + 1)));
-    printf("third index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/'), by_ssize_t(i + 1)));
+    printf("third index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
-    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(i)));
-    printf("third index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
-
-
-    i = as_int(cc_msg(s2, "findCharRev", by_char('/')));
-    printf("last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
-
-    i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i - 1)));
-    printf("second to last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
-
-    i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i)));
-    printf("second to last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
-
-    i = as_int(cc_msg(s2, "findCharRev", by_char('/'), by_int(i - 1)));
-    printf("third to last index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/'), by_ssize_t(i)));
+    printf("third index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
 
-    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(10)));
-    printf("bad index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findCharRev", by_char('/')));
+    printf("last index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
-    i = as_int(cc_msg(s2, "findChar", by_char('/'), by_int(0)));
-    printf("bad index of %s is %d\n", as_str(cc_msg0(s2, "buffer")), i);
+    i = as_ssize_t(cc_msg(s2, "findCharRev", by_char('/'), by_ssize_t(i - 1)));
+    printf("second to last index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
-    i = as_int(cc_msg(s2, "find", by_str("foo")));
-    printf("index of foo is %d\n", i);
+    i = as_ssize_t(cc_msg(s2, "findCharRev", by_char('/'), by_ssize_t(i)));
+    printf("second to last index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
 
-    i = as_int(cc_msg(s2, "find", by_str("this is a test designed")));
-    printf("index of this is a test... is %d\n", i);
+    i = as_ssize_t(cc_msg(s2, "findCharRev", by_char('/'), by_ssize_t(i - 1)));
+    printf("third to last index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
+
+
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/'), by_ssize_t(10)));
+    printf("bad index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
+
+    i = as_ssize_t(cc_msg(s2, "findChar", by_char('/'), by_ssize_t(0)));
+    printf("bad index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
+
+    i = as_ssize_t(cc_msg(s2, "find", by_str("foo")));
+    printf("index of foo is %zd\n", i);
+
+    i = as_ssize_t(cc_msg(s2, "find", by_str("this is a test designed")));
+    printf("index of this is a test... is %zd\n", i);
 
 
     // test error handling

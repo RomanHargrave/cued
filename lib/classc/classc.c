@@ -56,7 +56,10 @@ const char *cc_type_names[] = {
 
     "char",
     "float",
-    "double"
+    "double",
+
+    "ssize_t",
+    "size_t"
 #else
     [cc_type_any] = "any",
 
@@ -78,7 +81,10 @@ const char *cc_type_names[] = {
 
     [cc_type_c]   = "char",
     [cc_type_f]   = "float",
-    [cc_type_d]   = "double"
+    [cc_type_d]   = "double",
+
+    [cc_type_sst] = "ssize_t",
+    [cc_type_st]  = "size_t"
 #endif
 };
 

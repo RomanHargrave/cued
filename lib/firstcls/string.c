@@ -31,7 +31,7 @@ cc_begin_method(FcString, concat)
     const char *str;
     char *buf;
     cc_obj obj;
-    int len = 0;
+    ssize_t len = 0;
 
     if (!strcmp(msg, "init")) {
         cc_msg_super0("init");
@@ -56,7 +56,7 @@ cc_begin_method(FcString, concat)
                     //
                     // passed a length
                     //
-                    len = as_int(argv[1]);
+                    len = as_ssize_t(argv[1]);
                     break;
             }
 
@@ -65,7 +65,7 @@ cc_begin_method(FcString, concat)
             // passed an object that hopefully replies to length and buffer
             //
             obj = as_obj(argv[0]);
-            len = as_int(cc_msg0(obj, "length"));
+            len = as_ssize_t(cc_msg0(obj, "length"));
             str = as_str(cc_msg0(obj, "buffer"));
         } else {
             return cc_error(by_str("invalid type"));
@@ -99,15 +99,15 @@ cc_end_method
 
 
 cc_begin_method(FcString, sub)
-    int begin, end;
+    ssize_t begin, end;
 
     FcCheckArgcRange(1, 2);
-    begin = as_int(argv[0]);
-    end = (argc > 1) ? as_int(argv[1]) : my->length;
+    begin = as_ssize_t(argv[0]);
+    end = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
     if (begin < 1 || begin > my->length || begin > end || end > my->length  || end < 1) {
         return cc_null;
     } else {
-        return cc_msg(my->isa, "new", by_str(&my->buffer[ begin - 1 ]), by_int(end - begin + 1));
+        return cc_msg(my->isa, "new", by_str(&my->buffer[ begin - 1 ]), by_ssize_t(end - begin + 1));
     }
 cc_end_method
 
@@ -118,7 +118,7 @@ cc_end_method
 
 
 cc_begin_method(FcString, length)
-    return by_int(my->length);
+    return by_ssize_t(my->length);
 cc_end_method
 
 
@@ -149,6 +149,8 @@ cc_begin_method(FcString, write)
         if (writeln) {
             fputc('\n', file);
         }
+    } else {
+        return cc_error(by_str("invalid type"));
     }
 
     return by_obj(my);
@@ -177,10 +179,10 @@ cc_end_method
 
 
 cc_begin_method(FcString, getChar)
-    int index;
+    ssize_t index;
 
     FcCheckArgc(1);
-    index = as_int(argv[0]);
+    index = as_ssize_t(argv[0]);
     if (index < 1 || index > my->length) {
         return cc_null;
     }
@@ -190,11 +192,11 @@ cc_end_method
 
 
 cc_begin_method(FcString, setChar)
-    int index;
+    ssize_t index;
     char c;
 
     FcCheckArgc(2);
-    index = as_int(argv[0]);
+    index = as_ssize_t(argv[0]);
     c = as_char(argv[1]);
     if (index < 1 || index > my->length) {
         return cc_null;
@@ -207,37 +209,37 @@ cc_end_method
 
 cc_begin_method(FcString, findChar)
     char *addr;
-    int index, start;
+    ssize_t index, start;
     char c;
 
     FcCheckArgcRange(1, 2);
     c = as_char(argv[0]);
-    start = (argc > 1) ? as_int(argv[1]) : 1;
+    start = (argc > 1) ? as_ssize_t(argv[1]) : 1;
     if (start < 1 || start > my->length) {
         return cc_null;
     }
     addr = (char *) memchr(my->buffer + start - 1, c, my->length);
     index = addr ? ( addr - my->buffer + 1 ) : 0;
 
-    return by_int(index);
+    return by_ssize_t(index);
 cc_end_method
 
 
 cc_begin_method(FcString, findCharRev)
     char *addr;
-    int index, start;
+    ssize_t index, start;
     char c;
 
     FcCheckArgcRange(1, 2);
     c = as_char(argv[0]);
-    start = (argc > 1) ? as_int(argv[1]) : my->length;
+    start = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
     if (start < 1 || start > my->length) {
         return cc_null;
     }
     addr = (char *) memrchr(my->buffer, c, start);
     index = addr ? ( addr - my->buffer + 1 ) : 0;
 
-    return by_int(index);
+    return by_ssize_t(index);
 cc_end_method
 
 
@@ -245,13 +247,13 @@ cc_begin_method(FcString, find)
     cc_obj obj;
     const char *str;
     char *addr;
-    int len, index;
+    ssize_t len, index;
 
     FcCheckArgc(1);
     if (is_obj(argv[0])) {
         obj = as_obj(argv[0]);
         str = as_str(cc_msg0(obj, "buffer"));
-        len = as_int(cc_msg0(obj, "length"));
+        len = as_ssize_t(cc_msg0(obj, "length"));
     } else if (is_str(argv[0])) {
         str = as_str(argv[0]);
         len = strlen(str);
@@ -261,19 +263,19 @@ cc_begin_method(FcString, find)
     addr = (char *) memmem(my->buffer, my->length, str, len);
     index = addr ? ( addr - my->buffer + 1 ) : 0;
 
-    return by_int(index);
+    return by_ssize_t(index);
 cc_end_method
 
 
-// TODO:  setSub and ssize_t for string length?
+// TODO:  setSub and buffer size (plus pre-alloc)
 
 cc_begin_method(FcString, attach)
     char *buf;
-    int length;
+    ssize_t length;
 
     FcCheckArgcRange(1, 2);
     buf = (char *) as_str(argv[0]);
-    length = (argc > 1) ? as_int(argv[1]) : strlen(buf);
+    length = (argc > 1) ? as_ssize_t(argv[1]) : strlen(buf);
     my->buffer = buf;
     my->length = length;
 
