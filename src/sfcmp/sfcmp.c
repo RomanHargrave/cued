@@ -286,7 +286,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     if (   files[0].audioStart != files[0].audioDataStart 
         || files[1].audioStart != files[1].audioDataStart)
     {
-        printf("[0, 0] - (%zd, %zd):  ignored leading silence\n",
+        printf("[0, 0] - (%td, %td):  ignored leading silence\n",
             files[0].audioStart - files[0].audioDataStart,
             files[1].audioStart - files[1].audioDataStart);
     }
@@ -328,7 +328,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
             n = matchStr(mw2, sw1, SFCMP_MIN(e2 - mw2, e1 - sw1));
 
             if (m1 != sw1 || m2 != mw2) {
-                printf("[%zd, %zd] - (%zd, %zd):  did not match [%zd, %zd] bytes\n",
+                printf("[%td, %td] - (%td, %td):  did not match [%td, %td] bytes\n",
                     m1  - files[0].audioDataStart,
                     m2  - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart,
@@ -348,7 +348,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
             //
             if (n == countLeadingZeros(sw1, n, 1)) {
 
-                printf("[%zd, %zd] - (%zd, %zd):  %zd bytes of zeros matched\n",
+                printf("[%td, %td] - (%td, %td):  %zd bytes of zeros matched\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
@@ -364,7 +364,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
 
             } else {
 
-                printf("[%zd, %zd] - (%zd, %zd):  %zd bytes matched\n",
+                printf("[%td, %td] - (%td, %td):  %zd bytes matched\n",
                     sw1 - files[0].audioDataStart,
                     mw2 - files[1].audioDataStart,
                     sw1 - files[0].audioDataStart + n,
@@ -401,7 +401,7 @@ static int cmpSndFiles(sndfile_data *files, int initWindow, int resyncWindow, in
     }
 
     if (m1 != e1 || m2 != e2) {
-        printf("[%zd, %zd] - (%zd, %zd):  did not match [%zd, %zd] bytes\n",
+        printf("[%td, %td] - (%zd, %zd):  did not match [%td, %td] bytes\n",
             m1 - files[0].audioDataStart,
             m2 - files[1].audioDataStart,
             files[0].audioDataBytes - files[0].trailingSilence,
