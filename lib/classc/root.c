@@ -126,7 +126,7 @@ cc_class_object MetaRoot = {
     NULL,
     NULL,
     "MetaRoot",
-    (size_t) -1,
+    -1,
     0,
     NULL
 };

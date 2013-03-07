@@ -20,7 +20,7 @@
 #ifndef CLASSC_H_INCLUDED
 #define CLASSC_H_INCLUDED
 
-#include <stdlib.h> // size_t
+#include <stdlib.h> // ssize_t
 
 
 typedef void *cc_obj;
@@ -190,7 +190,7 @@ extern cc_class_object MetaRoot, Root;
 
 
 typedef struct _cc_method_name cc_method_name;
-extern void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods);
+extern void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *newMethods);
 extern void _cc_free_methods(cc_class_object *cls);
 
 
@@ -229,7 +229,7 @@ cc_class_object Meta##cls = { \
     NULL, \
     &cc_Meta##cls##_isa, \
     "Meta" #cls, \
-    (size_t) -1, \
+    -1, \
     0, \
     NULL \
     };
@@ -279,9 +279,9 @@ struct _cc_class_object {
     const char *name;
 
     // size of an instance of the class
-    size_t size;
+    ssize_t size;
 
-    size_t numMethods;
+    ssize_t numMethods;
 
     // method pointers paired with their names
     cc_method_name *methods;

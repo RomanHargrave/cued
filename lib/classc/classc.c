@@ -106,7 +106,7 @@ static int _cc_compare_names(const cc_method_name *a, const cc_method_name *b)
 }
 
 
-void _cc_add_methods(cc_class_object *cls, size_t numMethods, cc_method_name *newMethods)
+void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *newMethods)
 {
 #if 0 // why optimize this case?
     if (!numMethods) {
