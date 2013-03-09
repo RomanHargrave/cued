@@ -84,6 +84,8 @@ cc_begin_method(FcString, concat)
                     return cc_error(by_str("out of memory allocating string buffer"));
                 }
                 my->bufferSize = total;
+            } else {
+                buf = my->buffer;
             }
             memcpy(buf + my->length, str, len);
 
