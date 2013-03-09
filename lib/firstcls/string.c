@@ -276,6 +276,7 @@ cc_begin_method(FcString, attach)
     FcCheckArgcRange(1, 2);
     buf = (char *) as_str(argv[0]);
     length = (argc > 1) ? as_ssize_t(argv[1]) : strlen(buf);
+    free(my->buffer);
     my->buffer = buf;
     my->length = length;
 
