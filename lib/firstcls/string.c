@@ -51,6 +51,7 @@ cc_begin_method(FcString, concat)
                     //
                     len = strlen(str);
                     break;
+
                 case 2:
                     //
                     // passed a length
