@@ -31,7 +31,7 @@ cc_begin_method(FcString, concat)
     const char *str;
     char *buf;
     cc_obj obj;
-    ssize_t len = 0;
+    ssize_t len, total;
 
     if (!strcmp(msg, "init")) {
         cc_msg_super0("init");
@@ -52,12 +52,14 @@ cc_begin_method(FcString, concat)
                     len = strlen(str);
                     break;
                 case 2:
-                default:
                     //
                     // passed a length
                     //
                     len = as_ssize_t(argv[1]);
                     break;
+
+                default:
+                    return cc_error(by_str("too many arguments"));
             }
 
         } else if (is_obj(argv[0])) {
@@ -75,14 +77,18 @@ cc_begin_method(FcString, concat)
         // copy the source string
         //
         if (len) {
-            buf = (char *) realloc(my->buffer, my->length + len + 1);
-            if (!buf) {
-                return cc_error(by_str("out of memory allocating string buffer"));
+            total = my->length + len + 1;
+            if (total > my->bufferSize) {
+                buf = (char *) realloc(my->buffer, total);
+                if (!buf) {
+                    return cc_error(by_str("out of memory allocating string buffer"));
+                }
+                my->bufferSize = total;
             }
             memcpy(buf + my->length, str, len);
 
-            my->buffer  = buf;
-            my->length += len;
+            my->buffer = buf;
+            my->length = total;
 
             // null terminate
             buf[ my->length ] = 0;
@@ -103,7 +109,7 @@ cc_begin_method(FcString, sub)
 
     FcCheckArgcRange(1, 2);
     begin = as_ssize_t(argv[0]);
-    end = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
+    end   = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
     if (begin < 1 || begin > my->length || begin > end || end > my->length  || end < 1) {
         return cc_null;
     } else {
@@ -197,13 +203,13 @@ cc_begin_method(FcString, setChar)
 
     FcCheckArgc(2);
     index = as_ssize_t(argv[0]);
-    c = as_char(argv[1]);
+    c     = as_char(argv[1]);
     if (index < 1 || index > my->length) {
         return cc_null;
     }
     my->buffer[ index - 1 ] = c;
 
-    return by_ptr(my);
+    return by_obj(my);
 cc_end_method
 
 
@@ -213,7 +219,7 @@ cc_begin_method(FcString, findChar)
     char c;
 
     FcCheckArgcRange(1, 2);
-    c = as_char(argv[0]);
+    c     = as_char(argv[0]);
     start = (argc > 1) ? as_ssize_t(argv[1]) : 1;
     if (start < 1 || start > my->length) {
         return cc_null;
@@ -231,7 +237,7 @@ cc_begin_method(FcString, findCharRev)
     char c;
 
     FcCheckArgcRange(1, 2);
-    c = as_char(argv[0]);
+    c     = as_char(argv[0]);
     start = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
     if (start < 1 || start > my->length) {
         return cc_null;
@@ -267,26 +273,52 @@ cc_begin_method(FcString, find)
 cc_end_method
 
 
-// TODO:  setSub and buffer size (plus pre-alloc)
+// TODO:  setSub
 
 cc_begin_method(FcString, attach)
     char *buf;
-    ssize_t length;
+    ssize_t length, bufferSize;
 
-    FcCheckArgcRange(1, 2);
-    buf = (char *) as_str(argv[0]);
-    length = (argc > 1) ? as_ssize_t(argv[1]) : strlen(buf);
+    FcCheckArgcRange(1, 3);
+
+    buf        = (char *) as_str(argv[0]);
+    length     = (argc > 1) ? as_ssize_t(argv[1]) : strlen(buf);
+    bufferSize = (argc > 2) ? as_ssize_t(argv[2]) : length + 1;
+
     free(my->buffer);
-    my->buffer = buf;
-    my->length = length;
+
+    my->buffer     = buf;
+    my->length     = length;
+    my->bufferSize = bufferSize;
 
     return by_obj(my);
 cc_end_method
 
 
 cc_begin_method(FcString, detach)
-    my->buffer = NULL;
-    my->length = 0;
+    my->buffer     = NULL;
+    my->length     = 0;
+    my->bufferSize = 0;
+
+    return by_obj(my);
+cc_end_method
+
+
+cc_begin_method(FcString, prealloc)
+    char *buffer;
+    ssize_t bufferSize;
+
+    FcCheckArgc(1);
+    bufferSize = as_ssize_t(argv[0]);
+    if (bufferSize < my->length + 1) {
+        return cc_null;
+    }
+    buffer = (char *) realloc(my->buffer, my->bufferSize);
+    if (!buffer) {
+        return cc_error(by_str("out of memory pre-allocating string buffer"));
+    }
+    my->buffer     = buffer;
+    my->bufferSize = bufferSize;
 
     return by_obj(my);
 cc_end_method
@@ -313,4 +345,5 @@ cc_class(FcString,
     cc_method("find",           findFcString),
     cc_method("attach",         attachFcString),
     cc_method("detach",         detachFcString),
+    cc_method("prealloc",       preallocFcString)
     )
