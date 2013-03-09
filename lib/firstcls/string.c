@@ -83,17 +83,15 @@ cc_begin_method(FcString, concat)
                 if (!buf) {
                     return cc_error(by_str("out of memory allocating string buffer"));
                 }
+                my->buffer     = buf;
                 my->bufferSize = total;
-            } else {
-                buf = my->buffer;
             }
-            memcpy(buf + my->length, str, len);
+            memcpy(my->buffer + my->length, str, len);
 
-            my->buffer = buf;
-            my->length = total;
+            my->length += len;
 
             // null terminate
-            buf[ my->length ] = 0;
+            my->buffer[ my->length ] = 0;
         }
     }
 
@@ -180,6 +178,8 @@ cc_begin_method(FcString, compare)
     FcCheckArgc(1);
     obj = as_obj(argv[0]);
     str = as_str(cc_msg0(obj, "buffer"));
+
+    // TODO:  should this use memcmp?
     rc = strcoll(my->buffer, str);
 
     return by_int(rc);
