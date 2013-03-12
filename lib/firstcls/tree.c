@@ -32,9 +32,9 @@
 
 cc_begin_method(FcTree, init)
     cc_msg_super0("init");
+    my->root = &my->sentinel;
     FcCheckArgcRange(0, 1);
     my->cmpMethod = argc ? (FcCompareFn) as_ptr(argv[0]) : FcObjCompare;
-    my->root = &my->sentinel;
     return by_obj(my);
 cc_end_method
 
