@@ -112,7 +112,7 @@ cc_end_method
 
 
 cc_begin_method(FcString, copy)
-    return cc_msg(my->isa, "new", by_obj(my));
+    return cc_msg(my->isa, "new", by_str(my->buffer), by_ssize_t(my->length));
 cc_end_method
 
 
