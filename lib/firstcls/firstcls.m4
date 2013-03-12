@@ -11,10 +11,10 @@ typedef enum _FcEmptyHow {
 } FcEmptyHow;
 
 
-#define FcCheckArgc(n) (((n) == argc) ? cc_null : _FcErrorArgc(my, msg, argc, (n)))
+#define FcCheckArgc(n) ({ if ((n) != argc) { return _FcErrorArgc(my, msg, argc, (n)); } })
 
-#define FcCheckArgcRange(n1, n2) ((argc >= (n1) && argc <= (n2)) ? cc_null : \
-                                  _FcErrorArgc(my, msg, argc, (n1)))
+#define FcCheckArgcRange(n1, n2) ({ if (argc < (n1) || argc > (n2)) { \
+                                        return _FcErrorArgc(my, msg, argc, (n1)); } })
 
 #define _FcErrorArgc(my, msg, argc, minArgc) \
         cc_error(by_str("too "), argc < minArgc ? by_str("few") : by_str("many"), by_str(" arguments"))
