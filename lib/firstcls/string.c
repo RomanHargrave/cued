@@ -31,7 +31,7 @@ cc_begin_method(FcString, concat)
     const char *str;
     char *buf;
     cc_obj obj;
-    ssize_t len, total;
+    ssize_t len, total, pre = 0;
 
     if (!strcmp(msg, "init")) {
         cc_msg_super0("init");
@@ -59,6 +59,14 @@ cc_begin_method(FcString, concat)
                     len = as_ssize_t(argv[1]);
                     break;
 
+                case 3:
+                    //
+                    // also passed an initial buffer size
+                    //
+                    len = as_ssize_t(argv[1]);
+                    pre = as_ssize_t(argv[2]);
+                    break;
+
                 default:
                     return cc_error(by_str("too many arguments"));
             }
@@ -79,6 +87,9 @@ cc_begin_method(FcString, concat)
         //
         if (len) {
             total = my->length + len + 1;
+            if (pre > total) {
+                total = pre;
+            }
             if (total > my->bufferSize) {
                 buf = (char *) realloc(my->buffer, total);
                 if (!buf) {

@@ -228,6 +228,8 @@ cc_arg_t _cc_error(cc_obj my, const char *msg, int argc, cc_arg_t *argv, const c
     const char *name = cls ? cls->name : ((cc_class_object *) my)->name;
 
     char linestr[12];
+
+    // TODO:  snprintf to zero length buffer gives length of buffer required.  string could have initFromInt
     snprintf(linestr, sizeof(linestr), "%d", lineno);
 
     cc_arg_t appendArgs[] = {
