@@ -17,6 +17,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef HAVE_CONFIG_H
+#include "cued_config.h" // CUED_HAVE_MCHECK_H
+#endif
+
 #include "ob.h"
 
 #include "firstcls.h"
@@ -27,6 +31,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef CUED_HAVE_MCHECK_H
+#include <mcheck.h>
+#endif
 
 
 cc_begin_method(Foo, test)
@@ -462,6 +470,10 @@ int main(int argc, char *argv[])
 
     char test[5] = { 't', 'e', 's', 't', 0 };
 
+#ifdef CUED_HAVE_MCHECK_H
+    mtrace();
+#endif
+
     printf("\n*** ELEMENTARY TESTS ***\n");
 
     printf("sizeof(cc_arg_t) == %zu\n", sizeof(cc_arg_t));
@@ -521,10 +533,15 @@ int main(int argc, char *argv[])
 
 
     // test error handling
-    foo = as_obj(cc_msg0(&Root, "new"));
+    //foo = as_obj(cc_msg0(&Root, "new"));
     //cc_msg0(foo, "bar");
-    _cc_send_super(foo, "bar", 0, NULL);
-    
+    //_cc_send_super(foo, "bar", 0, NULL);
+
+#ifdef CUED_HAVE_MCHECK_H
+    // stop tracing here in order to avoid seeing the unbalanced free of the methods
+    // (class.c line 136: _cc_free_methods)
+    muntrace();
+#endif
 
     return (EXIT_SUCCESS);
 }
