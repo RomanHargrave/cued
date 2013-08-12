@@ -188,6 +188,7 @@ extern cc_arg_t _cc_error     (cc_obj my, const char *msg, int argc, cc_arg_t *a
 
 typedef struct _cc_class_object cc_class_object;
 extern cc_class_object MetaRoot, Root;
+extern cc_class_object MetaAlloc, Alloc;
 
 
 typedef struct _cc_method_name cc_method_name;
