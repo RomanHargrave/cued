@@ -62,6 +62,7 @@ cc_end_method
 
 // TODO:  chicken and egg problem here...  Root will call MetaAlloc:realloc to allocate the method table and sort it
 // will have to manually sort it and cannot use cc_add_methods b/c it expects realloc table
+//  OR, add a flags field to class to indicate whether methods are statically or dynamically allocated
 //
 // need to make _cc_compare_names extern
 //
