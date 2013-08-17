@@ -19,11 +19,16 @@
 
 #include "classc.h"
 
+// SNELEMS is the only external dependency of classc
+#include <macros.h>
+
 #include <string.h>
 #include <stdio.h>
 
 
 // TODO:  error handling for arguments...  borrow from firstcls?
+//
+// TODO:  move error handling for malloc failure to here?
 //
 
 
@@ -32,14 +37,6 @@ cc_begin_meta_method(MetaAlloc, malloc)
         return cc_error(by_str("too few arguments"));
     }
     return by_ptr(malloc(as_size_t(argv[0])));
-cc_end_method
-
-
-cc_begin_meta_method(MetaAlloc, calloc)
-    if (argc < 2) {
-        return cc_error(by_str("too few arguments"));
-    }
-    return by_ptr(calloc(as_size_t(argv[0]), as_size_t(argv[1])));
 cc_end_method
 
 
@@ -60,42 +57,23 @@ cc_begin_meta_method(MetaAlloc, free)
 cc_end_method
 
 
-// TODO:  chicken and egg problem here...  Root will call MetaAlloc:realloc to allocate the method table and sort it
-// will have to manually sort it and cannot use cc_add_methods b/c it expects realloc table
-//  OR, add a flags field to class to indicate whether methods are statically or dynamically allocated
+// this has to be sorted manually since _cc_add_methods() calls reallocMetaAlloc() and there is no guarantee
+// that the constructor for MetaAllocMethods[] will run before cc_category() for another class
 //
-// need to make _cc_compare_names extern
-//
-// constructor will sort table and assign to class
-//
-
-//    qsort(cls->methods, cls->numMethods, sizeof(cc_method_name), (int (*)(const void *, const void *))
-//          _cc_compare_names);
-
-// static void prefix##Constructor(void) __attribute__((constructor)); \
-// static void prefix##Constructor(void) \
-// { \
-//    cc_method_name prefix##Methods[] = { \
-//        __VA_ARGS__ \
-//    }; \
-//    _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
-// }
-
-
-cc_construct_methods(MetaAlloc, MetaAlloc, 
-    cc_method("malloc",     mallocMetaAlloc),
-    cc_method("calloc",     callocMetaAlloc),
-    cc_method("realloc",    reallocMetaAlloc),
+static cc_method_name MetaAllocMethods[] = {
     cc_method("free",       freeMetaAlloc),
-    )
+    cc_method("malloc",     mallocMetaAlloc),
+    cc_method("realloc",    reallocMetaAlloc)
+};
 
 cc_class_object MetaAlloc = {
     NULL,
     &MetaRoot,
     "MetaAlloc",
     -1,
-    0,
-    NULL
+    _CC_FLAG_STATIC_METHODS,
+    SNELEMS(MetaAllocMethods),
+    MetaAllocMethods
 };
 
 cc_class_object Alloc = {
@@ -103,6 +81,7 @@ cc_class_object Alloc = {
     NULL,
     "Alloc",
     sizeof(cc_vars_Root),
+    0,
     0,
     NULL
 };

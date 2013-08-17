@@ -41,7 +41,7 @@ static inline FcListNode *insertBefore(FcListNode *next, cc_arg_t item)
 {
     FcListNode *node, *prev;
 
-    node = (FcListNode *) malloc(sizeof(FcListNode));
+    node = (FcListNode *) as_ptr(cc_msg(&Alloc, "malloc", by_size_t(sizeof(FcListNode))));
     if (!node) {
         return NULL;
     }
@@ -64,7 +64,7 @@ static inline FcListNode *insertAfter(FcListNode *prev, cc_arg_t item)
 {
     FcListNode *node, *next;
 
-    node = (FcListNode *) malloc(sizeof(FcListNode));
+    node = (FcListNode *) as_ptr(cc_msg(&Alloc, "malloc", by_size_t(sizeof(FcListNode))));
     if (!node) {
         return NULL;
     }
@@ -119,7 +119,7 @@ static inline void removeNode(cc_vars_FcList *my, FcListNode *node)
     prev->next = next;
 
     if (&my->head != node) {
-        free(node);
+        cc_msg(&Alloc, "free", by_ptr(node));
     } else {
         // this does not have to be fatal:  could comment these lines and continue
         const char *msg = "unknown";
@@ -165,7 +165,7 @@ cc_begin_method(FcList, empty)
                 free(as_ptr(curr->item));
                 break;
         }
-        free(curr);
+        cc_msg(&Alloc, "free", by_ptr(curr));
     }
     return cc_msg0(my, "init");
 cc_end_method

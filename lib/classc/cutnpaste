@@ -1,3 +1,11 @@
+cc_begin_meta_method(MetaAlloc, calloc)
+    if (argc < 2) {
+        return cc_error(by_str("too few arguments"));
+    }
+    return by_ptr(calloc(as_size_t(argv[0]), as_size_t(argv[1])));
+cc_end_method
+
+
 // cannot specify in C++ that the function should be inline for this module and extern in other modules
 // (although one can make an extern function as a wrapper that calls the inline version of the function)
 //

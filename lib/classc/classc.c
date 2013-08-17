@@ -106,7 +106,7 @@ static int _cc_compare_names(const cc_method_name *a, const cc_method_name *b)
 }
 
 
-void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *newMethods)
+static void _cc_realloc_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *newMethods)
 {
 #if 0 // why optimize this case?
     if (!numMethods) {
@@ -114,8 +114,7 @@ void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *n
     }
 #endif
 
-    cls->methods = (cc_method_name *)
-        realloc(cls->methods, (cls->numMethods + numMethods) * sizeof(cc_method_name));
+    cls->methods = (cc_method_name *) as_ptr(cc_msg(&Alloc, "realloc", by_ptr(cls->methods), by_size_t((cls->numMethods + numMethods) * sizeof(cc_method_name))));
     if (!cls->methods) {
         fprintf(stderr, "fatal:  out of memory adding methods for class \"%s\"\n", cls->name);
         abort();
@@ -124,6 +123,29 @@ void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *n
     memcpy(&cls->methods[cls->numMethods], newMethods, numMethods * sizeof(cc_method_name));
 
     cls->numMethods += numMethods;
+}
+
+
+void _cc_add_methods(cc_class_object *cls, ssize_t newNumMethods, cc_method_name *newMethods)
+{
+    cc_method_name *oldMethods;
+    ssize_t oldNumMethods;
+
+    if (!cls->methods) {
+        SETF(_CC_FLAG_STATIC_METHODS, cls->flags);
+        cls->methods     = newMethods;
+        cls->numMethods  = newNumMethods;
+    } else {
+        if (TSTF(_CC_FLAG_STATIC_METHODS, cls->flags)) {
+            CLRF(_CC_FLAG_STATIC_METHODS, cls->flags);
+            oldMethods    = cls->methods;
+            oldNumMethods = cls->numMethods;
+            cls->methods = NULL;
+            cls->numMethods = 0;
+            _cc_realloc_methods(cls, oldNumMethods, oldMethods);
+        }
+        _cc_realloc_methods(cls, newNumMethods, newMethods);
+    }
 
     qsort(cls->methods, cls->numMethods, sizeof(cc_method_name), (int (*)(const void *, const void *))
           _cc_compare_names);
@@ -132,7 +154,9 @@ void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *n
 
 void _cc_free_methods(cc_class_object *cls)
 {
-    free(cls->methods);
+    if (!(cls->flags & _CC_FLAG_STATIC_METHODS)) {
+        cc_msg(&Alloc, "free", by_ptr(cls->methods));
+    }
     cls->methods = NULL;
 }
 

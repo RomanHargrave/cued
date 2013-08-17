@@ -200,7 +200,7 @@ extern void _cc_free_methods(cc_class_object *cls);
 static void prefix##Constructor(void) __attribute__((constructor)); \
 static void prefix##Constructor(void) \
 { \
-    cc_method_name prefix##Methods[] = { \
+    static cc_method_name prefix##Methods[] = { \
         __VA_ARGS__ \
     }; \
     _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
@@ -222,6 +222,7 @@ cc_class_object cls = { \
     #cls, \
     sizeof(cc_vars_##cls), \
     0, \
+    0, \
     NULL \
     };
 
@@ -232,6 +233,7 @@ cc_class_object Meta##cls = { \
     &cc_Meta##cls##_isa, \
     "Meta" #cls, \
     -1, \
+    0, \
     0, \
     NULL \
     };
@@ -283,11 +285,15 @@ struct _cc_class_object {
     // size of an instance of the class
     ssize_t size;
 
+    int flags;
+
     ssize_t numMethods;
 
     // method pointers paired with their names
     cc_method_name *methods;
 };
+
+#define _CC_FLAG_STATIC_METHODS     0x00000001
 
 typedef struct _cc_vars_Root {
 
