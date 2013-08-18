@@ -67,14 +67,5 @@ _cc_class_object_with_methods(Alloc, _CC_PRIORITY_ALLOC, &MetaRoot,
     cc_method("realloc",    reallocMetaAlloc)
     )
 
-// what does bsearch() do if the array to search is NULL as is the number of elements?
-// perhaps &Root should not be specified here
-cc_class_object Alloc = {
-    &MetaAlloc,
-    &Root,
-    "Alloc",
-    sizeof(cc_vars_Root),
-    0,
-    0,
-    NULL
-};
+#define cc_vars_Alloc cc_vars_Root
+_cc_class_no_methods(Alloc, &Root)
