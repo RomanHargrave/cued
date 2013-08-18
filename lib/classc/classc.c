@@ -138,9 +138,9 @@ void _cc_add_methods(cc_class_object *cls, ssize_t newNumMethods, cc_method_name
     } else {
         if (TSTF(_CC_FLAG_STATIC_METHODS, cls->flags)) {
             CLRF(_CC_FLAG_STATIC_METHODS, cls->flags);
-            oldMethods    = cls->methods;
-            oldNumMethods = cls->numMethods;
-            cls->methods = NULL;
+            oldMethods      = cls->methods;
+            oldNumMethods   = cls->numMethods;
+            cls->methods    = NULL;
             cls->numMethods = 0;
             _cc_realloc_methods(cls, oldNumMethods, oldMethods);
         }
@@ -156,8 +156,11 @@ void _cc_free_methods(cc_class_object *cls)
 {
     if (!(cls->flags & _CC_FLAG_STATIC_METHODS)) {
         cc_msg(&Alloc, "free", by_ptr(cls->methods));
+    } else {
+        CLRF(_CC_FLAG_STATIC_METHODS, cls->flags);
     }
-    cls->methods = NULL;
+    cls->methods    = NULL;
+    cls->numMethods = 0;
 }
 
 

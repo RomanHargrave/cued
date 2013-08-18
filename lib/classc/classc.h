@@ -1,7 +1,7 @@
 //
 // classc.h
 //
-// Copyright (C) 2008-2012 Robert William Fuller <hydrologiccycle@gmail.com>
+// Copyright (C) 2008-2013 Robert William Fuller <hydrologiccycle@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -196,8 +196,15 @@ extern void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_
 extern void _cc_free_methods(cc_class_object *cls);
 
 
-#define cc_construct_methods(cls, prefix, ...) \
-static void prefix##Constructor(void) __attribute__((constructor)); \
+#define _CC_PRIORITY_ALLOC      110
+#define _CC_PRIORITY_CLASS      120
+#define _CC_PRIORITY_CATEGORY   130
+
+// TODO:  implement interposing for overriding Alloc class
+#define _CC_PRIORITY_INTERPOSE  140
+
+#define _cc_construct_methods(cls, prefix, priority, ...) \
+static void prefix##Constructor(void) __attribute__((constructor(priority))); \
 static void prefix##Constructor(void) \
 { \
     static cc_method_name prefix##Methods[] = { \
@@ -206,12 +213,17 @@ static void prefix##Constructor(void) \
     _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
 }
 
-#define cc_destruct_methods(cls) \
-static void cls##Destructor(void) __attribute__((destructor)); \
-static void cls##Destructor(void) \
+#define cc_construct_methods(cls, prefix, ...) _cc_construct_methods(cls, prefix, _CC_PRIORITY_CLASS, __VA_ARGS__)
+
+#define _cc_destruct_methods(cls, prefix, priority) \
+static void prefix##Destructor(void) __attribute__((destructor(priority))); \
+static void prefix##Destructor(void) \
 { \
     _cc_free_methods(&cls); \
 }
+
+#define cc_destruct_methods(cls) _cc_destruct_methods(cls, cls, _CC_PRIORITY_CLASS)
+
 
 #define cc_class(cls, ...) \
 cc_construct_methods(cls, cls, __VA_ARGS__) \
@@ -242,8 +254,11 @@ cc_class_object Meta##cls = { \
 cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
 cc_class_object(cls)
 
-#define cc_category(cls, cat, ...) \
-cc_construct_methods(cls, cls##cat, __VA_ARGS__)
+#define _cc_category(cls, prefix, priority, ...) \
+_cc_construct_methods(cls, prefix, priority, __VA_ARGS__) \
+_cc_destruct_methods(cls, prefix, priority)
+
+#define cc_category(cls, cat, ...) _cc_category(cls, cls##cat, _CC_PRIORITY_CATEGORY, __VA_ARGS__)
 
 #define cc_method(name, function) { name, (cc_method_fp) function }
 

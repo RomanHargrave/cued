@@ -1,7 +1,7 @@
 //
 // root.c
 //
-// Copyright (C) 2008-2012 Robert William Fuller <hydrologiccycle@gmail.com>
+// Copyright (C) 2008-2013 Robert William Fuller <hydrologiccycle@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -114,13 +114,12 @@ cc_begin_method(Root, error)
 cc_end_method
 
 
-cc_construct_methods(MetaRoot, MetaRoot, 
+_cc_category(MetaRoot, MetaRoot, _CC_PRIORITY_CLASS,
     cc_method("new",        newMetaRoot),
     cc_method("alloc",      allocMetaRoot),
     cc_method("initVector", initVectorMetaRoot),
     cc_method("error",      errorRoot),
     )
-cc_destruct_methods(MetaRoot)
 
 cc_class_object MetaRoot = {
     NULL,
@@ -133,13 +132,12 @@ cc_class_object MetaRoot = {
 };
 
 
-cc_construct_methods(Root, Root,
+_cc_category(Root, Root, _CC_PRIORITY_CLASS,
     cc_method("init",  initRoot),
     cc_method("free",  freeRoot),
     cc_method("copy",  copyRoot),
     cc_method("error", errorRoot),
     )
-cc_destruct_methods(Root)
 
 cc_class_object Root = {
     &MetaRoot,

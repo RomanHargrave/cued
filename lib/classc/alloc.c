@@ -57,28 +57,31 @@ cc_begin_meta_method(MetaAlloc, free)
 cc_end_method
 
 
-// this has to be sorted manually since _cc_add_methods() calls reallocMetaAlloc() and there is no guarantee
-// that the constructor for MetaAllocMethods[] will run before cc_category() for another class
+// this has a lower priority since _cc_add_methods() calls reallocMetaAlloc();  otherwise,
+// there would be no guarantee that the constructor for MetaAllocMethods[] would run
+// before cc_category() for another class
 //
-static cc_method_name MetaAllocMethods[] = {
-    cc_method("free",       freeMetaAlloc),
+_cc_category(MetaAlloc, MetaAlloc, _CC_PRIORITY_ALLOC,
     cc_method("malloc",     mallocMetaAlloc),
+    cc_method("free",       freeMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)
-};
+    )
 
 cc_class_object MetaAlloc = {
     NULL,
     &MetaRoot,
     "MetaAlloc",
     -1,
-    _CC_FLAG_STATIC_METHODS,
-    SNELEMS(MetaAllocMethods),
-    MetaAllocMethods
+    0,
+    0,
+    NULL
 };
 
+// what does bsearch() do if the array to search is NULL as is the number of elements?
+// perhaps &Root should not be specified here
 cc_class_object Alloc = {
     &MetaAlloc,
-    NULL,
+    &Root,
     "Alloc",
     sizeof(cc_vars_Root),
     0,
