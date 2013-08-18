@@ -61,21 +61,12 @@ cc_end_method
 // there would be no guarantee that the constructor for MetaAllocMethods[] would run
 // before cc_category() for another class
 //
-_cc_category(MetaAlloc, MetaAlloc, _CC_PRIORITY_ALLOC,
+#define cc_MetaAlloc_isa MetaRoot
+_cc_class_object_with_methods(Alloc, _CC_PRIORITY_ALLOC,
     cc_method("malloc",     mallocMetaAlloc),
     cc_method("free",       freeMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)
     )
-
-cc_class_object MetaAlloc = {
-    NULL,
-    &MetaRoot,
-    "MetaAlloc",
-    -1,
-    0,
-    0,
-    NULL
-};
 
 // what does bsearch() do if the array to search is NULL as is the number of elements?
 // perhaps &Root should not be specified here

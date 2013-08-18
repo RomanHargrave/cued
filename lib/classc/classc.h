@@ -213,8 +213,6 @@ static void prefix##Constructor(void) \
     _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
 }
 
-#define cc_construct_methods(cls, prefix, ...) _cc_construct_methods(cls, prefix, _CC_PRIORITY_CLASS, __VA_ARGS__)
-
 #define _cc_destruct_methods(cls, prefix, priority) \
 static void prefix##Destructor(void) __attribute__((destructor(priority))); \
 static void prefix##Destructor(void) \
@@ -222,12 +220,10 @@ static void prefix##Destructor(void) \
     _cc_free_methods(&cls); \
 }
 
-#define cc_destruct_methods(cls) _cc_destruct_methods(cls, cls, _CC_PRIORITY_CLASS)
-
 
 #define cc_class(cls, ...) \
-cc_construct_methods(cls, cls, __VA_ARGS__) \
-cc_destruct_methods(cls) \
+_cc_construct_methods(cls, cls, _CC_PRIORITY_CLASS, __VA_ARGS__) \
+_cc_destruct_methods (cls, cls, _CC_PRIORITY_CLASS) \
 cc_class_object cls = { \
     &Meta##cls, \
     &cc_##cls##_isa, \
@@ -239,7 +235,6 @@ cc_class_object cls = { \
     };
 
 #define cc_class_object(cls) \
-cc_destruct_methods(Meta##cls) \
 cc_class_object Meta##cls = { \
     NULL, \
     &cc_Meta##cls##_isa, \
@@ -250,9 +245,12 @@ cc_class_object Meta##cls = { \
     NULL \
     };
 
-#define cc_class_object_with_methods(cls, ...) \
-cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
+#define _cc_class_object_with_methods(cls, priority, ...) \
+_cc_construct_methods(Meta##cls, Meta##cls, priority, __VA_ARGS__) \
+_cc_destruct_methods (Meta##cls, Meta##cls, priority) \
 cc_class_object(cls)
+
+#define cc_class_object_with_methods(cls, ...) _cc_class_object_with_methods(cls, _CC_PRIORITY_CLASS, __VA_ARGS__)
 
 #define _cc_category(cls, prefix, priority, ...) \
 _cc_construct_methods(cls, prefix, priority, __VA_ARGS__) \
