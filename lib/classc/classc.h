@@ -192,16 +192,27 @@ extern cc_class_object MetaAlloc, Alloc;
 
 
 typedef struct _cc_method_name cc_method_name;
-extern void _cc_add_methods(cc_class_object *cls, ssize_t numMethods, cc_method_name *newMethods);
+extern void _cc_add_methods (cc_class_object *cls, ssize_t numMethods, cc_method_name *newMethods);
 extern void _cc_free_methods(cc_class_object *cls);
 
 
 #define _CC_PRIORITY_ALLOC      110
-#define _CC_PRIORITY_CLASS      120
-#define _CC_PRIORITY_CATEGORY   130
+#define _CC_PRIORITY_INT_ALLOC  120
+#define _CC_PRIORITY_CLASS      130
+#define _CC_PRIORITY_CATEGORY   140
+#define _CC_PRIORITY_INTERPOSE  150
 
-// TODO:  implement interposing for overriding Alloc class
-#define _CC_PRIORITY_INTERPOSE  140
+#define _cc_interpose(poser, deposed, priority) \
+static void Interpose##poser(void) __attribute__((constructor(priority))); \
+static void Interpose##poser(void) \
+{ \
+    cc_class_object saved; \
+    saved   = deposed; \
+    deposed = poser; \
+    poser   = saved; \
+}
+
+#define cc_interpose(poser, deposed) _cc_interpose(poser, deposed, _CC_PRIORITY_INTERPOSE)
 
 #define _cc_construct_methods(cls, prefix, priority, ...) \
 static void prefix##Constructor(void) __attribute__((constructor(priority))); \
@@ -262,7 +273,7 @@ _cc_class_object(cls, supercls)
 #define cc_class_object_with_methods(cls, ...) \
        _cc_class_object_with_methods(cls, _CC_PRIORITY_CLASS, &cc_Meta##cls##_isa, __VA_ARGS__)
 
-#define _cc_category(cls, prefix, priority, ...) \
+#define  _cc_category(cls, prefix, priority, ...) \
 _cc_construct_methods(cls, prefix, priority, __VA_ARGS__) \
 _cc_destruct_methods (cls, prefix, priority)
 

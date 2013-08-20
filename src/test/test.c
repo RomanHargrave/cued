@@ -37,6 +37,44 @@
 #endif
 
 
+cc_class_object MetaNoisyAlloc, NoisyAlloc;
+
+cc_begin_meta_method(MetaAlloc, malloc)
+    if (argc < 1) {
+        return cc_error(by_str("too few arguments"));
+    }
+    printf("noisy malloc\n");
+    return _cc_send_super(my, "malloc", argc, argv);
+cc_end_method
+
+cc_begin_meta_method(MetaAlloc, realloc)
+    if (argc < 2) {
+        return cc_error(by_str("too few arguments"));
+    }
+    printf("noisy realloc\n");
+    return _cc_send_super(my, "realloc", argc, argv);
+cc_end_method
+
+cc_begin_meta_method(MetaAlloc, free)
+    if (argc < 1) {
+        return cc_error(by_str("too few arguments"));
+    }
+    printf("noisy free\n");
+    return _cc_send_super(my, "free", argc, argv);
+cc_end_method
+
+_cc_class_object_with_methods(NoisyAlloc, _CC_PRIORITY_ALLOC, &MetaAlloc,
+    cc_method("malloc",     mallocMetaAlloc),
+    cc_method("free",       freeMetaAlloc),
+    cc_method("realloc",    reallocMetaAlloc)
+    )
+
+#define cc_vars_NoisyAlloc cc_vars_Root
+_cc_class_no_methods(NoisyAlloc, &Alloc)
+
+_cc_interpose(NoisyAlloc, Alloc, _CC_PRIORITY_INT_ALLOC)
+
+
 cc_begin_method(Foo, test)
     int i;
     printf("args: ");
