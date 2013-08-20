@@ -246,9 +246,9 @@ cc_class_object cls = { \
 #define cc_class_no_methods(cls) _cc_class_no_methods(cls, &cc_##cls##_isa)
 
 #define _cc_class(cls, priority, supercls, ...) \
+_cc_class_no_methods (cls, supercls) \
 _cc_construct_methods(cls, cls, priority, __VA_ARGS__) \
-_cc_destruct_methods (cls, cls, priority) \
-_cc_class_no_methods (cls, supercls)
+_cc_destruct_methods (cls, cls, priority)
 
 #define cc_class(cls, ...) _cc_class(cls, _CC_PRIORITY_CLASS, &cc_##cls##_isa, __VA_ARGS__)
 
@@ -266,9 +266,9 @@ cc_class_object Meta##cls = { \
 #define cc_class_object(cls) _cc_class_object(cls, &cc_Meta##cls##_isa)
 
 #define _cc_class_object_with_methods(cls, priority, supercls, ...) \
+_cc_class_object(cls, supercls) \
 _cc_construct_methods(Meta##cls, Meta##cls, priority, __VA_ARGS__) \
-_cc_destruct_methods (Meta##cls, Meta##cls, priority) \
-_cc_class_object(cls, supercls)
+_cc_destruct_methods (Meta##cls, Meta##cls, priority)
 
 #define cc_class_object_with_methods(cls, ...) \
        _cc_class_object_with_methods(cls, _CC_PRIORITY_CLASS, &cc_Meta##cls##_isa, __VA_ARGS__)

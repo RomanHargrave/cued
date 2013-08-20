@@ -37,9 +37,6 @@
 #endif
 
 
-// TODO:  do I remember how to properly forward declare?
-extern cc_class_object MetaNoisyAlloc, NoisyAlloc;
-
 cc_begin_meta_method(MetaAlloc, malloc)
     if (argc < 1) {
         return cc_error(by_str("too few arguments"));
