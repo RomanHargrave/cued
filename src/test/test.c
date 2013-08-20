@@ -37,7 +37,8 @@
 #endif
 
 
-cc_class_object MetaNoisyAlloc, NoisyAlloc;
+// TODO:  do I remember how to properly forward declare?
+extern cc_class_object MetaNoisyAlloc, NoisyAlloc;
 
 cc_begin_meta_method(MetaAlloc, malloc)
     if (argc < 1) {
