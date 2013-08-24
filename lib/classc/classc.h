@@ -241,7 +241,8 @@ cc_class_object cls = { \
     0, \
     0, \
     NULL \
-    };
+    }; \
+cc_class_object *cls##ptr = &cls;
 
 #define cc_class_no_methods(cls) _cc_class_no_methods(cls, &cc_##cls##_isa)
 
@@ -261,7 +262,8 @@ cc_class_object Meta##cls = { \
     0, \
     0, \
     NULL \
-    };
+    }; \
+cc_class_object *Meta##cls##ptr = &Meta##cls;
 
 #define cc_class_object(cls) _cc_class_object(cls, &cc_Meta##cls##_isa)
 
