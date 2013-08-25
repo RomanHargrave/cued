@@ -64,7 +64,7 @@ static void FcTreeEmpty(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
             free(as_ptr(node->item));
             break;
     }
-    cc_msg(&Alloc, "free", by_ptr(node));
+    cc_msg(Alloc, "free", by_ptr(node));
 }
 
 
@@ -274,7 +274,7 @@ cc_end_method
 
 
 cc_begin_method(FcTree, cursor)
-    return cc_msg(&FcTreeCursor, "new", by_obj(my));
+    return cc_msg(FcTreeCursor, "new", by_obj(my));
 cc_end_method
 
 
@@ -422,14 +422,14 @@ cc_begin_method(FcTree, insert)
     FcTreeNode *newSubtree;
     FcTreeNode *subtree = &my->sentinel;
     for (int i = 0;  i < argc;  ++i) {
-        newSubtree = (FcTreeNode *) as_ptr(cc_msg(&Alloc, "malloc", by_size_t(sizeof(FcTreeNode))));
+        newSubtree = (FcTreeNode *) as_ptr(cc_msg(Alloc, "malloc", by_size_t(sizeof(FcTreeNode))));
         if (!newSubtree) {
             return cc_error(by_str("out of memory allocating tree node"));
         }
 
         subtree = TreeInsert(my, argv[i], newSubtree);
         if (subtree != newSubtree) {
-            cc_msg(&Alloc, "free", by_ptr(newSubtree));
+            cc_msg(Alloc, "free", by_ptr(newSubtree));
         }
     }
     return subtree->item;
@@ -565,7 +565,7 @@ cc_begin_method(FcTree, remove)
             // consequently, a different node may be removed from the tree
             //
             node = TreeRemoveNode(my, node);
-            cc_msg(&Alloc, "free", by_ptr(node));
+            cc_msg(Alloc, "free", by_ptr(node));
         }
     }
     return rc;

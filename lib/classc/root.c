@@ -34,7 +34,7 @@ cc_end_method
 
 
 cc_begin_meta_method(MetaRoot, alloc)
-    cc_vars_Root *obj = (cc_vars_Root *) as_ptr(cc_msg(&Alloc, "malloc", by_size_t(my->size)));
+    cc_vars_Root *obj = (cc_vars_Root *) as_ptr(cc_msg(Alloc, "malloc", by_size_t(my->size)));
     if (obj) {
         obj->isa = my;
         return by_obj(obj);
@@ -88,7 +88,7 @@ cc_end_method
 
 
 cc_begin_method(Root, free)
-    cc_msg(&Alloc, "free", by_ptr(my));
+    cc_msg(Alloc, "free", by_ptr(my));
     return cc_null;
 cc_end_method
 

@@ -114,7 +114,7 @@ static void _cc_realloc_methods(cc_class_object *cls, ssize_t numMethods, cc_met
     }
 #endif
 
-    cls->methods = (cc_method_name *) as_ptr(cc_msg(&Alloc, "realloc", by_ptr(cls->methods), by_size_t((cls->numMethods + numMethods) * sizeof(cc_method_name))));
+    cls->methods = (cc_method_name *) as_ptr(cc_msg(Alloc, "realloc", by_ptr(cls->methods), by_size_t((cls->numMethods + numMethods) * sizeof(cc_method_name))));
     if (!cls->methods) {
         fprintf(stderr, "fatal:  out of memory adding methods for class \"%s\"\n", cls->name);
         abort();
@@ -155,7 +155,7 @@ void _cc_add_methods(cc_class_object *cls, ssize_t newNumMethods, cc_method_name
 void _cc_free_methods(cc_class_object *cls)
 {
     if (!(cls->flags & _CC_FLAG_STATIC_METHODS)) {
-        cc_msg(&Alloc, "free", by_ptr(cls->methods));
+        cc_msg(Alloc, "free", by_ptr(cls->methods));
     } else {
         CLRF(_CC_FLAG_STATIC_METHODS, cls->flags);
     }

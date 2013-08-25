@@ -61,14 +61,14 @@ cc_begin_meta_method(MetaAlloc, free)
     return _cc_send_super(my, "free", argc, argv);
 cc_end_method
 
-_cc_class_object_with_methods(NoisyAlloc, _CC_PRIORITY_ALLOC, &MetaAlloc,
+_cc_class_object_with_methods(NoisyAlloc, _CC_PRIORITY_ALLOC, &MetaAllocObj,
     cc_method("malloc",     mallocMetaAlloc),
     cc_method("free",       freeMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)
     )
 
 #define cc_vars_NoisyAlloc cc_vars_Root
-_cc_class_no_methods(NoisyAlloc, &Alloc)
+_cc_class_no_methods(NoisyAlloc, &AllocObj)
 
 _cc_interpose(NoisyAlloc, Alloc, _CC_PRIORITY_INT_ALLOC)
 
@@ -139,20 +139,20 @@ void unitTestString()
  
     printf("\n\n*** STRING TESTS ***\n");
 
-    s[0] = as_obj(cc_msg(&FcString, "new", by_str("foo")));
+    s[0] = as_obj(cc_msg(FcString, "new", by_str("foo")));
     cc_msg0(s[0], "writeln");
 
     s[1] = as_obj(cc_msg0(s[0], "copy"));
     cc_msg(s[1], "writeln", by_ptr(stdout));
 
-    s[2] = as_obj(cc_msg(&FcString, "new", by_obj(s[0])));
+    s[2] = as_obj(cc_msg(FcString, "new", by_obj(s[0])));
     cc_msg0(s[2], "write");
     printf("\n");
 
     cc_msg(s[2], "setChar", by_ssize_t(1), by_char('b'));
     printf("char is %c\n", as_char(cc_msg(s[2], "getChar", by_ssize_t(1))));
 
-    s[3] = as_obj(cc_msg(&FcString, "new", by_str("bark"), by_ssize_t(strlen("bark"))));
+    s[3] = as_obj(cc_msg(FcString, "new", by_str("bark"), by_ssize_t(strlen("bark"))));
     cc_msg(s[3], "write", by_int(STDOUT_FILENO));
     printf("\n");
 
@@ -165,7 +165,7 @@ void unitTestString()
     cc_msg0(s[4], "writeln");
 
     // test compare
-    t = as_obj(cc_msg0(&FcTree, "new"));
+    t = as_obj(cc_msg0(FcTree, "new"));
 
     cc_msg(t, "insert", by_obj(s[0]), by_obj(s[1]), by_obj(s[2]), by_obj(s[3]), by_obj(s[4]));
     //_cc_send(t, "insert", SNELEMS(s), s);
@@ -188,7 +188,7 @@ void unitTestString()
     }
 #endif
 
-    s2 = as_obj(cc_msg(&FcString, "new", by_str("/foo/bar/")));
+    s2 = as_obj(cc_msg(FcString, "new", by_str("/foo/bar/")));
     i = as_ssize_t(cc_msg(s2, "findChar", by_char('/')));
     printf("first index of %s is %zd\n", as_str(cc_msg0(s2, "buffer")), i);
     
@@ -277,10 +277,10 @@ void unitTestTree()
 
 
     // vector init
-    cc_msg(&Foo, "initVector", by_ptr(fooVector), by_int(SNELEMS(fooVector)));
+    cc_msg(Foo, "initVector", by_ptr(fooVector), by_int(SNELEMS(fooVector)));
     //cc_msg(&fooVector[4], "test", by_int(5));
 
-    t = as_obj(cc_msg0(&FcTree, "new"));
+    t = as_obj(cc_msg0(FcTree, "new"));
     for (i = 0;  i < SNELEMS(fooVector);  ++i) {
         fooVector[i].bar = i;
         cc_msg(t, "insert", by_obj(&fooVector[i]));
@@ -290,7 +290,7 @@ void unitTestTree()
 
 
     // C++ needs the cast to void (ugh)
-    t = as_obj(cc_msg(&FcTree, "new", by_ptr((void *) int_cmp)));
+    t = as_obj(cc_msg(FcTree, "new", by_ptr((void *) int_cmp)));
     cursor = as_obj(cc_msg0(t, "cursor"));
 
     for (i = 0;  i < TREE_NODES;  ++i) {
@@ -434,7 +434,7 @@ void unitTestList()
     // list
     //
 
-    list = as_obj(cc_msg0(&FcList, "new"));
+    list = as_obj(cc_msg0(FcList, "new"));
 
     // empty?
     if (as_int(cc_msg0(list, "isEmpty"))) {
@@ -517,7 +517,7 @@ int main(int argc, char *argv[])
     printf("sizeof(Foo) == %zu\n", sizeof(Foo));
 
 
-    foo = as_obj(cc_msg0(&Foo, "new"));
+    foo = as_obj(cc_msg0(Foo, "new"));
 
     // call a method to set a variable
     cc_msg(foo, "setBar", by_int(34));
@@ -539,7 +539,7 @@ int main(int argc, char *argv[])
 
 
     // class name
-    printf("Foo's name is \"%s\"\n", Foo.name);
+    printf("Foo's name is \"%s\"\n", Foo->name);
 
 
     //cc_arg_t a;
@@ -569,7 +569,7 @@ int main(int argc, char *argv[])
 
 
     // test error handling
-    //foo = as_obj(cc_msg0(&Root, "new"));
+    //foo = as_obj(cc_msg0(Root, "new"));
     //cc_msg0(foo, "bar");
     //_cc_send_super(foo, "bar", 0, NULL);
 

@@ -187,8 +187,8 @@ extern cc_arg_t _cc_error     (cc_obj my, const char *msg, int argc, cc_arg_t *a
 
 
 typedef struct _cc_class_object cc_class_object;
-extern cc_class_object MetaRoot, Root;
-extern cc_class_object MetaAlloc, Alloc;
+extern cc_class_object *Root, *MetaRoot, RootObj, MetaRootObj;
+extern cc_class_object *Alloc, *MetaAlloc, AllocObj, MetaAllocObj;
 
 
 typedef struct _cc_method_name cc_method_name;
@@ -197,16 +197,16 @@ extern void _cc_free_methods(cc_class_object *cls);
 
 
 #define _CC_PRIORITY_ALLOC      110
-#define _CC_PRIORITY_INT_ALLOC  120
+#define _CC_PRIORITY_INT_ALLOC  105
 #define _CC_PRIORITY_CLASS      130
 #define _CC_PRIORITY_CATEGORY   140
-#define _CC_PRIORITY_INTERPOSE  150
+#define _CC_PRIORITY_INTERPOSE  125
 
 #define _cc_interpose(poser, deposed, priority) \
 static void Interpose##poser(void) __attribute__((constructor(priority))); \
 static void Interpose##poser(void) \
 { \
-    cc_class_object saved; \
+    cc_class_object *saved; \
     saved   = deposed; \
     deposed = poser; \
     poser   = saved; \
@@ -221,20 +221,20 @@ static void prefix##Constructor(void) \
     static cc_method_name prefix##Methods[] = { \
         __VA_ARGS__ \
     }; \
-    _cc_add_methods(&cls, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
+    _cc_add_methods(&cls##Obj, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
 }
 
 #define _cc_destruct_methods(cls, prefix, priority) \
 static void prefix##Destructor(void) __attribute__((destructor(priority))); \
 static void prefix##Destructor(void) \
 { \
-    _cc_free_methods(&cls); \
+    _cc_free_methods(&cls##Obj); \
 }
 
 
 #define _cc_class_no_methods(cls, supercls) \
-cc_class_object cls = { \
-    &Meta##cls, \
+cc_class_object cls##Obj = { \
+    &Meta##cls##Obj, \
     supercls, \
     #cls, \
     sizeof(cc_vars_##cls), \
@@ -242,7 +242,7 @@ cc_class_object cls = { \
     0, \
     NULL \
     }; \
-cc_class_object *cls##ptr = &cls;
+cc_class_object *cls = &cls##Obj;
 
 #define cc_class_no_methods(cls) _cc_class_no_methods(cls, &cc_##cls##_isa)
 
@@ -254,7 +254,7 @@ _cc_destruct_methods (cls, cls, priority)
 #define cc_class(cls, ...) _cc_class(cls, _CC_PRIORITY_CLASS, &cc_##cls##_isa, __VA_ARGS__)
 
 #define _cc_class_object(cls, supercls) \
-cc_class_object Meta##cls = { \
+cc_class_object Meta##cls##Obj = { \
     NULL, \
     supercls, \
     "Meta" #cls, \
@@ -263,7 +263,7 @@ cc_class_object Meta##cls = { \
     0, \
     NULL \
     }; \
-cc_class_object *Meta##cls##ptr = &Meta##cls;
+cc_class_object *Meta##cls = &Meta##cls##Obj;
 
 #define cc_class_object(cls) _cc_class_object(cls, &cc_Meta##cls##_isa)
 

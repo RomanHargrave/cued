@@ -91,7 +91,7 @@ cc_begin_method(FcString, concat)
                 total = pre;
             }
             if (total > my->bufferSize) {
-                buf = (char *) as_ptr(cc_msg(&Alloc, "realloc", by_ptr(my->buffer), by_size_t(total)));
+                buf = (char *) as_ptr(cc_msg(Alloc, "realloc", by_ptr(my->buffer), by_size_t(total)));
                 if (!buf) {
                     return cc_error(by_str("out of memory allocating string buffer"));
                 }
@@ -177,7 +177,7 @@ cc_end_method
 
 cc_begin_method(FcString, free)
     //printf("free buffer %s\n", my->buffer);
-    cc_msg(&Alloc, "free", by_ptr(my->buffer));
+    cc_msg(Alloc, "free", by_ptr(my->buffer));
     return cc_msg_super0("free");
 cc_end_method
 
@@ -299,7 +299,7 @@ cc_begin_method(FcString, attach)
     length     = (argc > 1) ? as_ssize_t(argv[1]) : strlen(buf);
     bufferSize = (argc > 2) ? as_ssize_t(argv[2]) : length + 1;
 
-    cc_msg(&Alloc, "free", by_ptr(my->buffer));
+    cc_msg(Alloc, "free", by_ptr(my->buffer));
 
     my->buffer     = buf;
     my->length     = length;
@@ -327,7 +327,7 @@ cc_begin_method(FcString, prealloc)
     if (bufferSize < my->length + 1) {
         return cc_null;
     }
-    buffer = (char *) as_ptr(cc_msg(&Alloc, "realloc", by_ptr(my->buffer), by_size_t(my->bufferSize)));
+    buffer = (char *) as_ptr(cc_msg(Alloc, "realloc", by_ptr(my->buffer), by_size_t(my->bufferSize)));
     if (!buffer) {
         return cc_error(by_str("out of memory pre-allocating string buffer"));
     }

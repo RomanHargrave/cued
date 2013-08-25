@@ -61,11 +61,11 @@ cc_end_method
 // there would be no guarantee that the constructor for MetaAllocMethods[] would run
 // before cc_category() for another class
 //
-_cc_class_object_with_methods(Alloc, _CC_PRIORITY_ALLOC, &MetaRoot,
+_cc_class_object_with_methods(Alloc, _CC_PRIORITY_ALLOC, &MetaRootObj,
     cc_method("malloc",     mallocMetaAlloc),
     cc_method("free",       freeMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)
     )
 
 #define cc_vars_Alloc cc_vars_Root
-_cc_class_no_methods(Alloc, &Root)
+_cc_class_no_methods(Alloc, &RootObj)

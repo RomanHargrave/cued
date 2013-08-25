@@ -48,12 +48,12 @@ cvars_$2
 `shift(shift($@))'
 } cc_vars_$1;dnl
 `divert(1)'dnl
-extern cc_class_object $1`,' Meta$1;
+extern cc_class_object *$1`,' *Meta$1`,' $1Obj`,' Meta$1Obj;
 `divert(0)'dnl
 `divert(2)'
 ``#ifndef'' cc_$1_isa
-``#define'' cc_$1_isa $2
-``#define'' cc_Meta$1_isa Meta$2
+``#define'' cc_$1_isa $2Obj
+``#define'' cc_Meta$1_isa Meta$2Obj
 ``#endif''
 `divert(0)')dnl
 dnl
