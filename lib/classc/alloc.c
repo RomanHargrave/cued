@@ -33,18 +33,22 @@
 
 
 cc_begin_meta_method(MetaAlloc, malloc)
+    void *p;
     if (argc < 1) {
         return cc_error(by_str("too few arguments"));
     }
-    return by_ptr(malloc(as_size_t(argv[0])));
+    p = malloc(as_size_t(argv[0]));
+    return by_ptr(p);
 cc_end_method
 
 
 cc_begin_meta_method(MetaAlloc, realloc)
+    void *p;
     if (argc < 2) {
         return cc_error(by_str("too few arguments"));
     }
-    return by_ptr(realloc(as_ptr(argv[0]), as_size_t(argv[1])));
+    p = realloc(as_ptr(argv[0]), as_size_t(argv[1]));
+    return by_ptr(p);
 cc_end_method
 
 
