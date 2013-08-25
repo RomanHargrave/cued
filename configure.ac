@@ -147,6 +147,15 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [ int a = 5;  int b @<:@ a @:>@; ])], [
     AC_MSG_RESULT(no)
 ])
 
+# Check for constructor priorities (missing in Solaris compilers, including gcc.)
+AC_MSG_CHECKING([for constructor priorities])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([ static void foo(void) __attribute__((constructor(101))); ])], [
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_CONSTRUCT_PRIO], [], [Define this if compiler implements constructor priorities])
+], [
+    AC_MSG_RESULT(no)
+])
+
 # Check for PATH_MAX in limits.h.
 AC_MSG_CHECKING([for PATH_MAX in limits.h])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <limits.h>], [int x = PATH_MAX;])], [
