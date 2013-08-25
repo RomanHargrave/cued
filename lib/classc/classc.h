@@ -183,7 +183,8 @@ extern cc_arg_t cc_null;
 
 extern cc_arg_t _cc_send      (cc_obj my, const char *msg, int argc, cc_arg_t *argv);
 extern cc_arg_t _cc_send_super(cc_obj my, const char *msg, int argc, cc_arg_t *argv);
-extern cc_arg_t _cc_error     (cc_obj my, const char *msg, int argc, cc_arg_t *argv, const char *fileName, int lineno);
+extern cc_arg_t _cc_error     (cc_obj my, const char *msg, int argc, cc_arg_t *argv,
+                               const char *fileName, int lineno);
 
 
 typedef struct _cc_class_object cc_class_object;

@@ -307,7 +307,7 @@ void unitTestTree()
         fooVector[i].bar = i;
         cc_msg(t, "insert", by_obj(&fooVector[i]));
     }
-    cc_msg(t, "apply", by_str("test"), by_int(0xABCDEF));
+    cc_msg(t, "apply", by_str("test"), by_long(0xABCDEF));
     cc_msg0(t, "free");
 
 
@@ -545,13 +545,13 @@ int main(int argc, char *argv[])
     cc_msg(foo, "setBar", by_int(34));
 
     // iterate with argc/argv
-    cc_msg(foo, test, by_int(1), by_int(2), by_obj(foo));
+    cc_msg(foo, test, by_long(1), by_long(2), by_obj(foo));
 
     // argv[0] access without arguments
     //cc_msg(foo, test);
 
     // category
-    cc_msg(foo, "blacker", by_int(1));
+    cc_msg(foo, "blacker", by_long(1));
 
     // message forwarding
     cc_msg0(foo, "not found");
