@@ -114,7 +114,7 @@ cc_begin_method(Root, error)
 cc_end_method
 
 
-_cc_class_object_with_methods(Root, _CC_PRIORITY_CLASS, NULL,
+_cc_class_object_with_methods(Root, NULL,
     cc_method("new",        newMetaRoot),
     cc_method("alloc",      allocMetaRoot),
     cc_method("initVector", initVectorMetaRoot),
@@ -122,7 +122,7 @@ _cc_class_object_with_methods(Root, _CC_PRIORITY_CLASS, NULL,
     )
 
 
-_cc_class(Root, _CC_PRIORITY_CLASS, NULL,
+_cc_class(Root, NULL,
     cc_method("init",  initRoot),
     cc_method("free",  freeRoot),
     cc_method("copy",  copyRoot),

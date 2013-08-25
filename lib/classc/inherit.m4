@@ -48,7 +48,7 @@ cvars_$2
 `shift(shift($@))'
 } cc_vars_$1;dnl
 `divert(1)'dnl
-extern cc_class_object *$1`,' *Meta$1`,' $1Obj`,' Meta$1Obj;
+extern cc_class_object *$1`,' $1Obj`,' Meta$1Obj;
 `divert(0)'dnl
 `divert(2)'
 ``#ifndef'' cc_$1_isa

@@ -187,8 +187,8 @@ extern cc_arg_t _cc_error     (cc_obj my, const char *msg, int argc, cc_arg_t *a
 
 
 typedef struct _cc_class_object cc_class_object;
-extern cc_class_object *Root, *MetaRoot, RootObj, MetaRootObj;
-extern cc_class_object *Alloc, *MetaAlloc, AllocObj, MetaAllocObj;
+extern cc_class_object *Root, RootObj, MetaRootObj;
+extern cc_class_object *Alloc, AllocObj, MetaAllocObj;
 
 
 typedef struct _cc_method_name cc_method_name;
@@ -196,14 +196,8 @@ extern void _cc_add_methods (cc_class_object *cls, ssize_t numMethods, cc_method
 extern void _cc_free_methods(cc_class_object *cls);
 
 
-#define _CC_PRIORITY_ALLOC      110
-#define _CC_PRIORITY_INT_ALLOC  105
-#define _CC_PRIORITY_CLASS      130
-#define _CC_PRIORITY_CATEGORY   140
-#define _CC_PRIORITY_INTERPOSE  125
-
-#define _cc_interpose(poser, deposed, priority) \
-static void Interpose##poser(void) __attribute__((constructor(priority))); \
+#define cc_interpose(poser, deposed) \
+static void Interpose##poser(void) __attribute__((constructor)); \
 static void Interpose##poser(void) \
 { \
     cc_class_object *saved; \
@@ -212,10 +206,8 @@ static void Interpose##poser(void) \
     poser   = saved; \
 }
 
-#define cc_interpose(poser, deposed) _cc_interpose(poser, deposed, _CC_PRIORITY_INTERPOSE)
-
-#define _cc_construct_methods(cls, prefix, priority, ...) \
-static void prefix##Constructor(void) __attribute__((constructor(priority))); \
+#define _cc_construct_methods(cls, prefix, ...) \
+static void prefix##Constructor(void) __attribute__((constructor)); \
 static void prefix##Constructor(void) \
 { \
     static cc_method_name prefix##Methods[] = { \
@@ -224,8 +216,8 @@ static void prefix##Constructor(void) \
     _cc_add_methods(&cls##Obj, sizeof(prefix##Methods) / sizeof(cc_method_name), prefix##Methods); \
 }
 
-#define _cc_destruct_methods(cls, prefix, priority) \
-static void prefix##Destructor(void) __attribute__((destructor(priority))); \
+#define _cc_destruct_methods(cls, prefix) \
+static void prefix##Destructor(void) __attribute__((destructor)); \
 static void prefix##Destructor(void) \
 { \
     _cc_free_methods(&cls##Obj); \
@@ -246,12 +238,12 @@ cc_class_object *cls = &cls##Obj;
 
 #define cc_class_no_methods(cls) _cc_class_no_methods(cls, &cc_##cls##_isa)
 
-#define _cc_class(cls, priority, supercls, ...) \
+#define _cc_class(cls, supercls, ...) \
 _cc_class_no_methods (cls, supercls) \
-_cc_construct_methods(cls, cls, priority, __VA_ARGS__) \
-_cc_destruct_methods (cls, cls, priority)
+_cc_construct_methods(cls, cls, __VA_ARGS__) \
+_cc_destruct_methods (cls, cls)
 
-#define cc_class(cls, ...) _cc_class(cls, _CC_PRIORITY_CLASS, &cc_##cls##_isa, __VA_ARGS__)
+#define cc_class(cls, ...) _cc_class(cls, &cc_##cls##_isa, __VA_ARGS__)
 
 #define _cc_class_object(cls, supercls) \
 cc_class_object Meta##cls##Obj = { \
@@ -262,24 +254,23 @@ cc_class_object Meta##cls##Obj = { \
     0, \
     0, \
     NULL \
-    }; \
-cc_class_object *Meta##cls = &Meta##cls##Obj;
+    };
 
 #define cc_class_object(cls) _cc_class_object(cls, &cc_Meta##cls##_isa)
 
-#define _cc_class_object_with_methods(cls, priority, supercls, ...) \
+#define _cc_class_object_with_methods(cls, supercls, ...) \
 _cc_class_object(cls, supercls) \
-_cc_construct_methods(Meta##cls, Meta##cls, priority, __VA_ARGS__) \
-_cc_destruct_methods (Meta##cls, Meta##cls, priority)
+_cc_construct_methods(Meta##cls, Meta##cls, __VA_ARGS__) \
+_cc_destruct_methods (Meta##cls, Meta##cls)
 
 #define cc_class_object_with_methods(cls, ...) \
-       _cc_class_object_with_methods(cls, _CC_PRIORITY_CLASS, &cc_Meta##cls##_isa, __VA_ARGS__)
+       _cc_class_object_with_methods(cls, &cc_Meta##cls##_isa, __VA_ARGS__)
 
-#define  _cc_category(cls, prefix, priority, ...) \
-_cc_construct_methods(cls, prefix, priority, __VA_ARGS__) \
-_cc_destruct_methods (cls, prefix, priority)
+#define  _cc_category(cls, prefix, ...) \
+_cc_construct_methods(cls, prefix, __VA_ARGS__) \
+_cc_destruct_methods (cls, prefix)
 
-#define cc_category(cls, cat, ...) _cc_category(cls, cls##cat, _CC_PRIORITY_CATEGORY, __VA_ARGS__)
+#define cc_category(cls, cat, ...) _cc_category(cls, cls##cat, __VA_ARGS__)
 
 #define cc_method(name, function) { name, (cc_method_fp) function }
 

@@ -37,6 +37,8 @@
 #endif
 
 
+#ifdef CUED_HAVE_CONSTRUCT_PRIO
+
 cc_begin_meta_method(MetaAlloc, malloc)
     if (argc < 1) {
         return cc_error(by_str("too few arguments"));
@@ -61,16 +63,36 @@ cc_begin_meta_method(MetaAlloc, free)
     return _cc_send_super(my, "free", argc, argv);
 cc_end_method
 
-_cc_class_object_with_methods(NoisyAlloc, _CC_PRIORITY_ALLOC, &MetaAllocObj,
-    cc_method("malloc",     mallocMetaAlloc),
+
+static cc_method_name MetaNoisyAllocMethods[] = {
     cc_method("free",       freeMetaAlloc),
+    cc_method("malloc",     mallocMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)
-    )
+};
+
+cc_class_object MetaNoisyAllocObj = {
+    NULL,
+    &MetaAllocObj,
+    "MetaNoisyAlloc",
+    -1,
+    _CC_FLAG_STATIC_METHODS,
+    SNELEMS(MetaNoisyAllocMethods),
+    MetaNoisyAllocMethods
+    };
 
 #define cc_vars_NoisyAlloc cc_vars_Root
 _cc_class_no_methods(NoisyAlloc, &AllocObj)
 
-_cc_interpose(NoisyAlloc, Alloc, _CC_PRIORITY_INT_ALLOC)
+static void InterposeNoisyAlloc(void) __attribute__((constructor(101)));
+static void InterposeNoisyAlloc(void)
+{
+    cc_class_object *saved;
+    saved      = Alloc;
+    Alloc      = NoisyAlloc;
+    NoisyAlloc = saved;
+}
+
+#endif // CUED_HAVE_CONSTRUCT_PRIO
 
 
 cc_begin_method(Foo, test)

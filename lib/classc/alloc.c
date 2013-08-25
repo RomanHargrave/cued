@@ -57,15 +57,26 @@ cc_begin_meta_method(MetaAlloc, free)
 cc_end_method
 
 
-// this has a lower priority since _cc_add_methods() calls reallocMetaAlloc();  otherwise,
-// there would be no guarantee that the constructor for MetaAllocMethods[] would run
-// before cc_category() for another class
+// methods are manually sorted here since _cc_add_methods() calls reallocMetaAlloc();
+// otherwise, there would be no guarantee that the constructor for MetaAllocMethods[]
+// would run before cc_category() for another class
 //
-_cc_class_object_with_methods(Alloc, _CC_PRIORITY_ALLOC, &MetaRootObj,
-    cc_method("malloc",     mallocMetaAlloc),
+static cc_method_name MetaAllocMethods[] = {
     cc_method("free",       freeMetaAlloc),
+    cc_method("malloc",     mallocMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)
-    )
+};
+
+cc_class_object MetaAllocObj = {
+    NULL,
+    &MetaRootObj,
+    "MetaAlloc",
+    -1,
+    _CC_FLAG_STATIC_METHODS,
+    SNELEMS(MetaAllocMethods),
+    MetaAllocMethods
+    };
+
 
 #define cc_vars_Alloc cc_vars_Root
 _cc_class_no_methods(Alloc, &RootObj)
