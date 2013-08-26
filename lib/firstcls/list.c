@@ -150,7 +150,7 @@ cc_end_method
 cc_begin_method(FcList, empty)
     FcListNode *curr, *next;
     FcEmptyHow how;
-    FcCheckArgcRange(0, 1);
+    cc_check_argc_range(0, 1);
     how = argc ? (FcEmptyHow) as_int(argv[0]) : FcEmptyNone;
     for (curr = my->head.next;  curr != &my->head;  curr = next) {
         next = curr->next;
@@ -180,7 +180,7 @@ cc_begin_method(FcList, apply)
     FcListNode *node;
     FcApplyFn applyFn;
     const char *applyMsg;
-    FcCheckArgcRange(1, INT_MAX);
+    cc_check_argc_range(1, INT_MAX);
     applyFn  = is_ptr(argv[0]) ? (FcApplyFn) as_ptr(argv[0]) : NULL;
     applyMsg = is_str(argv[0]) ?             as_str(argv[0]) : NULL;
     for (node = my->head.next;  node != &my->head;  node = node->next) {
@@ -277,7 +277,7 @@ cc_end_method
 
 cc_begin_method(FcListCursor, init)
     cc_msg_super0("init");
-    FcCheckArgc(1);
+    cc_check_argc(1);
     my->list = (cc_vars_FcList *) as_obj(argv[0]);
     my->curr = &my->list->head;
     return by_obj(my);

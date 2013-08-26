@@ -26,17 +26,13 @@
 #include <stdio.h>
 
 
-// TODO:  error handling for arguments...  borrow from firstcls?
-//
 // TODO:  move error handling for malloc failure to here?
 //
 
 
 cc_begin_meta_method(MetaAlloc, malloc)
     void *p;
-    if (argc < 1) {
-        return cc_error(by_str("too few arguments"));
-    }
+    cc_check_argc(1);
     p = malloc(as_size_t(argv[0]));
     return by_ptr(p);
 cc_end_method
@@ -44,18 +40,14 @@ cc_end_method
 
 cc_begin_meta_method(MetaAlloc, realloc)
     void *p;
-    if (argc < 2) {
-        return cc_error(by_str("too few arguments"));
-    }
+    cc_check_argc(2);
     p = realloc(as_ptr(argv[0]), as_size_t(argv[1]));
     return by_ptr(p);
 cc_end_method
 
 
 cc_begin_meta_method(MetaAlloc, free)
-    if (argc < 1) {
-        return cc_error(by_str("too few arguments"));
-    }
+    cc_check_argc(1);
     free(as_ptr(argv[0]));
     return cc_null;
 cc_end_method

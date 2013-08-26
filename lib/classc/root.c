@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h> // INT_MAX
 
 
 cc_begin_meta_method(MetaRoot, new)
@@ -49,9 +50,7 @@ cc_begin_meta_method(MetaRoot, initVector)
     cc_vars_Root *obj;
     int i, nelems;
 
-    if (argc < 2) {
-        return cc_error(by_str("too few arguments"));
-    }
+    cc_check_argc_range(2, INT_MAX);
 
     // some optimization for vector init: look up the method only once (optimize for large vector);
     // this lookup is correct because we are using "my" as the class, not "my->isa" which would be the meta class

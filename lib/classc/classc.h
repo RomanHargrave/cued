@@ -187,6 +187,12 @@ extern cc_arg_t _cc_error     (cc_obj my, const char *msg, int argc, cc_arg_t *a
                                const char *fileName, int lineno);
 
 
+#define cc_check_argc(n) ({ cc_check_argc_range((n), (n)); })
+
+#define cc_check_argc_range(n1, n2) ({ if (argc < (n1) || argc > (n2)) { \
+    return cc_error(by_str("too "), argc < (n1) ? by_str("few") : by_str("many"), by_str(" arguments")); } })
+
+
 typedef struct _cc_class_object cc_class_object;
 extern cc_class_object *Root, RootObj, MetaRootObj;
 extern cc_class_object *Alloc, AllocObj, MetaAllocObj;

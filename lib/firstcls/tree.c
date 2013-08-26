@@ -33,7 +33,7 @@
 cc_begin_method(FcTree, init)
     cc_msg_super0("init");
     my->root = &my->sentinel;
-    FcCheckArgcRange(0, 1);
+    cc_check_argc_range(0, 1);
     my->cmpMethod = argc ? (FcCompareFn) as_ptr(argv[0]) : FcObjCompare;
     return by_obj(my);
 cc_end_method
@@ -70,7 +70,7 @@ static void FcTreeEmpty(cc_vars_FcTree *tree, FcTreeNode *node, FcEmptyHow how)
 
 cc_begin_method(FcTree, empty)
     FcEmptyHow how;
-    FcCheckArgcRange(0, 1);
+    cc_check_argc_range(0, 1);
     how = argc ? (FcEmptyHow) as_int(argv[0]) : FcEmptyNone;
     FcTreeEmpty(my, my->root, how);
     return cc_msg0(my, "init");
@@ -101,7 +101,7 @@ static void FcTreeApply(cc_vars_FcTree *tree, FcTreeNode *node, FcApplyFn applyF
 
 
 cc_begin_method(FcTree, apply)
-    FcCheckArgcRange(1, INT_MAX);
+    cc_check_argc_range(1, INT_MAX);
     FcTreeApply(my, my->root,
                 is_ptr(argv[0]) ? (FcApplyFn) as_ptr(argv[0]) : NULL,
                 is_str(argv[0]) ?             as_str(argv[0]) : NULL,
@@ -235,7 +235,7 @@ static FcTreeNode *TreeFindGreaterOrEqual(cc_vars_FcTree *tree, cc_arg_t key)
 
 cc_begin_method(FcTree, findEqual)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindEqual(my, argv[0]);
     return node->item;
 cc_end_method
@@ -243,7 +243,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findGreater)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindGreater(my, argv[0]);
     return node->item;
 cc_end_method
@@ -251,7 +251,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findLesser)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindLesser(my, argv[0]);
     return node->item;
 cc_end_method
@@ -259,7 +259,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findLesserOrEqual)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindLesserOrEqual(my, argv[0]);
     return node->item;
 cc_end_method
@@ -267,7 +267,7 @@ cc_end_method
 
 cc_begin_method(FcTree, findGreaterOrEqual)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindGreaterOrEqual(my, argv[0]);
     return node->item;
 cc_end_method
@@ -601,7 +601,7 @@ cc_class(FcTree,
 
 cc_begin_method(FcTreeCursor, findEqual)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindEqual(my->tree, argv[0]);
     my->curr = node;
     return node->item;
@@ -610,7 +610,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findGreater)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindGreater(my->tree, argv[0]);
     my->curr = node;
     return node->item;
@@ -619,7 +619,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findLesser)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindLesser(my->tree, argv[0]);
     my->curr = node;
     return node->item;
@@ -628,7 +628,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findLesserOrEqual)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindLesserOrEqual(my->tree, argv[0]);
     my->curr = node;
     return node->item;
@@ -637,7 +637,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, findGreaterOrEqual)
     FcTreeNode *node;
-    FcCheckArgc(1);
+    cc_check_argc(1);
     node = TreeFindGreaterOrEqual(my->tree, argv[0]);
     my->curr = node;
     return node->item;
@@ -778,7 +778,7 @@ cc_end_method
 
 cc_begin_method(FcTreeCursor, init)
     cc_msg_super0("init");
-    FcCheckArgc(1);
+    cc_check_argc(1);
     my->tree = (cc_vars_FcTree *) as_obj(argv[0]);
     my->curr = &my->tree->sentinel;
     return by_obj(my);

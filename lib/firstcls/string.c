@@ -119,7 +119,7 @@ cc_end_method
 cc_begin_method(FcString, sub)
     ssize_t begin, end;
 
-    FcCheckArgcRange(1, 2);
+    cc_check_argc_range(1, 2);
     begin = as_ssize_t(argv[0]);
     end   = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
     if (begin < 1 || begin > my->length || begin > end || end > my->length  || end < 1) {
@@ -187,7 +187,7 @@ cc_begin_method(FcString, compare)
     const char *str;
     int rc;
 
-    FcCheckArgc(1);
+    cc_check_argc(1);
     obj = as_obj(argv[0]);
     str = as_str(cc_msg0(obj, "buffer"));
 
@@ -201,7 +201,7 @@ cc_end_method
 cc_begin_method(FcString, getChar)
     ssize_t index;
 
-    FcCheckArgc(1);
+    cc_check_argc(1);
     index = as_ssize_t(argv[0]);
     if (index < 1 || index > my->length) {
         return cc_null;
@@ -215,7 +215,7 @@ cc_begin_method(FcString, setChar)
     ssize_t index;
     char c;
 
-    FcCheckArgc(2);
+    cc_check_argc(2);
     index = as_ssize_t(argv[0]);
     c     = as_char(argv[1]);
     if (index < 1 || index > my->length) {
@@ -232,7 +232,7 @@ cc_begin_method(FcString, findChar)
     ssize_t index, start;
     char c;
 
-    FcCheckArgcRange(1, 2);
+    cc_check_argc_range(1, 2);
     c     = as_char(argv[0]);
     start = (argc > 1) ? as_ssize_t(argv[1]) : 1;
     if (start < 1 || start > my->length) {
@@ -250,7 +250,7 @@ cc_begin_method(FcString, findCharRev)
     ssize_t index, start;
     char c;
 
-    FcCheckArgcRange(1, 2);
+    cc_check_argc_range(1, 2);
     c     = as_char(argv[0]);
     start = (argc > 1) ? as_ssize_t(argv[1]) : my->length;
     if (start < 1 || start > my->length) {
@@ -269,7 +269,7 @@ cc_begin_method(FcString, find)
     char *addr;
     ssize_t len, index;
 
-    FcCheckArgc(1);
+    cc_check_argc(1);
     if (is_obj(argv[0])) {
         obj = as_obj(argv[0]);
         str = as_str(cc_msg0(obj, "buffer"));
@@ -293,7 +293,7 @@ cc_begin_method(FcString, attach)
     char *buf;
     ssize_t length, bufferSize;
 
-    FcCheckArgcRange(1, 3);
+    cc_check_argc_range(1, 3);
 
     buf        = (char *) as_str(argv[0]);
     length     = (argc > 1) ? as_ssize_t(argv[1]) : strlen(buf);
@@ -322,7 +322,7 @@ cc_begin_method(FcString, prealloc)
     char *buffer;
     ssize_t bufferSize;
 
-    FcCheckArgc(1);
+    cc_check_argc(1);
     bufferSize = as_ssize_t(argv[0]);
     if (bufferSize < my->length + 1) {
         return cc_null;
