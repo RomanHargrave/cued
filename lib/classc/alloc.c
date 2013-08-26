@@ -74,6 +74,8 @@ static cc_method_name MetaAllocMethods[] = {
 cc_class_object MetaAllocObj = {
     NULL,
     &MetaRootObj,
+    NULL,
+    NULL,
     "MetaAlloc",
     -1,
     _CC_FLAG_STATIC_METHODS,

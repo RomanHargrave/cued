@@ -73,6 +73,8 @@ static cc_method_name MetaNoisyAllocMethods[] = {
 cc_class_object MetaNoisyAllocObj = {
     NULL,
     &MetaAllocObj,
+    NULL,
+    NULL,
     "MetaNoisyAlloc",
     -1,
     _CC_FLAG_STATIC_METHODS,
@@ -83,14 +85,17 @@ cc_class_object MetaNoisyAllocObj = {
 #define cc_vars_NoisyAlloc cc_vars_Root
 _cc_class_no_methods(NoisyAlloc, &AllocObj)
 
+#if 1
 static void InterposeNoisyAlloc(void) __attribute__((constructor(101)));
 static void InterposeNoisyAlloc(void)
 {
-    cc_class_object *saved;
-    saved      = Alloc;
-    Alloc      = NoisyAlloc;
-    NoisyAlloc = saved;
+    NoisyAlloc->deposed = Alloc;
+    Alloc->poser        = NoisyAlloc;
+    Alloc               = NoisyAlloc;
 }
+#else
+cc_interpose(NoisyAlloc, Alloc);
+#endif
 
 #endif // CUED_HAVE_CONSTRUCT_PRIO
 

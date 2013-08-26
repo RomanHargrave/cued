@@ -197,14 +197,13 @@ extern void _cc_add_methods (cc_class_object *cls, ssize_t numMethods, cc_method
 extern void _cc_free_methods(cc_class_object *cls);
 
 
-#define cc_interpose(poser, deposed) \
+#define cc_interpose(posee, deposee) \
 static void Interpose##poser(void) __attribute__((constructor)); \
 static void Interpose##poser(void) \
 { \
-    cc_class_object *saved; \
-    saved   = deposed; \
-    deposed = poser; \
-    poser   = saved; \
+    posee->deposed = deposee; \
+    deposee->poser = posee; \
+    deposee        = posee; \
 }
 
 #define _cc_construct_methods(cls, prefix, ...) \
@@ -229,6 +228,8 @@ static void prefix##Destructor(void) \
 cc_class_object cls##Obj = { \
     &Meta##cls##Obj, \
     supercls, \
+    NULL, \
+    NULL, \
     #cls, \
     sizeof(cc_vars_##cls), \
     0, \
@@ -250,6 +251,8 @@ _cc_destruct_methods (cls, cls)
 cc_class_object Meta##cls##Obj = { \
     NULL, \
     supercls, \
+    NULL, \
+    NULL, \
     "Meta" #cls, \
     -1, \
     0, \
@@ -306,6 +309,12 @@ struct _cc_class_object {
 
     // super class
     struct _cc_class_object *supercls;
+
+    // posed-for class
+    struct _cc_class_object *deposed;
+
+    // posing for class
+    struct _cc_class_object *poser;
 
     // class name
     const char *name;
