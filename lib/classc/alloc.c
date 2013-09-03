@@ -55,7 +55,7 @@ cc_begin_meta_method(MetaAlloc, realloc)
 
         // TODO:  cc_error should take int, size_t, etc.
         snprintf(bytes, sizeof(bytes), "%zu", n);
-        return cc_error(by_str("out of memory allocating "), by_str(bytes), by_str(" bytes"));
+        return cc_error(by_str("out of memory re-allocating "), by_str(bytes), by_str(" bytes"));
     }
 
     return by_ptr(p);
