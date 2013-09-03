@@ -162,21 +162,6 @@ extern cc_arg_t cc_null;
 #define is_size_t(n)    is(st,  (n))
 
 
-typedef struct _cc_frame_t {
-
-    cc_obj my;
-    const char *msg;
-    struct _cc_frame_t *prev;
-    const char *fileName;
-    int lineno;
-    int argc;
-    cc_arg_t *argv;
-
-} cc_frame_t;
-
-extern cc_frame_t cc_curr_frame;
-
-
 // for compilers that do not support empty arrays (Solaris)
 #define cc_msg0(obj, msg)  (_cc_send(     obj, msg, 0, NULL))
 #define cc_msg_super0(msg) (_cc_send_super(my, msg, 0, NULL))
