@@ -51,7 +51,7 @@ cc_begin_meta_method(MetaAlloc, realloc)
     cc_check_argc_range(2, 3);
     n = as_size_t(argv[1]);
     p = realloc(as_ptr(argv[0]), n);
-    if (!p && 3 == argc && as_int(argv[2])) {
+    if (!p && n && 3 == argc && as_int(argv[2])) {
 
         // TODO:  cc_error should take int, size_t, etc.
         snprintf(bytes, sizeof(bytes), "%zu", n);
