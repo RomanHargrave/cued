@@ -537,6 +537,8 @@ int main(int argc, char *argv[])
     mtrace();
 #endif
 
+    //void *fail = as_ptr(cc_msg(Alloc, "realloc", by_ptr(NULL), by_size_t(9223372036854775807LL))); // , by_int(0)));
+
     printf("\n*** ELEMENTARY TESTS ***\n");
 
     printf("sizeof(cc_arg_t) == %zu\n", sizeof(cc_arg_t));

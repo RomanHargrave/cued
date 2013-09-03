@@ -26,22 +26,38 @@
 #include <stdio.h>
 
 
-// TODO:  move error handling for malloc failure to here?
-//
-
-
 cc_begin_meta_method(MetaAlloc, malloc)
     void *p;
-    cc_check_argc(1);
-    p = malloc(as_size_t(argv[0]));
+    size_t n;
+    char bytes[24];
+
+    cc_check_argc_range(1, 2);
+    n = as_size_t(argv[0]);
+    p = malloc(n);
+    if (!p && 2 == argc && as_int(argv[1])) {
+        snprintf(bytes, sizeof(bytes), "%zu", n);
+        return cc_error(by_str("out of memory allocating "), by_str(bytes), by_str(" bytes"));
+    }
+
     return by_ptr(p);
 cc_end_method
 
 
 cc_begin_meta_method(MetaAlloc, realloc)
     void *p;
-    cc_check_argc(2);
-    p = realloc(as_ptr(argv[0]), as_size_t(argv[1]));
+    size_t n;
+    char bytes[24];
+
+    cc_check_argc_range(2, 3);
+    n = as_size_t(argv[1]);
+    p = realloc(as_ptr(argv[0]), n);
+    if (!p && 3 == argc && as_int(argv[2])) {
+
+        // TODO:  cc_error should take int, size_t, etc.
+        snprintf(bytes, sizeof(bytes), "%zu", n);
+        return cc_error(by_str("out of memory allocating "), by_str(bytes), by_str(" bytes"));
+    }
+
     return by_ptr(p);
 cc_end_method
 
