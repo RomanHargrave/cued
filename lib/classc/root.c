@@ -110,6 +110,7 @@ cc_begin_method(Root, error)
     }
     fprintf(stderr, "\n");
     abort();
+    return by_obj(my);
 cc_end_method
 
 
