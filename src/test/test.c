@@ -258,6 +258,13 @@ void unitTestString()
     printf("index of this is a test... is %zd\n", i);
 
 
+    printf("truncate:\n");
+    cc_msg(s2, "truncate", by_ssize_t(6));
+    cc_msg0(s2, "writeln");
+    cc_msg(s2, "truncate", by_ssize_t(3), by_int(0));
+    cc_msg0(s2, "writeln");
+
+
     // test error handling
     //cc_msg(s2, "concat", by_double(8.0));
 

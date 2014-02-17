@@ -309,6 +309,35 @@ cc_begin_method(FcString, attach)
 cc_end_method
 
 
+cc_begin_method(FcString, truncate)
+    ssize_t length, bufferSize;
+    char *buffer;
+    int freeBuf;
+
+    cc_check_argc_range(1, 2);
+    length  = as_ssize_t(argv[0]);
+    freeBuf = (argc > 1) ? as_int(argv[1]) : 1;
+
+    if (length < my->length) {
+        my->length         = length;
+        my->buffer[length] = 0;
+        if (freeBuf) {
+            bufferSize = length + 1;
+            buffer = (char *) as_ptr(cc_msg(Alloc, "realloc", by_ptr(my->buffer), by_size_t(bufferSize)));
+            if (buffer) {
+                my->buffer     = buffer;
+                my->bufferSize = bufferSize;
+            } else {
+                return cc_error(by_str("out of memory"));
+            }
+        }
+        return by_obj(my);
+    } else {
+        return cc_error(by_str("new length is not smaller"));
+    }
+cc_end_method
+
+
 cc_begin_method(FcString, detach)
     my->buffer     = NULL;
     my->length     = 0;
@@ -359,5 +388,6 @@ cc_class(FcString,
     cc_method("find",           findFcString),
     cc_method("attach",         attachFcString),
     cc_method("detach",         detachFcString),
-    cc_method("prealloc",       preallocFcString)
+    cc_method("prealloc",       preallocFcString),
+    cc_method("truncate",       truncateFcString)
     )
