@@ -318,7 +318,7 @@ cc_begin_method(FcString, truncate)
     length  = as_ssize_t(argv[0]);
     freeBuf = (argc > 1) ? as_int(argv[1]) : 1;
 
-    if (length < my->length) {
+    if (length >= 0 && length < my->length) {
         my->length         = length;
         my->buffer[length] = 0;
         if (freeBuf) {
@@ -333,7 +333,7 @@ cc_begin_method(FcString, truncate)
         }
         return by_obj(my);
     } else {
-        return cc_error(by_str("new length is not smaller"));
+        return cc_null;
     }
 cc_end_method
 
