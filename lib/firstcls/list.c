@@ -120,11 +120,6 @@ static inline void removeNode(cc_vars_FcList *my, FcListNode *node)
 
     if (&my->head != node) {
         cc_msg(Alloc, "free", by_ptr(node));
-    } else {
-        // this does not have to be fatal:  could comment these lines and continue
-        const char *msg = "unknown";
-        cc_error(by_str("cannot remove item from empty list"));
-        //cc_msg(my, "error", by_str("attempt to remove item from empty list"));
     }
 }
 
