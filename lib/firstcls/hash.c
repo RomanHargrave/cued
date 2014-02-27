@@ -106,7 +106,7 @@ cc_end_method
 
 
 cc_begin_method(FcHash, find)
-    cc_arg_t rc = cc_null;
+    cc_arg_t item = cc_null;
     cc_arg_t key;
     FcHashBucket *bucket;
     unsigned hash;
@@ -116,16 +116,16 @@ cc_begin_method(FcHash, find)
     hash = (my->hashMethod)(key);
     for (bucket = my->table[ HashSlot(my, hash) ];  bucket;  bucket = bucket->next) {
         if (hash == bucket->hash && !(my->cmpMethod)(bucket->item, key)) {
-            rc = bucket->item;
+            item = bucket->item;
             break;
         }
     }
-    return rc;
+    return item;
 cc_end_method
 
 
 cc_begin_method(FcHash, remove)
-    cc_arg_t rc = cc_null;
+    cc_arg_t item = cc_null;
     cc_arg_t key;
     FcHashBucket **prev, *bucket;
     unsigned hash;
@@ -136,7 +136,7 @@ cc_begin_method(FcHash, remove)
     prev = &my->table[ HashSlot(my, hash) ];
     for (bucket = *prev;  bucket;  bucket = bucket->next) {
         if (hash == bucket->hash && !(my->cmpMethod)(bucket->item, key)) {
-            rc    = bucket->item;
+            item  = bucket->item;
             *prev = bucket->next;
             cc_msg(Alloc, "free", by_ptr(bucket));
             break;
@@ -144,7 +144,7 @@ cc_begin_method(FcHash, remove)
         prev = &bucket->next;
     }
 
-    return rc;
+    return item;
 cc_end_method
 
 

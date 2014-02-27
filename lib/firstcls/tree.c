@@ -554,11 +554,11 @@ FcTreeNode *TreeRemoveNode(cc_vars_FcTree *tree, FcTreeNode *subtree)
 
 
 cc_begin_method(FcTree, remove)
-    cc_arg_t rc = cc_null;
+    cc_arg_t item = cc_null;
     FcTreeNode *node;
     for (int i = 0;  i < argc;  ++i) {
         node = TreeFindEqual(my, argv[i]);
-        rc = node->item;
+        item = node->item;
         if (&my->sentinel != node) {
             //
             // an optimization removes the successor rather than replacing it;
@@ -568,7 +568,7 @@ cc_begin_method(FcTree, remove)
             cc_msg(Alloc, "free", by_ptr(node));
         }
     }
-    return rc;
+    return item;
 cc_end_method
 
 
