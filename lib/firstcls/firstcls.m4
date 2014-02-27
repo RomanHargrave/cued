@@ -12,8 +12,10 @@ typedef enum _FcEmptyHow {
 
 
 typedef int (*FcCompareFn)(cc_arg_t item, cc_arg_t key);
-
 extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
+
+typedef unsigned (*FcHashFn)(cc_arg_t item);
+extern unsigned FcObjHash(cc_arg_t item);
 
 
 typedef void (*FcApplyFn)(cc_arg_t item, int argc, cc_arg_t *argv);
@@ -25,8 +27,7 @@ extern cc_arg_t FcContainerFree(cc_obj my, const char *msg, int argc, cc_arg_t *
 typedef struct _FcListNode {
 
     cc_arg_t item;
-    struct _FcListNode *next;
-    struct _FcListNode *prev;
+    struct _FcListNode *next, *prev;
 
 } FcListNode;
 
@@ -47,8 +48,7 @@ typedef struct _FcTreeNode {
 } FcTreeNode;
 
 class(FcTree, Root,
-`    FcTreeNode sentinel;'
-`    FcTreeNode *root;'
+`    FcTreeNode sentinel, *root;'
 `    FcCompareFn cmpMethod;')
 
 class(FcTreeCursor, Root,
@@ -58,8 +58,16 @@ class(FcTreeCursor, Root,
 
 class(FcString, Root,
 `    char *buffer;'
-`    ssize_t length;'
-`    ssize_t bufferSize;')
+`    ssize_t length, bufferSize;')
 
+
+struct _FcHashBucket;
+
+class(FcHash, Root,
+`    struct _FcHashBucket **table;'
+`    ssize_t buckets, mask, filled;'
+`    FcCompareFn cmpMethod;'
+`    FcHashFn hashMethod;'
+`    int flags;')
 
 unguard_h

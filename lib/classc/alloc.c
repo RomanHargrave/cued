@@ -43,6 +43,23 @@ cc_begin_meta_method(MetaAlloc, malloc)
 cc_end_method
 
 
+cc_begin_meta_method(MetaAlloc, calloc)
+    void *p;
+    size_t n;
+    char bytes[24];
+
+    cc_check_argc_range(1, 2);
+    n = as_size_t(argv[0]);
+    p = calloc(1, n);
+    if (!p && 2 == argc && as_int(argv[1])) {
+        snprintf(bytes, sizeof(bytes), "%zu", n);
+        return cc_error(by_str("out of memory allocating "), by_str(bytes), by_str(" bytes"));
+    }
+
+    return by_ptr(p);
+cc_end_method
+
+
 cc_begin_meta_method(MetaAlloc, realloc)
     void *p;
     size_t n;
@@ -74,6 +91,7 @@ cc_end_method
 // would run before cc_category() for another class
 //
 static cc_method_name MetaAllocMethods[] = {
+    cc_method("calloc",     callocMetaAlloc),
     cc_method("free",       freeMetaAlloc),
     cc_method("malloc",     mallocMetaAlloc),
     cc_method("realloc",    reallocMetaAlloc)

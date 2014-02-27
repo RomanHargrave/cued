@@ -28,6 +28,12 @@ int FcObjCompare(cc_arg_t item, cc_arg_t key)
 }
 
 
+unsigned FcObjHash(cc_arg_t item)
+{
+    return as_uint(cc_msg(as_obj(item), "hash"));
+}
+
+
 cc_arg_t FcContainerFree(cc_obj my, const char *msg, int argc, cc_arg_t *argv)
 {
     _cc_send(my, "empty", argc, argv);
