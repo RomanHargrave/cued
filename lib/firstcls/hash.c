@@ -53,6 +53,9 @@ cc_begin_method(FcHash, init)
     }
 
     my->table = (FcHashBucket **) as_ptr(cc_msg(Alloc, "calloc", by_size_t(sizeof(FcHashBucket *) * my->buckets)));
+    if (!my->table) {
+        return cc_error(by_str("out of memory allocating hash table"));
+    }
 
     return by_obj(my);
 cc_end_method
@@ -77,13 +80,58 @@ static inline unsigned HashSlot(cc_vars_FcHash *my, unsigned hash)
 }
 
 
+static inline cc_arg_t HashResizeTable(cc_vars_FcHash *my, const char *msg)
+{
+    FcHashBucket **newTable, **prev, *bucket, *next;
+    ssize_t newBuckets, oldBuckets, i, j;
+
+    oldBuckets = my->buckets;
+    newBuckets = oldBuckets << 1;
+    printf("resizing from %zd to %zd\n", oldBuckets, newBuckets);
+    newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
+               "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * newBuckets)));
+    if (!newTable) {
+        return cc_error(by_str("out of memory re-allocating hash table"));
+    }
+    memset(&newTable[oldBuckets], 0x00, sizeof(FcHashBucket *) * oldBuckets);
+
+    my->table = newTable;
+    for (i = 0, j = oldBuckets;  i < oldBuckets;  ++i, ++j) {
+        prev = &my->table[i];
+        for (bucket = *prev;  bucket;  bucket = next) {
+            next = bucket->next;
+            if (bucket->hash & oldBuckets) {
+                *prev = next;
+                bucket->next = my->table[j];
+                my->table[j] = bucket;
+            } else {
+                prev = &bucket->next;
+            }
+        }
+    }
+
+    my->buckets = newBuckets;
+    my->mask = newBuckets - 1;
+
+    return cc_null;
+}
+
+
 cc_begin_method(FcHash, insert)
     FcHashBucket *bucket;
+    cc_arg_t rc;
     ssize_t slot;
     int i;
-    for (i = 0;  i < argc;  ++i) {
-        // TODO:  resize logic
 
+    // TODO:  do the multiplication (my->buckets * 8 / 10) in init and on resize
+    if (my->flags & FC_HASH_FLAG_EXTENSIBLE && my->filled + argc > my->buckets << 2) {
+        rc = HashResizeTable(my, "insert");
+        if (!cc_is_null(rc)) {
+            return rc;
+        }
+    }
+
+    for (i = 0;  i < argc;  ++i) {
         bucket = (FcHashBucket *) as_ptr(cc_msg(Alloc, "malloc", by_size_t(sizeof(FcHashBucket))));
         if (!bucket) {
             return cc_error(by_str("out of memory allocating hash bucket"));

@@ -305,28 +305,29 @@ void applyInt(cc_arg_t item, int argc, cc_arg_t *argv)
 
 #define HASH_NODES 1000
 
+int nh[HASH_NODES];
+
 void unitTestHash()
 {
-    int i, j, n[HASH_NODES];
+    int i, j;
     cc_obj h;
     cc_arg_t rc;
 
     printf("\n\n*** HASH TESTS ***\n");
 
-    h = as_obj(cc_msg(FcHash, "new", by_ssize_t(128), by_ptr((void *) int_cmp), by_ptr((void *) int_hash)));
+    h = as_obj(cc_msg(FcHash, "new", by_ssize_t(1), by_ptr((void *) int_cmp), by_ptr((void *) int_hash)));
     for (i = 0;  i < HASH_NODES;  ++i) {
-        n[i] = rand();
-        cc_msg(h, "insert", by_int(n[i]));
+        nh[i] = rand();
+        cc_msg(h, "insert", by_int(nh[i]));
     }
 
     printf("random find\n");
     findTest(h, "find", 0);
-    for (i = 0;  i < 50;  ++i) {
+    for (i = 0;  i < HASH_NODES;  ++i) {
         j = rand() % HASH_NODES;
-        if (i % 2) {
-            findTest(h, "findFreq", n[j]);
-        } else {
-            findTest(h, "find", n[j]);
+        rc = cc_msg(h, (i & 1) ? "find" : "findFreq", by_int(nh[j]));
+        if (cc_is_null(rc)) {
+            printf("find(%d) returns cc_null\n", nh[j]);
         }
     }
     findTest(h, "find", 0);
@@ -334,7 +335,7 @@ void unitTestHash()
     printf("random remove");
     for (i = 0;  i < HASH_NODES * 2;  ++i) {
         j = rand() % HASH_NODES;
-        cc_msg(h, "remove", by_int(n[j]));
+        cc_msg(h, "remove", by_int(nh[j]));
         if (!(i % 1000)) {
             printf(".");
         }
@@ -346,7 +347,7 @@ void unitTestHash()
     }
     printf("\n");
 
-    cc_msg(h, "apply", by_ptr((void *) applyInt));
+    //cc_msg(h, "apply", by_ptr((void *) applyInt));
 
     cc_msg0(h, "free");
 }
