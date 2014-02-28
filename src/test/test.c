@@ -294,6 +294,11 @@ unsigned int_hash(cc_arg_t item)
     return (unsigned) as_int(item);
 }
 
+void applyInt(cc_arg_t item, int argc, cc_arg_t *argv)
+{
+    printf("apply: int is %d\n", as_int(item));
+}
+
 
 // hash table tests
 //
@@ -340,6 +345,8 @@ void unitTestHash()
         }
     }
     printf("\n");
+
+    cc_msg(h, "apply", by_ptr((void *) applyInt));
 
     cc_msg0(h, "free");
 }
@@ -509,7 +516,7 @@ void unitTestTree()
 
 void applyStr(cc_arg_t item, int argc, cc_arg_t *argv)
 {
-    printf("apply:  string is %s\n", as_str(item));
+    printf("apply: string is %s\n", as_str(item));
 }
 
 void unitTestList()
@@ -562,7 +569,7 @@ void unitTestList()
     cc_msg(cursor, "prefix", by_str("foo"));
     cc_msg(cursor, "affix", by_str("bar"), by_str("baz"));
     cc_msg0(cursor, "previous");
-    printf("after:  first, prefix foo, affix bar & baz, previous;  current is %s\n",
+    printf("after: first, prefix foo, affix bar & baz, previous;  current is %s\n",
         as_str(cc_msg0(cursor, "current")));
 
     for (item = as_str(cc_msg0(cursor, "first"));  item;  item = as_str(cc_msg0(cursor, "next"))) {

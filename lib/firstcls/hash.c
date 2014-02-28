@@ -156,6 +156,30 @@ cc_begin_method(FcHash, findOrRemove)
 cc_end_method
 
 
+cc_begin_method(FcHash, apply)
+    FcHashBucket *bucket;
+    FcApplyFn applyFn;
+    const char *applyMsg;
+    ssize_t i;
+
+    cc_check_argc_range(1, INT_MAX);
+    applyFn  = is_ptr(argv[0]) ? (FcApplyFn) as_ptr(argv[0]) : NULL;
+    applyMsg = is_str(argv[0]) ?             as_str(argv[0]) : NULL;
+
+    for (i = 0;  i < my->buckets;  ++i) {
+        for (bucket = my->table[i];  bucket;  bucket = bucket->next) {
+            if (applyMsg) {
+                _cc_send(as_obj(bucket->item), applyMsg, argc - 1, &argv[1]);
+            } else {
+                applyFn(        bucket->item,            argc - 1, &argv[1]);
+            }
+        }
+    }
+
+    return by_obj(my);
+cc_end_method
+
+
 cc_begin_method(FcHash, empty)
     FcHashBucket *bucket, *next;
     ssize_t i;
@@ -195,6 +219,5 @@ cc_class(FcHash,
     cc_method("find",               findFcHash),
     cc_method("findFreq",           findOrRemoveFcHash),
     cc_method("remove",             findOrRemoveFcHash),
-
-//    cc_method("apply",              applyFcHash),
+    cc_method("apply",              applyFcHash),
     )
