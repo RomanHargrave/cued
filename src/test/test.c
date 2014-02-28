@@ -37,7 +37,7 @@
 #endif
 
 
-#ifdef CUED_HAVE_CONSTRUCT_PRIO
+#if defined(CUED_HAVE_CONSTRUCT_PRIO) && 0
 
 cc_begin_meta_method(MetaAlloc, malloc)
     if (argc < 1) {
@@ -273,19 +273,6 @@ void unitTestString()
 }
 
 
-// tree tests
-//
-
-//#define TREE_NODES 10000
-#define TREE_NODES 100
-
-#define TEST_NUM (TREE_NODES / 2)
-
-int int_cmp(cc_arg_t item, cc_arg_t key)
-{
-    return as_int(item) - as_int(key);
-}
-
 void findTest(cc_obj t, const char *msg, int i)
 {
     cc_arg_t item;
@@ -296,6 +283,75 @@ void findTest(cc_obj t, const char *msg, int i)
         printf("%s(%d) returns %d\n",      msg, i, as_int(item));
     }
 }
+
+int int_cmp(cc_arg_t item, cc_arg_t key)
+{
+    return as_int(item) - as_int(key);
+}
+
+unsigned int_hash(cc_arg_t item)
+{
+    return (unsigned) as_int(item);
+}
+
+
+// hash table tests
+//
+
+#define HASH_NODES 1000
+
+void unitTestHash()
+{
+    int i, j, n[HASH_NODES];
+    cc_obj h;
+    cc_arg_t rc;
+
+    printf("\n\n*** HASH TESTS ***\n");
+
+    h = as_obj(cc_msg(FcHash, "new", by_ssize_t(128), by_ptr((void *) int_cmp), by_ptr((void *) int_hash)));
+    for (i = 0;  i < HASH_NODES;  ++i) {
+        n[i] = rand();
+        cc_msg(h, "insert", by_int(n[i]));
+    }
+
+    printf("random find\n");
+    findTest(h, "find", 0);
+    for (i = 0;  i < 50;  ++i) {
+        j = rand() % HASH_NODES;
+        if (i % 2) {
+            findTest(h, "findFreq", n[j]);
+        } else {
+            findTest(h, "find", n[j]);
+        }
+    }
+    findTest(h, "find", 0);
+
+    printf("random remove");
+    for (i = 0;  i < HASH_NODES * 2;  ++i) {
+        j = rand() % HASH_NODES;
+        cc_msg(h, "remove", by_int(n[j]));
+        if (!(i % 1000)) {
+            printf(".");
+        }
+        rc = cc_msg0(h, "isEmpty");
+        if (as_int(rc)) {
+            printf("table is empty\n");
+            break;
+        }
+    }
+    printf("\n");
+
+    cc_msg0(h, "free");
+}
+
+
+// tree tests
+//
+
+//#define TREE_NODES 10000
+#define TREE_NODES 100
+
+#define TEST_NUM (TREE_NODES / 2)
 
 void unitTestTree()
 {
@@ -602,6 +658,7 @@ int main(int argc, char *argv[])
     unitTestList();
     unitTestTree();
     unitTestString();
+    unitTestHash();
 
 
     // test error handling

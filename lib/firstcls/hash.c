@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <limits.h> // INT_MAX
+#include <string.h> // strcmp
 
 #define FC_HASH_FLAG_EXTENSIBLE     0x00000001
 
@@ -49,7 +50,6 @@ cc_begin_method(FcHash, init)
     my->mask = my->buckets - 1;
     if (!(my->mask & my->buckets)) {
         my->flags = FC_HASH_FLAG_EXTENSIBLE;
-        printf("hash table is power of two\n");
     }
 
     my->table = (FcHashBucket **) as_ptr(cc_msg(Alloc, "calloc", by_size_t(sizeof(FcHashBucket *) * my->buckets)));
@@ -102,9 +102,6 @@ cc_begin_method(FcHash, insert)
 cc_end_method
 
 
-// TODO:  findAndPromote (MRU behavior)
-
-
 cc_begin_method(FcHash, find)
     cc_arg_t item = cc_null;
     cc_arg_t key;
@@ -124,27 +121,66 @@ cc_begin_method(FcHash, find)
 cc_end_method
 
 
-cc_begin_method(FcHash, remove)
+cc_begin_method(FcHash, findOrRemove)
     cc_arg_t item = cc_null;
     cc_arg_t key;
     FcHashBucket **prev, *bucket;
+    ssize_t slot;
+    int i;
     unsigned hash;
+    int find = !strcmp(msg, "findFreq") ? 1 : 0;
 
-    cc_check_argc(1);
-    key = argv[0];
-    hash = (my->hashMethod)(key);
-    prev = &my->table[ HashSlot(my, hash) ];
-    for (bucket = *prev;  bucket;  bucket = bucket->next) {
-        if (hash == bucket->hash && !(my->cmpMethod)(bucket->item, key)) {
-            item  = bucket->item;
-            *prev = bucket->next;
-            cc_msg(Alloc, "free", by_ptr(bucket));
-            break;
+    for (i = 0;  i < argc;  ++i) {
+        key = argv[i];
+        hash = (my->hashMethod)(key);
+        slot = HashSlot(my, hash);
+        prev = &my->table[slot];
+        for (bucket = *prev;  bucket;  bucket = bucket->next) {
+            if (hash == bucket->hash && !(my->cmpMethod)(bucket->item, key)) {
+                item  = bucket->item;
+                *prev = bucket->next;
+                if (find) {
+                    bucket->next = my->table[slot];
+                    my->table[slot] = bucket;
+                } else {
+                    cc_msg(Alloc, "free", by_ptr(bucket));
+                    --my->filled;
+                }
+                break;
+            }
+            prev = &bucket->next;
         }
-        prev = &bucket->next;
     }
 
     return item;
+cc_end_method
+
+
+cc_begin_method(FcHash, empty)
+    FcHashBucket *bucket, *next;
+    ssize_t i;
+
+    for (i = 0;  i < my->buckets;  ++i) {
+        for (bucket = my->table[i];  bucket;  bucket = next) {
+            next = bucket->next;
+            cc_msg(Alloc, "free", by_ptr(bucket));
+            --my->filled;
+        }
+        my->table[i] = NULL;
+    }
+
+    if (my->filled) {
+        return cc_error(by_str("internal error"));
+    }
+
+    return by_obj(my);
+cc_end_method
+
+
+cc_begin_method(FcHash, free)
+    cc_msg0(my, "empty");
+    cc_msg(Alloc, "free", by_ptr(my->table));
+    return cc_msg_super0("free");
 cc_end_method
 
 
@@ -153,15 +189,12 @@ cc_class_object(FcHash)
 cc_class(FcHash,
     cc_method("init",               initFcHash),
     cc_method("isEmpty",            isEmptyFcHash),
-//    cc_method("empty",              emptyFcHash),
-//    cc_method("free",               FcContainerFree),
-
-    // should list gain an insert/remove that do a comparison?
+    cc_method("empty",              emptyFcHash),
+    cc_method("free",               freeFcHash),
     cc_method("insert",             insertFcHash),
-
-    // should list gain a findEqual that does a comparison?
     cc_method("find",               findFcHash),
+    cc_method("findFreq",           findOrRemoveFcHash),
+    cc_method("remove",             findOrRemoveFcHash),
 
-    cc_method("remove",             removeFcHash),
 //    cc_method("apply",              applyFcHash),
     )
