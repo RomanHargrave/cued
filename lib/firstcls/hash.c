@@ -95,23 +95,23 @@ static inline cc_arg_t HashResizeTable(cc_vars_FcHash *my, const char *msg)
     }
     memset(&newTable[oldBuckets], 0x00, sizeof(FcHashBucket *) * oldBuckets);
 
-    my->table = newTable;
     for (i = 0, j = oldBuckets;  i < oldBuckets;  ++i, ++j) {
-        prev = &my->table[i];
+        prev = &newTable[i];
         for (bucket = *prev;  bucket;  bucket = next) {
             next = bucket->next;
             if (bucket->hash & oldBuckets) {
                 *prev = next;
-                bucket->next = my->table[j];
-                my->table[j] = bucket;
+                bucket->next = newTable[j];
+                newTable[j]  = bucket;
             } else {
                 prev = &bucket->next;
             }
         }
     }
 
+    my->table   = newTable;
     my->buckets = newBuckets;
-    my->mask = newBuckets - 1;
+    my->mask    = newBuckets - 1;
 
     return cc_null;
 }
