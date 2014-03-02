@@ -65,7 +65,7 @@ struct _FcHashBucket;
 
 class(FcHash, Root,
 `    struct _FcHashBucket **table;'
-`    ssize_t buckets, mask, filled;'
+`    ssize_t buckets, mask, filled, initialSize;'
 `    FcCompareFn cmpMethod;'
 `    FcHashFn hashMethod;'
 `    int flags;')

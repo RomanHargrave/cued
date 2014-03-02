@@ -23,7 +23,7 @@
 #include <limits.h> // INT_MAX
 #include <string.h> // strcmp
 
-#define FC_HASH_FLAG_EXTENSIBLE     0x00000001
+#define FC_HASH_FLAG_RESIZABLE      0x00000001
 
 
 typedef struct _FcHashBucket {
@@ -39,9 +39,9 @@ cc_begin_method(FcHash, init)
     cc_msg_super0("init");
 
     cc_check_argc_range(0, 3);
-    my->buckets    = (argc)     ?           as_ssize_t(argv[0]) : 64;
-    my->cmpMethod  = (argc > 1) ? (FcCompareFn) as_ptr(argv[1]) : FcObjCompare;
-    my->hashMethod = (argc > 2) ? (FcHashFn)    as_ptr(argv[2]) : FcObjHash;
+    my->initialSize = my->buckets = (argc) ? as_ssize_t(argv[0]) : 64;
+    my->cmpMethod  = (argc > 1) ? (FcCompareFn)  as_ptr(argv[1]) : FcObjCompare;
+    my->hashMethod = (argc > 2) ? (FcHashFn)     as_ptr(argv[2]) : FcObjHash;
 
     if (my->buckets < 1) {
         return cc_error(by_str("invalid number of buckets"));
@@ -49,7 +49,7 @@ cc_begin_method(FcHash, init)
 
     my->mask = my->buckets - 1;
     if (!(my->mask & my->buckets)) {
-        my->flags = FC_HASH_FLAG_EXTENSIBLE;
+        my->flags = FC_HASH_FLAG_RESIZABLE;
     }
 
     my->table = (FcHashBucket **) as_ptr(cc_msg(Alloc, "calloc", by_size_t(sizeof(FcHashBucket *) * my->buckets)));
@@ -71,7 +71,7 @@ cc_end_method
 static inline unsigned HashSlot(cc_vars_FcHash *my, unsigned hash)
 {
     unsigned slot;
-    if (my->flags & FC_HASH_FLAG_EXTENSIBLE) {
+    if (my->flags & FC_HASH_FLAG_RESIZABLE) {
         slot = hash & my->mask;
     } else {
         slot = hash % my->buckets;
@@ -80,7 +80,47 @@ static inline unsigned HashSlot(cc_vars_FcHash *my, unsigned hash)
 }
 
 
-static inline cc_arg_t HashResizeTable(cc_vars_FcHash *my, const char *msg)
+static inline cc_arg_t HashShrinkTable(cc_vars_FcHash *my, const char *msg)
+{
+    FcHashBucket **newTable, **prev, *bucket;
+    ssize_t newBuckets, oldBuckets, i, j;
+
+    oldBuckets = my->buckets;
+    newBuckets = oldBuckets >> 1;  // sign extension should not be a problem
+    printf("resizing from %zd to %zd\n", oldBuckets, newBuckets);
+
+    // move hash chains from upper part of table to lower
+    for (i = newBuckets, j = 0;  i < oldBuckets;  ++i, ++j) {
+
+        // chances are good some chains are empty
+        if (my->table[i]) {
+
+            // find end of chain
+            prev = &my->table[j];
+            for (bucket = *prev;  bucket;  bucket = bucket->next) {
+                prev = &bucket->next;
+            }
+
+            // append chain
+            *prev = my->table[i];
+        }
+    }
+
+    my->buckets = newBuckets;
+    my->mask    = newBuckets - 1;
+
+    newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
+               "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * newBuckets)));
+    if (!newTable) {
+        return cc_error(by_str("out of memory re-allocating hash table"));
+    }
+    my->table = newTable;
+
+    return cc_null;
+}
+
+
+static inline cc_arg_t HashExtendTable(cc_vars_FcHash *my, const char *msg)
 {
     FcHashBucket **newTable, **prev, *bucket, *next;
     ssize_t newBuckets, oldBuckets, i, j;
@@ -88,6 +128,7 @@ static inline cc_arg_t HashResizeTable(cc_vars_FcHash *my, const char *msg)
     oldBuckets = my->buckets;
     newBuckets = oldBuckets << 1;
     printf("resizing from %zd to %zd\n", oldBuckets, newBuckets);
+
     newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
                "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * newBuckets)));
     if (!newTable) {
@@ -119,16 +160,16 @@ static inline cc_arg_t HashResizeTable(cc_vars_FcHash *my, const char *msg)
 
 cc_begin_method(FcHash, insert)
     FcHashBucket *bucket;
-    cc_arg_t rc;
     ssize_t slot;
     int i;
 
-    // TODO:  do the multiplication (my->buckets * 8 / 10) in init and on resize
-    if (my->flags & FC_HASH_FLAG_EXTENSIBLE && my->filled + argc > my->buckets << 2) {
-        rc = HashResizeTable(my, "insert");
-        if (!cc_is_null(rc)) {
-            return rc;
-        }
+    // TODO:  is << 2 what we want?  (is better for testing)
+    if (my->flags & FC_HASH_FLAG_RESIZABLE && my->filled + argc > my->buckets << 2) {
+
+        // TODO:  how often do we add more than one entry?  should we handle the case where we need
+        // to grow to more than double the size?
+        //
+        HashExtendTable(my, "insert");
     }
 
     for (i = 0;  i < argc;  ++i) {
@@ -200,6 +241,11 @@ cc_begin_method(FcHash, findOrRemove)
         }
     }
 
+    // sign extension should not be a problem
+    if (!find && my->flags & FC_HASH_FLAG_RESIZABLE && my->filled < my->buckets >> 1 && my->initialSize < my->buckets) {
+        HashShrinkTable(my, msg);
+    }
+
     return item;
 cc_end_method
 
@@ -244,6 +290,8 @@ cc_begin_method(FcHash, empty)
     if (my->filled) {
         return cc_error(by_str("internal error"));
     }
+
+    // TODO:  resize here to initialSize?  pathological on free...  could have parameter?
 
     return by_obj(my);
 cc_end_method

@@ -332,20 +332,16 @@ void unitTestHash()
     }
     findTest(h, "find", 0);
 
-    printf("random remove");
-    for (i = 0;  i < HASH_NODES * 2;  ++i) {
+    printf("random remove\n");
+    for (i = 0;  i < HASH_NODES * 4;  ++i) {
         j = rand() % HASH_NODES;
         cc_msg(h, "remove", by_int(nh[j]));
-        if (!(i % 1000)) {
-            printf(".");
-        }
         rc = cc_msg0(h, "isEmpty");
         if (as_int(rc)) {
             printf("table is empty\n");
             break;
         }
     }
-    printf("\n");
 
     //cc_msg(h, "apply", by_ptr((void *) applyInt));
 
