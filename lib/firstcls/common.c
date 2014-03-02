@@ -30,7 +30,7 @@ int FcObjCompare(cc_arg_t item, cc_arg_t key)
 
 unsigned FcObjHash(cc_arg_t item)
 {
-    return as_uint(cc_msg(as_obj(item), "hash"));
+    return as_uint(cc_msg0(as_obj(item), "hash"));
 }
 
 
