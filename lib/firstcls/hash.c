@@ -158,8 +158,8 @@ cc_begin_method(FcHash, insert)
     ssize_t slot;
     int i;
 
-    // TODO:  is << 2 what we want?  (is better for testing)
-    if ((my->flags & FC_HASH_FLAG_RESIZABLE) && (my->filled + argc > (my->buckets << 2))) {
+    // was my->buckets << 2;  << 1 might be better than nothing...
+    if ((my->flags & FC_HASH_FLAG_RESIZABLE) && (my->filled + argc > my->buckets)) {
         HashExtendTable(my, "insert");
     }
 
@@ -234,7 +234,7 @@ cc_begin_method(FcHash, findOrRemove)
 
     // sign extension should not be a problem
     if (   !find && (my->flags & FC_HASH_FLAG_RESIZABLE)
-        && (my->filled < (my->buckets >> 1)) && (my->initialSize < my->buckets))
+        && (my->filled < (my->buckets >> 2)) && (my->initialSize < my->buckets))
     {
         HashShrinkTable(my, msg);
     }
