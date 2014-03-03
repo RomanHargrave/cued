@@ -39,7 +39,7 @@ cc_begin_method(FcHash, init)
     cc_msg_super0("init");
 
     cc_check_argc_range(0, 3);
-    my->initialSize = my->buckets = (argc) ? as_ssize_t(argv[0]) : 64;
+    my->initialSize = my->buckets = argc ?   as_ssize_t(argv[0]) : 64;
     my->cmpMethod  = (argc > 1) ? (FcCompareFn)  as_ptr(argv[1]) : FcObjCompare;
     my->hashMethod = (argc > 2) ? (FcHashFn)     as_ptr(argv[2]) : FcObjHash;
 
@@ -87,7 +87,7 @@ static inline void HashShrinkTable(cc_vars_FcHash *my, const char *msg)
 
     oldBuckets = my->buckets;
     newBuckets = oldBuckets >> 1;  // sign extension should not be a problem
-    printf("resizing from %zd to %zd\n", oldBuckets, newBuckets);
+    printf("resizing from %zd to %zd; filled=%zd\n", oldBuckets, newBuckets, my->filled);
 
     // move hash chains from upper part of table to lower
     for (i = newBuckets, j = 0;  i < oldBuckets;  ++i, ++j) {
@@ -124,7 +124,7 @@ static inline void HashExtendTable(cc_vars_FcHash *my, const char *msg)
 
     oldBuckets = my->buckets;
     newBuckets = oldBuckets << 1;
-    printf("resizing from %zd to %zd\n", oldBuckets, newBuckets);
+    printf("resizing from %zd to %zd; filled=%zd\n", oldBuckets, newBuckets, my->filled);
 
     newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
                "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * newBuckets)));
@@ -268,12 +268,27 @@ cc_end_method
 
 
 cc_begin_method(FcHash, empty)
-    FcHashBucket *bucket, *next;
-    ssize_t i;
+    FcHashBucket *bucket, *next, **newTable;
+    ssize_t i, resize;
+    FcEmptyHow how;
+
+    cc_check_argc_range(0, 2);
+    how    = (argc)     ? (FcEmptyHow) as_int(argv[0]) : FcEmptyNone;
+    resize = (argc > 1) ?              as_int(argv[1]) : 0;
 
     for (i = 0;  i < my->buckets;  ++i) {
         for (bucket = my->table[i];  bucket;  bucket = next) {
             next = bucket->next;
+            switch (how) {
+                case FcEmptyNone:
+                    break;
+                case FcEmptyFreeObject:
+                    cc_msg0(as_obj(bucket->item), "free");
+                    break;
+                case FcEmptyFreePointer:
+                    free(as_ptr(bucket->item));
+                    break;
+            }
             cc_msg(Alloc, "free", by_ptr(bucket));
             --my->filled;
         }
@@ -284,7 +299,15 @@ cc_begin_method(FcHash, empty)
         return cc_error(by_str("internal error"));
     }
 
-    // TODO:  resize here to initialSize?  pathological on free...  could have parameter?
+    if (resize) {
+        newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
+                   "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * my->initialSize)));
+        if (newTable) {
+            my->table   = newTable;
+            my->buckets = my->initialSize;
+            my->mask    = my->buckets - 1;
+        }
+    }
 
     return by_obj(my);
 cc_end_method
