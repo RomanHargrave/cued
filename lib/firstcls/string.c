@@ -327,8 +327,6 @@ cc_begin_method(FcString, truncate)
             if (buffer) {
                 my->buffer     = buffer;
                 my->bufferSize = bufferSize;
-            } else {
-                return cc_error(by_str("out of memory"));
             }
         }
         return by_obj(my);

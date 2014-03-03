@@ -80,7 +80,7 @@ static inline unsigned HashSlot(cc_vars_FcHash *my, unsigned hash)
 }
 
 
-static inline cc_arg_t HashShrinkTable(cc_vars_FcHash *my, const char *msg)
+static inline void HashShrinkTable(cc_vars_FcHash *my, const char *msg)
 {
     FcHashBucket **newTable, **prev, *bucket;
     ssize_t newBuckets, oldBuckets, i, j;
@@ -111,16 +111,13 @@ static inline cc_arg_t HashShrinkTable(cc_vars_FcHash *my, const char *msg)
 
     newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
                "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * newBuckets)));
-    if (!newTable) {
-        return cc_error(by_str("out of memory re-allocating hash table"));
+    if (newTable) {
+        my->table = newTable;
     }
-    my->table = newTable;
-
-    return cc_null;
 }
 
 
-static inline cc_arg_t HashExtendTable(cc_vars_FcHash *my, const char *msg)
+static inline void HashExtendTable(cc_vars_FcHash *my, const char *msg)
 {
     FcHashBucket **newTable, **prev, *bucket, *next;
     ssize_t newBuckets, oldBuckets, i, j;
@@ -132,7 +129,7 @@ static inline cc_arg_t HashExtendTable(cc_vars_FcHash *my, const char *msg)
     newTable = (FcHashBucket **) as_ptr(cc_msg(Alloc,
                "realloc", by_ptr(my->table), by_size_t(sizeof(FcHashBucket *) * newBuckets)));
     if (!newTable) {
-        return cc_error(by_str("out of memory re-allocating hash table"));
+        return;
     }
     memset(&newTable[oldBuckets], 0x00, sizeof(FcHashBucket *) * oldBuckets);
 
@@ -153,8 +150,6 @@ static inline cc_arg_t HashExtendTable(cc_vars_FcHash *my, const char *msg)
     my->table   = newTable;
     my->buckets = newBuckets;
     my->mask    = newBuckets - 1;
-
-    return cc_null;
 }
 
 
@@ -164,11 +159,7 @@ cc_begin_method(FcHash, insert)
     int i;
 
     // TODO:  is << 2 what we want?  (is better for testing)
-    if (my->flags & FC_HASH_FLAG_RESIZABLE && my->filled + argc > my->buckets << 2) {
-
-        // TODO:  how often do we add more than one entry?  should we handle the case where we need
-        // to grow to more than double the size?
-        //
+    if ((my->flags & FC_HASH_FLAG_RESIZABLE) && (my->filled + argc > (my->buckets << 2))) {
         HashExtendTable(my, "insert");
     }
 
@@ -242,7 +233,9 @@ cc_begin_method(FcHash, findOrRemove)
     }
 
     // sign extension should not be a problem
-    if (!find && my->flags & FC_HASH_FLAG_RESIZABLE && my->filled < my->buckets >> 1 && my->initialSize < my->buckets) {
+    if (   !find && (my->flags & FC_HASH_FLAG_RESIZABLE)
+        && (my->filled < (my->buckets >> 1)) && (my->initialSize < my->buckets))
+    {
         HashShrinkTable(my, msg);
     }
 
