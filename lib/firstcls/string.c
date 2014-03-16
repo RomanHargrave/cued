@@ -25,6 +25,7 @@
 #include <stdio.h>  // fwrite
 #include <string.h> // strlen
 #include <unistd.h> // write
+#include <stdint.h> // SIZE_MAX
 
 
 cc_begin_method(FcString, concat)
@@ -365,26 +366,25 @@ cc_begin_method(FcString, prealloc)
 cc_end_method
 
 
-// TODO:  this illustrates why we need to know if ssize_t is 32-bit or 64-bit
 cc_begin_method(FcString, hash)
     ssize_t index, hash;
 
-    if (sizeof(hash) == 4) {
-        hash = 0x811C9DC5;
-    } else {
-        hash = 0xCBF29CE484222325ULL;
-    }
+#if SIZE_MAX <= 4294967295U
+    hash = 0x811C9DC5;
+#else
+    hash = 0xCBF29CE484222325ULL;
+#endif
 
     for (index = 0;  index < my->length;  ++index) {
         hash ^= (ssize_t) my->buffer[index];
 
-        if (sizeof(hash) == 4) {
-            // optimized form of hval *= 0x01000193
-            hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
-        } else {
-            // optimized form of hash *= 0x00000100000001B3
-            hash += (hash << 1) + (hash << 4) + (hash << 5) + (hash << 7) + (hash << 8) + (hash << 40);
-        }
+#if SIZE_MAX <= 4294967295U
+        // optimized form of hval *= 0x01000193
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+#else
+        // optimized form of hash *= 0x00000100000001B3
+        hash += (hash << 1) + (hash << 4) + (hash << 5) + (hash << 7) + (hash << 8) + (hash << 40);
+#endif
     }
 
     return by_ssize_t(hash);
