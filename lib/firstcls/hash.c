@@ -30,7 +30,7 @@ typedef struct _FcHashBucket {
 
     cc_arg_t item;
     struct _FcHashBucket *next;
-    unsigned hash;
+    ssize_t hash;
 
 } FcHashBucket;
 
@@ -68,9 +68,9 @@ cc_begin_method(FcHash, isEmpty)
 cc_end_method
 
 
-static inline unsigned HashSlot(cc_vars_FcHash *my, unsigned hash)
+static inline ssize_t HashSlot(cc_vars_FcHash *my, ssize_t hash)
 {
-    unsigned slot;
+    ssize_t slot;
     if (my->flags & FC_HASH_FLAG_RESIZABLE) {
         slot = hash & my->mask;
     } else {
@@ -186,7 +186,7 @@ cc_begin_method(FcHash, find)
     cc_arg_t item = cc_null;
     cc_arg_t key;
     FcHashBucket *bucket;
-    unsigned hash;
+    ssize_t hash;
 
     cc_check_argc(1);
     key = argv[0];
@@ -207,7 +207,7 @@ cc_begin_method(FcHash, findOrRemove)
     FcHashBucket **prev, *bucket;
     ssize_t slot;
     int i;
-    unsigned hash;
+    ssize_t hash;
     int find = !strcmp(msg, "findFreq") ? 1 : 0;
 
     for (i = 0;  i < argc;  ++i) {
