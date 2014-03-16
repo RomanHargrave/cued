@@ -28,9 +28,9 @@ int FcObjCompare(cc_arg_t item, cc_arg_t key)
 }
 
 
-unsigned FcObjHash(cc_arg_t item)
+ssize_t FcObjHash(cc_arg_t item)
 {
-    return as_uint(cc_msg0(as_obj(item), "hash"));
+    return as_ssize_t(cc_msg0(as_obj(item), "hash"));
 }
 
 

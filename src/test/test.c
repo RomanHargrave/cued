@@ -289,9 +289,9 @@ int int_cmp(cc_arg_t item, cc_arg_t key)
     return as_int(item) - as_int(key);
 }
 
-unsigned int_hash(cc_arg_t item)
+ssize_t int_hash(cc_arg_t item)
 {
-    return (unsigned) as_int(item);
+    return (ssize_t) as_int(item);
 }
 
 void applyInt(cc_arg_t item, int argc, cc_arg_t *argv)

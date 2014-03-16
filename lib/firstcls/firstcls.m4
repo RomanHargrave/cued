@@ -14,8 +14,8 @@ typedef enum _FcEmptyHow {
 typedef int (*FcCompareFn)(cc_arg_t item, cc_arg_t key);
 extern int FcObjCompare(cc_arg_t item, cc_arg_t key);
 
-typedef unsigned (*FcHashFn)(cc_arg_t item);
-extern unsigned FcObjHash(cc_arg_t item);
+typedef ssize_t (*FcHashFn)(cc_arg_t item);
+extern ssize_t FcObjHash(cc_arg_t item);
 
 
 typedef void (*FcApplyFn)(cc_arg_t item, int argc, cc_arg_t *argv);

@@ -269,7 +269,8 @@ cc_end_method
 
 cc_begin_method(FcHash, empty)
     FcHashBucket *bucket, *next, **newTable;
-    ssize_t i, resize;
+    ssize_t i;
+    int resize;
     FcEmptyHow how;
 
     cc_check_argc_range(0, 2);
