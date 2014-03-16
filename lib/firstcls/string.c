@@ -367,22 +367,23 @@ cc_end_method
 
 
 cc_begin_method(FcString, hash)
-    ssize_t index, hash;
+    ssize_t index;
+    size_t hash;
 
     cc_check_argc_range(0, 1);
     if (argc) {
         // allow an initial value in order to extend a hash from another object
-        hash = as_ssize_t(argv[0]);
+        hash = (size_t) as_ssize_t(argv[0]);
     } else {
 #if SIZE_MAX <= 4294967295U
-        hash = (ssize_t) 0x811C9DC5;
+        hash = 0x811C9DC5;
 #else
-        hash = (ssize_t) 0xCBF29CE484222325ULL;
+        hash = 0xCBF29CE484222325ULL;
 #endif
     }
 
     for (index = 0;  index < my->length;  ++index) {
-        hash ^= (ssize_t) my->buffer[index];
+        hash ^= (size_t) my->buffer[index];
 
 #if SIZE_MAX <= 4294967295U
         // optimized form of hval *= 0x01000193
@@ -393,7 +394,7 @@ cc_begin_method(FcString, hash)
 #endif
     }
 
-    return by_ssize_t(hash);
+    return by_ssize_t((ssize_t) hash);
 cc_end_method
 
 
