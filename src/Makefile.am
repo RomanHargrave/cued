@@ -5,7 +5,3 @@ SUBDIRS = cued \
           sfcat \
           analyzer \
           sfcmp
-
-if CLASSC
-    SUBDIRS += test
-endif

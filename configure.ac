@@ -37,33 +37,6 @@ unset result
 AC_MSG_RESULT($SED_EXTENDED_RE_FLAG)
 AC_SUBST(SED_EXTENDED_RE_FLAG)
 
-# Check for m4 and how to run.
-AC_ARG_ENABLE([classc], AS_HELP_STRING([--disable-classc],
-    [object-oriented extension to the C programming language (default enabled)]))
-
-# can use AM_IF instead of AS_IF with later versions of automake
-AS_IF([test "x$enable_classc" != "xno"], [
-    AC_PATH_PROG([M4], [m4], [no])
-    if test "$M4" = no; then
-        AC_MSG_WARN([Classc needs m4 installed; disabling classc.])
-        enable_classc="no"
-    else
-        AC_MSG_CHECKING([for m4 that accepts -g flag])
-        result=$(echo foo | $M4 -g 2>/dev/null)
-        if [[ $? -eq 0 ]] ; then
-            AM_M4FLAGS="-g ${AM_M4FLAGS}"
-            AC_MSG_RESULT([yes])
-        else
-            AC_MSG_RESULT([no])
-        fi
-        unset result
-        AC_SUBST([AM_M4FLAGS])
-    fi
-])
-
-# this has to appear at top-level; otherwise, would specify inside AS_IF
-AM_CONDITIONAL([CLASSC], test "x$enable_classc" != "xno")
-
 
 # Checks for libraries.
 #
@@ -138,24 +111,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <getopt.h>], [struct option o; cons
     AC_MSG_RESULT(no)
 ])
 
-# Check for variable length arrays (missing in Solaris Studio C++ compiler.)
-AC_MSG_CHECKING([for variable length arrays])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [ int a = 5;  int b @<:@ a @:>@; ])], [
-    AC_MSG_RESULT(yes)
-    AC_DEFINE([HAVE_VAR_ARRAY], [], [Define this if compiler implements variable length arrays])
-], [
-    AC_MSG_RESULT(no)
-])
-
-# Check for constructor priorities (missing in Solaris compilers, including gcc.)
-AC_MSG_CHECKING([for constructor priorities])
-AC_COMPILE_IFELSE([AC_LANG_SOURCE([ static void foo(void) __attribute__((constructor(101))); ])], [
-    AC_MSG_RESULT(yes)
-    AC_DEFINE([HAVE_CONSTRUCT_PRIO], [], [Define this if compiler implements constructor priorities])
-], [
-    AC_MSG_RESULT(no)
-])
-
 # Check for PATH_MAX in limits.h.
 AC_MSG_CHECKING([for PATH_MAX in limits.h])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <limits.h>], [int x = PATH_MAX;])], [
@@ -220,7 +175,7 @@ AC_SUBST([LIBCUED_LIBS])
 AC_SUBST([LIBCUED_CPPFLAGS])
 
 
-# Always generate classc Makefiles because AM_CONDITIONAL in SUBDIRS
+# Always generate all Makefiles because AM_CONDITIONAL in SUBDIRS
 # is ignored during make maintainer-clean
 AC_CONFIG_FILES([Makefile
                  lib/Makefile
@@ -231,9 +186,6 @@ AC_CONFIG_FILES([Makefile
                  src/qdump/Makefile
                  src/sfcat/Makefile
                  src/analyzer/Makefile
-                 src/sfcmp/Makefile
-                 lib/classc/Makefile
-                 lib/firstcls/Makefile
-                 src/test/Makefile])
+                 src/sfcmp/Makefile])
 
 AC_OUTPUT

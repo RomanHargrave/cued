@@ -6,24 +6,6 @@ remove dependence on libcdio in qsc.c (again)
 
 cued needs --version option
 
-classc
-    apple does not have -g flag for m4
-
-    need m4 rules in makefiles
-        can include foo.am during automake?
-
-    AC_PROG_LEX AC_PROG_YACC are options as well
-
-    ob.h and firstcls.h will need delete rules in makefile
-
-    make class compilation conditional
-        note that always have to make makefiles for classc b/c conditional around SUBDIRS doesn't work correctly in case of make maintainer-clean
-        
-        Solaris does not have AM_COND_IF macro
-
-    handle variants of m4
-        use -g flag?
-
 out of directory build
     cannot find cued_config.h
 
