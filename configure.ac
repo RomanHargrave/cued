@@ -82,9 +82,6 @@ LIBS=${SAVE_LIBS}
 unset SAVE_LIBS
 
 
-# Check for mcheck.h.
-AC_CHECK_HEADERS([mcheck.h])
-
 # Check for memrchr in libc.
 AC_CHECK_FUNC([memrchr],
     [AC_DEFINE([HAVE_MEMRCHR], [], [Define this if libc has the 'memrchr' function])])
