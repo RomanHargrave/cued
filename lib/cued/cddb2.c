@@ -33,6 +33,7 @@
 #include <stdlib.h> // malloc
 #include <ctype.h> // toupper
 #include <stdarg.h>
+#include <string.h>
 
 
 static cddb_log_handler_t oldLogFn;

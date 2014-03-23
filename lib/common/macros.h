@@ -20,8 +20,6 @@
 #ifndef MACROS_H_INCLUDED
 #define MACROS_H_INCLUDED
 
-#include <string.h>
-
 
 //#define SUBSTREQ(cnst, str) (!strncmp((cnst), (str), sizeof(cnst) - 1))
 #define SUBSTREQ(cnst, str) (!strncmp((cnst), (str), strlen((cnst))))
