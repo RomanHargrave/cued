@@ -29,8 +29,8 @@
 #   ifndef _GNU_SOURCE // already defined for g++
 #       define _GNU_SOURCE // memrchr, memmem
 #   endif // _GNU_SOURCE
-#   include <string.h>
 #endif
+#include <string.h>
 
 #include <sys/types.h> // mode_t
 #include <stdio.h> // FILE *
