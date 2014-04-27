@@ -21,13 +21,14 @@
 #define RIP_H_INCLUDED
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_PARANOIA
+#include <cued/cued_config.h> // CUED_HAVE_PARANOIA
 #endif
 
-#include "cddb2.h" // cddb_disc_t
-#include "qsc.h" // MCN_LEN, ISRC_LEN
-#include "pwsc.h"
-#include "macros.h"
+#include <cued/cddb2.h> // cddb_disc_t
+#include <cued/qsc.h> // MCN_LEN, ISRC_LEN
+#include <cued/pwsc.h>
+
+#include <caulk/macros.h>
 
 #ifdef CUED_HAVE_PARANOIA
 #ifdef CUED_HAVE_CDIO_PARANOIA_PARANOIA_H

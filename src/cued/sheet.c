@@ -18,20 +18,22 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_PACKAGE_VERSION
+#include <cued/cued_config.h> // CUED_PACKAGE_VERSION
 #endif
-#include "macros.h"
-#include "unix.h"
 #include "cued.h" // CUED_PRODUCT_NAME
-#include "dmalloc.h"
+
+#include <caulk/macros.h>
+#include <caulk/unix.h>
+#include <caulk/dmalloc.h>
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
-#include "cdio2.h"
+#include <cued/cdio2.h>
+#include <cued/qsc.h>
 #include "sheet.h"
-#include "qsc.h"
 
 #include <stdlib.h> // atoll
+#include <string.h> // strchr
 
 
 static int cued_lsn_to_ascii_for_cue(lsn_t lsn, char *ascii)

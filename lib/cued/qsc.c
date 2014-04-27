@@ -17,7 +17,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "qsc.h"
+#include <cued/qsc.h>
 
 
 #undef DEBUG_CRC

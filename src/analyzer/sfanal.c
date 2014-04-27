@@ -15,9 +15,9 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "opt.h"
-#include "macros.h"
-#include "unix.h"
+#include <caulk/opt.h>
+#include <caulk/macros.h>
+#include <caulk/unix.h>
 
 #ifdef __cplusplus
 #define __STDC_LIMIT_MACROS

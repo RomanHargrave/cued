@@ -20,7 +20,7 @@
 #ifndef QSC_H_INCLUDED
 #define QSC_H_INCLUDED
 
-#include "qsc_types.h"
+#include <cued/qsc_types.h>
 
 
 #define MCN_LEN 13

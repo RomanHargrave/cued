@@ -49,6 +49,7 @@ fi
 PKG_CHECK_MODULES([LIBCDIO], [libcdio >= 0.81])
 PKG_CHECK_MODULES([LIBSNDFILE], [sndfile >= 1.0.17])
 PKG_CHECK_MODULES([LIBCDDB], [libcddb >= 1.3.0])
+PKG_CHECK_MODULES([LIBCAULK], [libcaulk >= 1.0.0])
 
 # MacPorts installs headers in /opt/local so CPPFLAGS magic is needed.
 # Bracket package header checks with save and restore of CPPFLAGS.
@@ -82,28 +83,11 @@ LIBS=${SAVE_LIBS}
 unset SAVE_LIBS
 
 
-# Check for memrchr in libc.
-AC_CHECK_FUNC([memrchr],
-    [AC_DEFINE([HAVE_MEMRCHR], [], [Define this if libc has the 'memrchr' function])])
-
-# Check for memmem in libc.
-AC_CHECK_FUNC([memmem],
-    [AC_DEFINE([HAVE_MEMMEM], [], [Define this if libc has the 'memmem' function])])
-
 # Check for non-standard C runtime behavior.
 AC_MSG_CHECKING([for assignable stdout])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <stdio.h>], [stdout = stderr;])], [
     AC_MSG_RESULT(yes)
     AC_DEFINE([HAVE_ASSIGNABLE_STDOUT], [], [Define this if stdout can be assigned])
-], [
-    AC_MSG_RESULT(no)
-])
-
-# Check for missing const qualifier in struct option (for Solaris.)
-AC_MSG_CHECKING([for const qualifier in struct option])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <getopt.h>], [struct option o; const char *foo = "foo"; o.name = foo;])], [
-    AC_MSG_RESULT(yes)
-    AC_DEFINE([HAVE_CONST_OPTION], [], [Define this if struct option has the const qualifier])
 ], [
     AC_MSG_RESULT(no)
 ])
@@ -139,35 +123,14 @@ if test "$GCC" = yes; then
 fi
 
 
-# Checks for options to configure.
-#
-
+# Add common header files.
 AC_SUBST([AM_CPPFLAGS])
-
-AC_ARG_ENABLE([dmalloc_libc], AS_HELP_STRING([--enable-dmalloc-libc],
-    [debug malloc that overloads libc malloc (default disabled)]))
-AS_IF([test "x$enable_dmalloc_libc" = "xyes"], [
-    AC_SEARCH_LIBS([dlsym], [dl dld], [
-        AC_DEFINE([OVERLOAD_LIBC], [], [Define this if debug malloc should overload libc malloc])
-    ], [
-        AC_MSG_WARN([Failed to find function 'dlsym' needed by --enable-dmalloc-libc; not enabled])
-    ])
-])
-
-AC_ARG_ENABLE([dmalloc_naive], AS_HELP_STRING([--enable-dmalloc-naive],
-    [debug malloc that does not overload libc (default disabled)]))
-AS_IF([test "x$enable_dmalloc_naive" = "xyes"], [
-    AM_CPPFLAGS="-D'malloc(x)=dmalloc(x)' -D'calloc(x, y)=dcalloc(x, y)' -D'free(x)=dfree(x)' -D'realloc(x, y)=drealloc(x, y)' ${AM_CPPFLAGS}"
-])
+AM_CPPFLAGS='-I$(top_builddir)/include -I$(top_srcdir)/include'
 
 
 # Static library shared by various binaries.
-LIBCOMMON_LIBS='$(top_builddir)/lib/common/libcommon.a'
-LIBCOMMON_CPPFLAGS='-I$(top_srcdir)/lib/common'
 LIBCUED_LIBS='$(top_builddir)/lib/cued/libcued.a'
 LIBCUED_CPPFLAGS='-I$(top_srcdir)/lib/cued'
-AC_SUBST([LIBCOMMON_LIBS])
-AC_SUBST([LIBCOMMON_CPPFLAGS])
 AC_SUBST([LIBCUED_LIBS])
 AC_SUBST([LIBCUED_CPPFLAGS])
 
@@ -175,8 +138,9 @@ AC_SUBST([LIBCUED_CPPFLAGS])
 # Always generate all Makefiles because AM_CONDITIONAL in SUBDIRS
 # is ignored during make maintainer-clean
 AC_CONFIG_FILES([Makefile
+                 include/Makefile
+                 include/cued/Makefile
                  lib/Makefile
-                 lib/common/Makefile
                  lib/cued/Makefile
                  src/Makefile
                  src/cued/Makefile

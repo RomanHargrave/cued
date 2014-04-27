@@ -26,26 +26,28 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_PARANOIA, CUED_PATH_MAX
+#include <cued/cued_config.h> // CUED_HAVE_PARANOIA, CUED_PATH_MAX
 #endif
-#include "unix.h"
-#include "macros.h"
 #include "cued.h" // CUED_PRODUCT_NAME
-#include "opt.h"
-#include "util.h"
-#include "dmalloc.h"
+
+#include <caulk/unix.h>
+#include <caulk/macros.h>
+#include <caulk/opt.h>
+#include <caulk/util.h>
+#include <caulk/dmalloc.h>
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
-#include "cdio2.h"
-#include "cddb2.h"
-#include "format.h"
+#include <cued/cdio2.h>
+#include <cued/cddb2.h>
+#include <cued/format.h>
+#include <cued/qsc.h> // MSF_LEN, msf_to_ascii
 #include "rip.h"
 #include "sheet.h"
-#include "qsc.h" // MSF_LEN, msf_to_ascii
 
 #include <sndfile.h>
 
+#include <string.h>
 #include <stdlib.h> // EXIT_FAILURE
 #include <unistd.h> // unlink
 #include <limits.h> // PATH_MAX

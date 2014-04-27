@@ -18,7 +18,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_CDTEXT_V2, CUED_HAVE_PARANOIA
+#include <cued/cued_config.h> // CUED_HAVE_CDTEXT_V2, CUED_HAVE_PARANOIA
 #endif
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
@@ -28,7 +28,7 @@
 #ifdef CUED_HAVE_CDIO_MMC_LL_CMDS_H
 #include <cdio/mmc_ll_cmds.h>
 #endif
-#include "cdio2.h"
+#include <cued/cdio2.h>
 
 #include <string.h> // strlen, strerror, strchr
 #include <errno.h>

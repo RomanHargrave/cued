@@ -20,7 +20,7 @@
 #ifndef PWSC_H_INCLUDED
 #define PWSC_H_INCLUDED
 
-#include "qsc.h"
+#include <cued/qsc.h>
 
 
 typedef struct _mmc_raw_pwsc_t {

@@ -19,9 +19,9 @@
 **
 */
 
-#include "opt.h"
-#include "macros.h"
-#include "unix.h"
+#include <caulk/opt.h>
+#include <caulk/macros.h>
+#include <caulk/unix.h>
 
 #include <stdio.h>
 #include <stdlib.h>

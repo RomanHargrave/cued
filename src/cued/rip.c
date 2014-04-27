@@ -18,10 +18,10 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_CDIO_MMC_LL_CMDS_H, CUED_HAVE_PARANOIA
+#include <cued/cued_config.h> // CUED_HAVE_CDIO_MMC_LL_CMDS_H, CUED_HAVE_PARANOIA
 #endif
-#include "unix.h"
-#include "util.h"
+#include <caulk/unix.h>
+#include <caulk/util.h>
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
@@ -29,10 +29,11 @@
 #ifdef CUED_HAVE_CDIO_MMC_LL_CMDS_H
 #include <cdio/mmc_ll_cmds.h>
 #endif
-#include "cdio2.h"
+#include <cued/cdio2.h>
+#include <cued/format.h>
 #include "rip.h"
-#include "format.h"
 
+#include <string.h> // memset, memcpy, memmove
 #include <stdlib.h> // free
 #include <unistd.h> // unlink
 #include <sndfile.h>

@@ -18,17 +18,18 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h"
+#include <cued/cued_config.h>
 #endif
-#include "opt.h"
 #include "cued.h" // CUED_PRODUCT_NAME
-#include "macros.h" // NELEMS
-#include "dmalloc.h"
+
+#include <caulk/opt.h>
+#include <caulk/macros.h> // NELEMS
+#include <caulk/dmalloc.h>
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
-#include "cddb2.h"
+#include <cued/cddb2.h>
 
 #include <stdlib.h> // malloc
 #include <ctype.h> // toupper

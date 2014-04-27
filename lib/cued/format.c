@@ -18,18 +18,19 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h"
+#include <cued/cued_config.h>
 #endif
-#include "unix.h"
 #include "cued.h" // CUED_PRODUCT_NAME
-#include "dlist.h"
-#include "macros.h"
+
+#include <caulk/unix.h>
+#include <caulk/dlist.h>
+#include <caulk/macros.h>
 
 #define DO_NOT_WANT_PARANOIA_COMPATIBILITY
 #include <cdio/cdio.h>
-#include "format.h"
-#include "cdio2.h"
-#include "cddb2.h"
+#include <cued/format.h>
+#include <cued/cdio2.h>
+#include <cued/cddb2.h>
 
 #include <stdlib.h> // malloc
 #include <string.h>

@@ -17,9 +17,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "pwsc.h"
-#include "macros.h"
-
+#include <cued/pwsc.h>
+#include <caulk/macros.h>
 #include <string.h>
 
 

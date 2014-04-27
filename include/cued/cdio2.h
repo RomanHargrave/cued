@@ -21,10 +21,10 @@
 #define CDIO2_H_INCLUDED
 
 #ifdef HAVE_CONFIG_H
-#include "cued_config.h" // CUED_HAVE_PARANOIA
+#include <cued/cued_config.h> // CUED_HAVE_PARANOIA
 #endif
 
-#include "qsc.h"
+#include <cued/qsc.h>
 
 #include <cdio/logging.h>
 

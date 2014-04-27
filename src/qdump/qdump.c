@@ -20,11 +20,13 @@
 //      qdump -q qchannel >qchannel.txt
 //
 
-#include "unix.h"
-#include "macros.h"
-#include "qsc.h"
-#include "opt.h"
+#include <caulk/unix.h>
+#include <caulk/macros.h>
+#include <caulk/opt.h>
 
+#include <cued/qsc.h>
+
+#include <string.h>
 #include <stdlib.h> // EXIT_FAILURE
 #include <unistd.h> // *opt*
 #include <errno.h>

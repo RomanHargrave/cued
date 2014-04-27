@@ -21,9 +21,9 @@
 #define __STDC_LIMIT_MACROS
 #endif
 
-#include "unix.h" // _GNU_SOURCE must be defined by unix.h before including any other headers
-#include "opt.h"
-#include "macros.h"
+#include <caulk/unix.h> // _GNU_SOURCE must be defined by unix.h before including any other headers
+#include <caulk/opt.h>
+#include <caulk/macros.h>
 
 #include <stdio.h>
 #include <stdlib.h>
