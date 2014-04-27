@@ -2,7 +2,7 @@ bin_PROGRAMS = cued
 cued_SOURCES = rip.c sheet.c cued.c \
                rip.h sheet.h
 
-AM_CPPFLAGS = $(LIBCUED_CPPFLAGS) $(LIBCAULK_CPPFLAGS) \
+AM_CPPFLAGS = $(LIBCUED_CPPFLAGS) $(LIBCAULK_CFLAGS) \
               $(LIBCDIO_CFLAGS) $(LIBCDIOPARANOIA_CFLAGS) $(LIBSNDFILE_CFLAGS) $(LIBCDDB_CFLAGS) \
               @AM_CPPFLAGS@
 cued_LDADD =  $(LIBCUED_LIBS)     $(LIBCAULK_LIBS) \
